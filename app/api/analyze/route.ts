@@ -1,20 +1,21 @@
 import { prisma } from "@/lib/prisma";
 import crypto from "node:crypto";
-
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
-
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // ====== SAFETY LIMITS (MVP defaults) ======
 const MAX_TRANSCRIPT_CHARS = 10_000;
 const GLOBAL_DAILY_LIMIT = 30; // total analyses per UTC day
-const PER_IP_DAILY_LIMIT = 5;  // per IP per UTC day
+const PER_IP_DAILY_LIMIT = 5; // per IP per UTC day
 const MAX_OUTPUT_TOKENS = 900; // cap model output
 
 // naive in-memory store (OK for MVP; replace with Redis/DB for production)
 const g = globalThis as any;
-g.__talkscope = g.__talkscope || { day: "", globalCount: 0, byIp: {} as Record<string, number> };
+g.__talkscope = g.__talkscope || {
+  day: "",
+  globalCount: 0,
+  byIp: {} as Record<string, number>,
+};
 
 function todayKeyUTC() {
   const d = new Date();
@@ -67,21 +68,23 @@ function systemPrompt(mode: Mode) {
 }
 
 export async function POST(req: Request) {
-  // --- basic checks ---
-  if (!process.env.OPENAI_API_KEY) {
-    return new NextResponse("Missing OPENAI_API_KEY in .env.local", { status: 500 });
-  }
+  // Create client INSIDE handler so build step doesn't require env
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return new NextResponse("Missing OPENAI_API_KEY", { status: 500 });
+  const client = new OpenAI({ apiKey });
 
   const body = await req.json();
   const transcript = String(body?.transcript ?? "").trim();
   const modeRaw = String(body?.mode ?? "coaching").toLowerCase();
-  const mode = (MODES.includes(modeRaw as Mode) ? (modeRaw as Mode) : "coaching");
+  const mode = (MODES.includes(modeRaw as Mode) ? (modeRaw as Mode) : "coaching") as Mode;
 
   if (transcript.length < 200) {
     return new NextResponse("Transcript is too short. Please paste more text.", { status: 400 });
   }
   if (transcript.length > MAX_TRANSCRIPT_CHARS) {
-    return new NextResponse(`Transcript too long. Max ${MAX_TRANSCRIPT_CHARS} characters.`, { status: 400 });
+    return new NextResponse(`Transcript too long. Max ${MAX_TRANSCRIPT_CHARS} characters.`, {
+      status: 400,
+    });
   }
 
   // --- quotas ---
@@ -100,14 +103,15 @@ export async function POST(req: Request) {
     return new NextResponse("Daily capacity reached. Please try again tomorrow.", { status: 429 });
   }
   if (state.byIp[ip] >= PER_IP_DAILY_LIMIT) {
-    return new NextResponse("Daily limit reached for this user. Please try again tomorrow.", { status: 429 });
+    return new NextResponse("Daily limit reached for this user. Please try again tomorrow.", {
+      status: 429,
+    });
   }
 
   // consume quota
   state.globalCount += 1;
   state.byIp[ip] += 1;
 
-  // --- enforce strict JSON via schema ---
   const schema = {
     name: "talkscope_report",
     schema: {
@@ -147,29 +151,24 @@ export async function POST(req: Request) {
       text: { format: { type: "json_schema", ...schema } },
     });
 
-    const text = resp.output_text;
-const parsed = JSON.parse(text);
+    const parsed = JSON.parse(resp.output_text);
 
-const transcriptHash = crypto
-  .createHash("sha256")
-  .update(transcript)
-  .digest("hex");
+    const transcriptHash = crypto.createHash("sha256").update(transcript).digest("hex");
 
-await prisma.report.create({
-  data: {
-    mode,
-    transcriptChars: transcript.length,
-    transcriptHash,
-    summary: String(parsed.summary ?? ""),
-    reportJson: JSON.stringify(parsed),
-    ip,
-  },
-});
+    await prisma.report.create({
+      data: {
+        mode,
+        transcriptChars: transcript.length,
+        transcriptHash,
+        summary: String(parsed.summary ?? ""),
+        reportJson: JSON.stringify(parsed),
+        ip,
+      },
+    });
 
-return NextResponse.json(parsed);
-
+    return NextResponse.json(parsed);
   } catch (err: any) {
-    // rollback quota on failure (so errors don't burn daily limits)
+    // rollback quota on failure
     state.globalCount = Math.max(0, state.globalCount - 1);
     state.byIp[ip] = Math.max(0, state.byIp[ip] - 1);
 
