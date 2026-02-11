@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+
+
+model Report {
+  id              String   @id @default(cuid())
+  createdAt       DateTime @default(now())
+
+  mode            String
+  transcriptChars Int
+  transcriptHash  String
+
+  summary         String
+  reportJson      String
+
+  // Optional metadata (MVP)
+  ip              String?
+
+  @@index([createdAt])
+  @@index([transcriptHash])
+}
