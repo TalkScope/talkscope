@@ -69,7 +69,8 @@ export async function POST(req: Request) {
 </body>
 </html>`;
 
-  const browser = await puppeteer.launch({ headless: "new" });
+  const browser = await puppeteer.launch({ headless: true });
+
   try {
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "load" });
