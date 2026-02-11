@@ -80,10 +80,11 @@ export async function POST(req: Request) {
   margin: { top: "18mm", right: "12mm", bottom: "18mm", left: "12mm" },
 });
 
-// Convert Uint8Array -> ArrayBuffer for NextResponse body typing
-const body = pdf.buffer.slice(pdf.byteOffset, pdf.byteOffset + pdf.byteLength);
+// Convert Uint8Array -> Buffer for NextResponse
+const body = Buffer.from(pdf);
 
 return new NextResponse(body, {
+
 
       headers: {
         "Content-Type": "application/pdf",
