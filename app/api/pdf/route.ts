@@ -75,12 +75,16 @@ export async function POST(req: Request) {
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "load" });
     const pdf = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      margin: { top: "18mm", right: "12mm", bottom: "18mm", left: "12mm" },
-    });
+  format: "A4",
+  printBackground: true,
+  margin: { top: "18mm", right: "12mm", bottom: "18mm", left: "12mm" },
+});
 
-    return new NextResponse(pdf, {
+// Convert Uint8Array -> ArrayBuffer for NextResponse body typing
+const body = pdf.buffer.slice(pdf.byteOffset, pdf.byteOffset + pdf.byteLength);
+
+return new NextResponse(body, {
+
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="talkscope-report.pdf"`,
