@@ -29,7 +29,7 @@ type PatternReport = {
 export default function PatternsPage() {
   const [level, setLevel] = useState<Level>("agent");
   const [refId, setRefId] = useState("");
-  const [windowSize, setWindowSize] = useState(50);
+  const [windowSize, setWindowSize] = useState(20);
 
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<PatternReport | null>(null);

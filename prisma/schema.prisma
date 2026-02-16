@@ -90,3 +90,23 @@ model PatternReport {
 
   @@index([level, refId])
 }
+
+model AgentScore {
+  id        String   @id @default(cuid())
+  agentId   String
+  createdAt DateTime @default(now())
+
+  windowSize Int
+
+  overallScore        Float
+  communicationScore  Float
+  conversionScore     Float
+  riskScore           Float
+  coachingPriority    Float
+
+  strengths     String   // JSON string
+  weaknesses    String   // JSON string
+  keyPatterns   String   // JSON string
+
+  @@index([agentId, createdAt])
+}
