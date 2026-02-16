@@ -16,8 +16,8 @@ type Overview = {
   lowPerformers: { agentId: string; overall: number; communication: number; conversion: number; risk: number; coachingPriority: number; at: string }[];
 };
 
-type OrgItem = { id: string; name: string; createdAt: string; _count?: { Teams: number } };
-type TeamItem = { id: string; name: string; organizationId: string; createdAt: string; _count?: { agents: number } };
+type Org = { id: string; name: string; createdAt?: string; teamsCount?: number };
+type Team = { id: string; name: string; organizationId: string; createdAt?: string; agentsCount?: number };
 
 function fmt(n: number | null | undefined) {
   if (n === null || n === undefined) return "—";
@@ -40,22 +40,36 @@ function RowLink({ href, children }: { href: string; children: React.ReactNode }
   );
 }
 
+async function readJsonSafe(r: Response) {
+  const txt = await r.text();
+  // частая проблема: сервер вернул HTML (error page) вместо JSON
+  if (txt.trim().startsWith("<!DOCTYPE") || txt.trim().startsWith("<html")) {
+    throw new Error(`Server returned HTML instead of JSON (status ${r.status}). Check route / deployment.`);
+  }
+  try {
+    return JSON.parse(txt);
+  } catch {
+    throw new Error(`Invalid JSON from server (status ${r.status}): ${txt.slice(0, 220)}`);
+  }
+}
+
 export default function DashboardPage() {
   const [limit, setLimit] = useState(12);
   const [data, setData] = useState<Overview | null>(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  // meta (org/team)
-  const [orgs, setOrgs] = useState<OrgItem[]>([]);
-  const [teams, setTeams] = useState<TeamItem[]>([]);
+  // Meta: orgs/teams
+  const [orgs, setOrgs] = useState<Org[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [metaLoading, setMetaLoading] = useState(false);
   const [metaErr, setMetaErr] = useState<string | null>(null);
 
   const [selectedOrgId, setSelectedOrgId] = useState<string>("");
   const [selectedTeamId, setSelectedTeamId] = useState<string>("");
 
-  // batch controls
+  // Batch
+  const [batchScope, setBatchScope] = useState<"team" | "org">("team");
   const [batchWindow, setBatchWindow] = useState<number>(30);
 
   const [jobId, setJobId] = useState<string>("");
@@ -63,17 +77,12 @@ export default function DashboardPage() {
   const [jobLoading, setJobLoading] = useState(false);
   const [jobErr, setJobErr] = useState<string | null>(null);
 
-  const batchScope: "team" | "org" = selectedTeamId ? "team" : "org";
-  const batchRefId = selectedTeamId || selectedOrgId;
-
-  async function loadDashboard() {
+  async function loadOverview() {
     setLoading(true);
     setErr(null);
     try {
       const r = await fetch(`/api/dashboard/overview?limit=${limit}`, { cache: "no-store" });
-      const txt = await r.text();
-      if (!r.ok) throw new Error(`Dashboard failed ${r.status}: ${txt.slice(0, 200)}`);
-      const j = JSON.parse(txt) as Overview;
+      const j = (await readJsonSafe(r)) as Overview;
       if (!j.ok) throw new Error("Dashboard API returned ok:false");
       setData(j);
     } catch (e: any) {
@@ -88,11 +97,21 @@ export default function DashboardPage() {
     setMetaErr(null);
     try {
       const r = await fetch(`/api/meta/orgs`, { cache: "no-store" });
-      const txt = await r.text();
-      if (!r.ok) throw new Error(`Meta orgs failed ${r.status}: ${txt.slice(0, 200)}`);
-      const j = JSON.parse(txt);
-      if (!j.ok) throw new Error(j.error || "Failed to load orgs");
-      setOrgs(j.orgs || []);
+      const j = await readJsonSafe(r);
+      if (!j.ok) throw new Error(j.error || "meta/orgs returned ok:false");
+
+      // нормализуем counts
+      const list: Org[] = (j.orgs ?? []).map((x: any) => ({
+        id: x.id,
+        name: x.name,
+        createdAt: x.createdAt,
+        teamsCount: x?._count?.teams ?? x.teamsCount ?? 0,
+      }));
+
+      setOrgs(list);
+
+      // автоселект 1-й org если пусто
+      if (!selectedOrgId && list.length > 0) setSelectedOrgId(list[0].id);
     } catch (e: any) {
       setMetaErr(e?.message || "Failed to load orgs");
     } finally {
@@ -101,43 +120,70 @@ export default function DashboardPage() {
   }
 
   async function loadTeams(orgId: string) {
+    if (!orgId) {
+      setTeams([]);
+      setSelectedTeamId("");
+      return;
+    }
+
     setMetaLoading(true);
     setMetaErr(null);
     try {
       const r = await fetch(`/api/meta/teams?orgId=${encodeURIComponent(orgId)}`, { cache: "no-store" });
-      const txt = await r.text();
-      if (!r.ok) throw new Error(`Meta teams failed ${r.status}: ${txt.slice(0, 200)}`);
-      const j = JSON.parse(txt);
-      if (!j.ok) throw new Error(j.error || "Failed to load teams");
-      setTeams(j.teams || []);
+      const j = await readJsonSafe(r);
+      if (!j.ok) throw new Error(j.error || "meta/teams returned ok:false");
+
+      const list: Team[] = (j.teams ?? []).map((x: any) => ({
+        id: x.id,
+        name: x.name,
+        organizationId: x.organizationId,
+        createdAt: x.createdAt,
+        agentsCount: x?._count?.agents ?? x.agentsCount ?? 0,
+      }));
+
+      setTeams(list);
+
+      // если выбранная team не принадлежит org или пустая — выберем первую
+      if (list.length === 0) {
+        setSelectedTeamId("");
+      } else if (!list.find((t) => t.id === selectedTeamId)) {
+        setSelectedTeamId(list[0].id);
+      }
     } catch (e: any) {
       setMetaErr(e?.message || "Failed to load teams");
-      setTeams([]);
     } finally {
       setMetaLoading(false);
     }
   }
 
+  function getRefIdForBatch() {
+    if (batchScope === "org") return selectedOrgId;
+    return selectedTeamId;
+  }
+
   async function createBatch() {
+    const refId = getRefIdForBatch();
+    if (!refId) {
+      setJobErr("Pick organization/team first");
+      return;
+    }
+
     setJobLoading(true);
     setJobErr(null);
     try {
-      if (!batchRefId) throw new Error("Select org/team first");
-
       const r = await fetch(`/api/batch/score/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scope: batchScope, refId: batchRefId, windowSize: batchWindow }),
+        body: JSON.stringify({ scope: batchScope, refId, windowSize: batchWindow }),
       });
 
-      const txt = await r.text();
-      if (!r.ok) throw new Error(`Create job failed ${r.status}: ${txt.slice(0, 200)}`);
-      const j = JSON.parse(txt);
-      if (!j.ok) throw new Error(j.error || "Create job failed");
+      const j = await readJsonSafe(r);
+      if (!r.ok || !j.ok) throw new Error(j?.error || `Create job failed (${r.status})`);
 
       setJobId(j.jobId);
       localStorage.setItem("talkscope_last_job_id", j.jobId);
       await fetchJobStatus(j.jobId);
+      await loadOverview();
     } catch (e: any) {
       setJobErr(e?.message || "Failed to create batch job");
     } finally {
@@ -148,14 +194,12 @@ export default function DashboardPage() {
   async function fetchJobStatus(id?: string) {
     const jid = (id ?? jobId).trim();
     if (!jid) return;
-    setJobErr(null);
 
+    setJobErr(null);
     try {
       const r = await fetch(`/api/batch/score/status?jobId=${encodeURIComponent(jid)}`, { cache: "no-store" });
-      const txt = await r.text();
-      if (!r.ok) throw new Error(`Status failed ${r.status}: ${txt.slice(0, 200)}`);
-      const j = JSON.parse(txt);
-      if (!j.ok) throw new Error(j.error || "Status failed");
+      const j = await readJsonSafe(r);
+      if (!r.ok || !j.ok) throw new Error(j?.error || `Status failed (${r.status})`);
       setJobStatus(j);
     } catch (e: any) {
       setJobErr(e?.message || "Failed to load batch status");
@@ -175,13 +219,11 @@ export default function DashboardPage() {
         body: JSON.stringify({ jobId: jid, take: 3 }),
       });
 
-      const txt = await r.text();
-      if (!r.ok) throw new Error(`Worker failed ${r.status}: ${txt.slice(0, 200)}`);
-      const j = JSON.parse(txt);
-      if (!j.ok) throw new Error(j.error || "Worker failed");
+      const j = await readJsonSafe(r);
+      if (!r.ok || !j.ok) throw new Error(j?.error || `Worker failed (${r.status})`);
 
       await fetchJobStatus(jid);
-      await loadDashboard();
+      await loadOverview();
     } catch (e: any) {
       setJobErr(e?.message || "Failed to run worker");
     } finally {
@@ -191,55 +233,45 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const last = typeof window !== "undefined" ? localStorage.getItem("talkscope_last_job_id") : "";
-    if (last) {
-      setJobId(last);
-      fetchJobStatus(last);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (last) setJobId(last);
   }, []);
 
   useEffect(() => {
-    loadDashboard();
+    loadOverview();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [limit]);
 
   useEffect(() => {
-    // meta init
     loadOrgs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (!selectedOrgId) {
-      setTeams([]);
-      setSelectedTeamId("");
-      return;
-    }
-    setSelectedTeamId("");
     loadTeams(selectedOrgId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedOrgId]);
 
-  const stats = useMemo(() => data?.stats, [data]);
+  useEffect(() => {
+    if (jobId) fetchJobStatus(jobId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobId]);
 
-  const canCreateJob = Boolean(batchRefId) && !jobLoading;
+  const stats = useMemo(() => data?.stats, [data]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Operations Dashboard</h1>
-          <p className="text-sm text-neutral-500">Coaching queue, risk signals, and performance overview.</p>
+          <p className="text-sm text-neutral-500">
+            Coaching queue, risk signals, batch scoring, and performance overview.
+          </p>
         </div>
 
         <div className="flex flex-col gap-2 md:flex-row md:items-center">
           <div className="flex items-center gap-2">
             <span className="text-sm text-neutral-500">Rows</span>
-            <select
-              className="rounded-lg border px-3 py-2 text-sm"
-              value={limit}
-              onChange={(e) => setLimit(Number(e.target.value))}
-            >
+            <select className="rounded-lg border px-3 py-2 text-sm" value={limit} onChange={(e) => setLimit(Number(e.target.value))}>
               {[8, 12, 20, 40].map((n) => (
                 <option key={n} value={n}>
                   {n}
@@ -248,11 +280,7 @@ export default function DashboardPage() {
             </select>
           </div>
 
-          <button
-            onClick={loadDashboard}
-            disabled={loading}
-            className="rounded-lg border px-4 py-2 text-sm font-medium disabled:opacity-50"
-          >
+          <button onClick={loadOverview} disabled={loading} className="rounded-lg border px-4 py-2 text-sm font-medium disabled:opacity-50">
             {loading ? "Refreshing..." : "Refresh"}
           </button>
 
@@ -262,8 +290,11 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {err && (
-        <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{err}</div>
+      {(err || metaErr) && (
+        <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          {err ? <div>{err}</div> : null}
+          {metaErr ? <div className={err ? "mt-2" : ""}>{metaErr}</div> : null}
+        </div>
       )}
 
       <div className="mt-6 flex flex-wrap gap-2">
@@ -273,49 +304,78 @@ export default function DashboardPage() {
         {pill(`Score snapshots: ${stats?.agentScoresCount ?? 0}`)}
       </div>
 
+      {/* Scope picker */}
+      <div className="mt-6 rounded-2xl border p-5">
+        <h2 className="text-lg font-semibold">Scope</h2>
+        <p className="mt-1 text-sm text-neutral-500">Choose org/team. Batch tools will use selected ids automatically.</p>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <div className="rounded-xl border p-4">
+            <div className="text-xs text-neutral-500">Organization</div>
+            <select
+              className="mt-2 w-full rounded-lg border px-3 py-2 text-sm"
+              value={selectedOrgId}
+              onChange={(e) => setSelectedOrgId(e.target.value)}
+              disabled={metaLoading || orgs.length === 0}
+            >
+              {orgs.length === 0 ? <option value="">No orgs</option> : null}
+              {orgs.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.name} - {o.id.slice(0, 8)}…
+                </option>
+              ))}
+            </select>
+            <div className="mt-2 text-xs text-neutral-500">OrgId: <span className="font-mono">{selectedOrgId || "—"}</span></div>
+          </div>
+
+          <div className="rounded-xl border p-4">
+            <div className="text-xs text-neutral-500">Team</div>
+            <select
+              className="mt-2 w-full rounded-lg border px-3 py-2 text-sm"
+              value={selectedTeamId}
+              onChange={(e) => setSelectedTeamId(e.target.value)}
+              disabled={metaLoading || teams.length === 0}
+            >
+              {teams.length === 0 ? <option value="">No teams in org</option> : null}
+              {teams.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name} - {t.id.slice(0, 8)}…
+                </option>
+              ))}
+            </select>
+            <div className="mt-2 text-xs text-neutral-500">TeamId: <span className="font-mono">{selectedTeamId || "—"}</span></div>
+          </div>
+        </div>
+
+        <div className="mt-3 flex gap-2">
+          <button
+            onClick={() => {
+              loadOrgs();
+              if (selectedOrgId) loadTeams(selectedOrgId);
+            }}
+            className="rounded-lg border px-3 py-2 text-sm font-medium disabled:opacity-50"
+            disabled={metaLoading}
+          >
+            {metaLoading ? "Loading..." : "Reload orgs/teams"}
+          </button>
+        </div>
+      </div>
+
       {/* Batch Scoring */}
       <div className="mt-6 rounded-2xl border p-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <h2 className="text-lg font-semibold">Batch Scoring</h2>
-            <p className="text-sm text-neutral-500">
-              Select org/team - create a job - then run the worker in controlled chunks.
-            </p>
+            <p className="text-sm text-neutral-500">Create a job for selected scope. Then run worker in controlled steps.</p>
           </div>
 
           <div className="flex flex-col gap-2 md:flex-row md:items-center">
-            <select
-              className="rounded-lg border px-3 py-2 text-sm md:w-[240px]"
-              value={selectedOrgId}
-              onChange={(e) => setSelectedOrgId(e.target.value)}
-            >
-              <option value="">Select organization...</option>
-              {orgs.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.name} ({o._count?.Teams ?? 0} teams)
-                </option>
-              ))}
+            <select className="rounded-lg border px-3 py-2 text-sm" value={batchScope} onChange={(e) => setBatchScope(e.target.value as any)}>
+              <option value="team">team</option>
+              <option value="org">org</option>
             </select>
 
-            <select
-              className="rounded-lg border px-3 py-2 text-sm md:w-[240px] disabled:opacity-50"
-              value={selectedTeamId}
-              onChange={(e) => setSelectedTeamId(e.target.value)}
-              disabled={!selectedOrgId || teams.length === 0}
-            >
-              <option value="">All teams (org scope)</option>
-              {teams.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name} ({t._count?.agents ?? 0} agents)
-                </option>
-              ))}
-            </select>
-
-            <select
-              className="rounded-lg border px-3 py-2 text-sm"
-              value={batchWindow}
-              onChange={(e) => setBatchWindow(Number(e.target.value))}
-            >
+            <select className="rounded-lg border px-3 py-2 text-sm" value={batchWindow} onChange={(e) => setBatchWindow(Number(e.target.value))}>
               {[20, 30, 50].map((n) => (
                 <option key={n} value={n}>
                   window {n}
@@ -325,29 +385,32 @@ export default function DashboardPage() {
 
             <button
               onClick={createBatch}
-              disabled={!canCreateJob}
+              disabled={jobLoading || (batchScope === "org" ? !selectedOrgId : !selectedTeamId)}
               className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
             >
-              {jobLoading ? "Working..." : `Create Job (${batchScope})`}
+              {jobLoading ? "Working..." : "Create Job"}
             </button>
           </div>
         </div>
 
-        {(metaErr || metaLoading) && (
-          <div className="mt-3 text-sm text-neutral-600">
-            {metaLoading ? "Loading orgs/teams..." : <span className="text-red-700">{metaErr}</span>}
-          </div>
-        )}
+        <div className="mt-2 text-xs text-neutral-500">
+          Using refId:
+          <span className="ml-2 rounded-md border bg-neutral-50 px-2 py-1 font-mono text-xs">
+            {getRefIdForBatch() || "—"}
+          </span>
+        </div>
 
         {jobErr && (
-          <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{jobErr}</div>
+          <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            {jobErr}
+          </div>
         )}
 
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           <div className="rounded-xl border p-4">
             <div className="text-xs text-neutral-500">Job ID</div>
             <div className="mt-1 break-all font-mono text-xs">{jobId || "—"}</div>
-            <div className="mt-2 flex gap-2">
+            <div className="mt-2 flex flex-wrap gap-2">
               <button
                 onClick={() => fetchJobStatus()}
                 disabled={jobLoading || !jobId}
@@ -363,17 +426,13 @@ export default function DashboardPage() {
                 Run worker (x3)
               </button>
             </div>
-            <div className="mt-2 text-xs text-neutral-500">
-              RefId: <span className="font-mono">{batchRefId || "—"}</span>
-            </div>
           </div>
 
           <div className="rounded-xl border p-4">
             <div className="text-xs text-neutral-500">Progress</div>
             <div className="mt-2 text-2xl font-semibold">{jobStatus?.job?.percent ?? 0}%</div>
             <div className="mt-1 text-sm text-neutral-600">
-              {jobStatus?.counts?.done ?? 0} done - {jobStatus?.counts?.queued ?? 0} queued -{" "}
-              {jobStatus?.counts?.failed ?? 0} failed
+              {jobStatus?.counts?.done ?? 0} done - {jobStatus?.counts?.queued ?? 0} queued - {jobStatus?.counts?.failed ?? 0} failed
             </div>
             <div className="mt-2 text-xs text-neutral-500">
               Status: <span className="font-semibold">{jobStatus?.job?.status ?? "—"}</span>
@@ -398,8 +457,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Tables */}
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        {/* Coaching Queue */}
         <section className="rounded-2xl border p-5">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Coaching Queue</h2>
@@ -445,7 +504,6 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* High Risk */}
         <section className="rounded-2xl border p-5">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">High Risk</h2>
@@ -491,7 +549,6 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* Top Performers */}
         <section className="rounded-2xl border p-5">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Top Performers</h2>
@@ -541,7 +598,6 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* Low Performers */}
         <section className="rounded-2xl border p-5">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Low Performers</h2>
@@ -589,10 +645,10 @@ export default function DashboardPage() {
       </div>
 
       <div className="mt-6 rounded-2xl border p-5">
-        <h2 className="text-lg font-semibold">Next layer</h2>
+        <h2 className="text-lg font-semibold">Why this page matters</h2>
         <p className="mt-2 text-sm text-neutral-600">
-          Далі ми підключимо це до “клієнтського” сценарію: імпорт розмов, агенти, профіль агента, патерни по команді/організації,
-          і контроль доступів (Neon Auth/Clerk - повернемося до цього, важливо).
+          Это операционный пульт: он не “рисует графики”, он запускает движок (batch scoring), показывает риск и очередь
+          на коучинг. Следующий слой - автоматизация: “Run until done”, расписание, и роли (org/team access).
         </p>
       </div>
     </div>
