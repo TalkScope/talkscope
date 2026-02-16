@@ -154,45 +154,50 @@ export default function DashboardPage() {
       <div className="mt-6 rounded-xl border p-5">
         <h2 className="text-lg font-semibold">Batch Scoring</h2>
 
-        <div className="mt-4 flex flex-wrap gap-3 relative">
+<div className="mt-4 flex flex-wrap gap-3">
 
-          {/* SCOPE */}
-          <select
-            className="relative z-10 cursor-pointer rounded-lg border bg-white px-3 py-2 text-sm"
-            value={batchScope}
-            onChange={(e) => setBatchScope(e.target.value as any)}
-          >
-            <option value="team">team</option>
-            <option value="org">org</option>
-          </select>
+  {/* SCOPE */}
+  <div className="relative z-50">
+    <select
+      className="cursor-pointer rounded-lg border bg-white px-3 py-2 text-sm shadow-sm"
+      value={batchScope}
+      onChange={(e) => setBatchScope(e.target.value as any)}
+    >
+      <option value="team">team</option>
+      <option value="org">org</option>
+    </select>
+  </div>
 
-          {/* REF ID */}
-          <input
-            className="relative z-10 rounded-lg border bg-white px-3 py-2 text-sm w-[360px]"
-            placeholder="teamId or orgId"
-            value={batchRefId}
-            onChange={(e) => setBatchRefId(e.target.value)}
-          />
+  {/* REF ID */}
+  <input
+    className="rounded-lg border bg-white px-3 py-2 text-sm w-[360px] shadow-sm"
+    placeholder="teamId or orgId"
+    value={batchRefId}
+    onChange={(e) => setBatchRefId(e.target.value)}
+  />
 
-          {/* WINDOW */}
-          <select
-            className="relative z-10 cursor-pointer rounded-lg border bg-white px-3 py-2 text-sm"
-            value={batchWindow}
-            onChange={(e) => setBatchWindow(Number(e.target.value))}
-          >
-            <option value={20}>window 20</option>
-            <option value={30}>window 30</option>
-            <option value={50}>window 50</option>
-          </select>
+  {/* WINDOW */}
+  <div className="relative z-50">
+    <select
+      className="cursor-pointer rounded-lg border bg-white px-3 py-2 text-sm shadow-sm"
+      value={batchWindow}
+      onChange={(e) => setBatchWindow(Number(e.target.value))}
+    >
+      <option value={20}>window 20</option>
+      <option value={30}>window 30</option>
+      <option value={50}>window 50</option>
+    </select>
+  </div>
 
-          <button
-            onClick={createBatch}
-            disabled={jobLoading || !batchRefId}
-            className="rounded-lg bg-black px-4 py-2 text-white disabled:opacity-50"
-          >
-            {jobLoading ? "Working..." : "Create Job"}
-          </button>
-        </div>
+  <button
+    onClick={createBatch}
+    disabled={jobLoading || !batchRefId.trim()}
+    className="rounded-lg bg-black px-4 py-2 text-white disabled:opacity-50"
+  >
+    {jobLoading ? "Working..." : "Create Job"}
+  </button>
+</div>
+
 
         {jobErr && <div className="mt-3 text-red-600">{jobErr}</div>}
 
