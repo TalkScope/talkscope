@@ -110,3 +110,15 @@ model AgentScore {
 
   @@index([agentId, createdAt])
 }
+
+model AgentScoreHistory {
+  id          String   @id @default(cuid())
+  agentId     String
+  score       Float
+  windowSize  Int
+  createdAt   DateTime @default(now())
+
+  agent Agent @relation(fields: [agentId], references: [id])
+
+  @@index([agentId, createdAt])
+}
