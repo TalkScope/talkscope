@@ -47,3 +47,5 @@ prisma/dev.db
 next-env.d.ts
 
 /app/generated/prisma
+talkscope_50_conversations.json
+
