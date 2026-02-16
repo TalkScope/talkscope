@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 type Level = "agent" | "team" | "org";
 
-const MAX_OUTPUT_TOKENS = 1200;
+const MAX_OUTPUT_TOKENS = 2500;
 
 const schema = {
   name: "talkscope_pattern_report",
@@ -23,8 +23,8 @@ const schema = {
 
       top_recurring_issues: {
         type: "array",
-        minItems: 5,
-        maxItems: 12,
+        minItems: 3,
+        maxItems: 6,
         items: {
           type: "object",
           additionalProperties: false,
@@ -35,7 +35,7 @@ const schema = {
             evidence_examples: {
               type: "array",
               minItems: 2,
-              maxItems: 5,
+              maxItems: 3,
               items: {
                 type: "object",
                 additionalProperties: false,
@@ -63,8 +63,8 @@ const schema = {
         },
       },
 
-      quick_wins_next_7_days: { type: "array", minItems: 3, maxItems: 8, items: { type: "string" } },
-      metrics_to_track: { type: "array", minItems: 3, maxItems: 10, items: { type: "string" } },
+      quick_wins_next_7_days: { type: "array", minItems: 3, maxItems: 5, items: { type: "string" } },
+      metrics_to_track: { type: "array", minItems: 3, maxItems: 6, items: { type: "string" } },
     },
     required: [
       "window_size",
