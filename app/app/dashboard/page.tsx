@@ -42,10 +42,18 @@ function RowLink({ href, children }: { href: string; children: React.ReactNode }
 }
 
 export default function DashboardPage() {
-  const [limit, setLimit] = useState(12);
-  const [data, setData] = useState<Overview | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+const [limit, setLimit] = useState(12);
+const [data, setData] = useState<Overview | null>(null);
+const [loading, setLoading] = useState(false);
+const [err, setErr] = useState<string | null>(null);
+const [batchScope, setBatchScope] = useState<"team" | "org">("team");
+const [batchRefId, setBatchRefId] = useState<string>("");
+const [batchWindow, setBatchWindow] = useState<number>(30);
+
+const [jobId, setJobId] = useState<string>("");
+const [jobStatus, setJobStatus] = useState<any>(null);
+const [jobLoading, setJobLoading] = useState(false);
+const [jobErr, setJobErr] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -61,6 +69,87 @@ export default function DashboardPage() {
       setLoading(false);
     }
   }
+
+
+async function createBatch() {
+  setJobLoading(true);
+  setJobErr(null);
+  try {
+    const r = await fetch(`/api/batch/score/create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ scope: batchScope, refId: batchRefId.trim(), windowSize: batchWindow }),
+    });
+
+    const txt = await r.text();
+    if (!r.ok) throw new Error(`Create job failed ${r.status}: ${txt.slice(0, 200)}`);
+
+    const j = JSON.parse(txt);
+    if (!j.ok) throw new Error(j.error || "Create job failed");
+
+    setJobId(j.jobId);
+    localStorage.setItem("talkscope_last_job_id", j.jobId);
+    await fetchJobStatus(j.jobId);
+  } catch (e: any) {
+    setJobErr(e?.message || "Failed to create batch job");
+  } finally {
+    setJobLoading(false);
+  }
+}
+
+async function fetchJobStatus(id?: string) {
+  const jid = (id ?? jobId).trim();
+  if (!jid) return;
+
+  try {
+    const r = await fetch(`/api/batch/score/status?jobId=${encodeURIComponent(jid)}`, { cache: "no-store" });
+    const txt = await r.text();
+    if (!r.ok) throw new Error(`Status failed ${r.status}: ${txt.slice(0, 200)}`);
+    const j = JSON.parse(txt);
+    if (!j.ok) throw new Error(j.error || "Status failed");
+    setJobStatus(j);
+  } catch (e: any) {
+    setJobErr(e?.message || "Failed to load batch status");
+  }
+}
+
+async function runWorkerOnce() {
+  const jid = jobId.trim();
+  if (!jid) return;
+
+  setJobLoading(true);
+  setJobErr(null);
+  try {
+    const r = await fetch(`/api/batch/score/run`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jobId: jid, take: 3 }),
+    });
+
+    const txt = await r.text();
+    if (!r.ok) throw new Error(`Worker failed ${r.status}: ${txt.slice(0, 200)}`);
+
+    const j = JSON.parse(txt);
+    if (!j.ok) throw new Error(j.error || "Worker failed");
+
+    await fetchJobStatus(jid);
+    await load(); // обновим таблицы dashboard
+  } catch (e: any) {
+    setJobErr(e?.message || "Failed to run worker");
+  } finally {
+    setJobLoading(false);
+  }
+}
+
+useEffect(() => {
+  const last = typeof window !== "undefined" ? localStorage.getItem("talkscope_last_job_id") : "";
+  if (last) {
+    setJobId(last);
+    fetchJobStatus(last);
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+
 
   useEffect(() => {
     load();
@@ -124,7 +213,112 @@ export default function DashboardPage() {
         {pill(`Pattern reports: ${stats?.patternReportsCount ?? 0}`)}
         {pill(`Score snapshots: ${stats?.agentScoresCount ?? 0}`)}
       </div>
+<div className="mt-6 rounded-2xl border p-5">
+  <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+    <div>
+      <h2 className="text-lg font-semibold">Batch Scoring</h2>
+      <p className="text-sm text-neutral-500">
+        Run scoring for a whole team or org with controlled throughput.
+      </p>
+    </div>
 
+    <div className="flex flex-col gap-2 md:flex-row md:items-center">
+      <select
+        className="rounded-lg border px-3 py-2 text-sm"
+        value={batchScope}
+        onChange={(e) => setBatchScope(e.target.value as any)}
+      >
+        <option value="team">team</option>
+        <option value="org">org</option>
+      </select>
+
+      <input
+        className="w-full rounded-lg border px-3 py-2 text-sm md:w-[420px]"
+        placeholder="refId (teamId or orgId)"
+        value={batchRefId}
+        onChange={(e) => setBatchRefId(e.target.value)}
+      />
+
+      <select
+        className="rounded-lg border px-3 py-2 text-sm"
+        value={batchWindow}
+        onChange={(e) => setBatchWindow(Number(e.target.value))}
+      >
+        {[20, 30, 50].map((n) => (
+          <option key={n} value={n}>
+            window {n}
+          </option>
+        ))}
+      </select>
+
+      <button
+        onClick={createBatch}
+        disabled={jobLoading || !batchRefId.trim()}
+        className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+      >
+        {jobLoading ? "Working..." : "Create Job"}
+      </button>
+    </div>
+  </div>
+
+  {jobErr && (
+    <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+      {jobErr}
+    </div>
+  )}
+
+  <div className="mt-4 grid gap-3 md:grid-cols-3">
+    <div className="rounded-xl border p-4">
+      <div className="text-xs text-neutral-500">Job ID</div>
+      <div className="mt-1 break-all font-mono text-xs">{jobId || "—"}</div>
+      <div className="mt-2 flex gap-2">
+        <button
+          onClick={() => fetchJobStatus()}
+          disabled={jobLoading || !jobId}
+          className="rounded-lg border px-3 py-2 text-sm font-medium disabled:opacity-50"
+        >
+          Refresh status
+        </button>
+        <button
+          onClick={runWorkerOnce}
+          disabled={jobLoading || !jobId}
+          className="rounded-lg border px-3 py-2 text-sm font-medium disabled:opacity-50"
+        >
+          Run worker (x3)
+        </button>
+      </div>
+    </div>
+
+    <div className="rounded-xl border p-4">
+      <div className="text-xs text-neutral-500">Progress</div>
+      <div className="mt-2 text-2xl font-semibold">
+        {jobStatus?.job?.percent ?? 0}%
+      </div>
+      <div className="mt-1 text-sm text-neutral-600">
+        {jobStatus?.counts?.done ?? 0} done - {jobStatus?.counts?.queued ?? 0} queued - {jobStatus?.counts?.failed ?? 0} failed
+      </div>
+      <div className="mt-2 text-xs text-neutral-500">
+        Status: <span className="font-semibold">{jobStatus?.job?.status ?? "—"}</span>
+      </div>
+    </div>
+
+    <div className="rounded-xl border p-4">
+      <div className="text-xs text-neutral-500">Last failures</div>
+      <div className="mt-2 space-y-2 text-sm text-neutral-700">
+        {(jobStatus?.lastFailed ?? []).length === 0 ? (
+          <div className="text-neutral-600">No failures.</div>
+        ) : (
+          (jobStatus?.lastFailed ?? []).map((x: any, i: number) => (
+            <div key={i} className="rounded-lg border p-2">
+              <div className="font-mono text-xs">{x.agentId}</div>
+              <div className="mt-1 text-xs text-neutral-600">{x.error}</div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  </div>
+</div>
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         {/* Coaching Queue */}
         <section className="rounded-2xl border p-5">
