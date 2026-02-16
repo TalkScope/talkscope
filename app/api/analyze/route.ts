@@ -155,16 +155,32 @@ export async function POST(req: Request) {
 
     const transcriptHash = crypto.createHash("sha256").update(transcript).digest("hex");
 
-    await prisma.report.create({
-      data: {
-        mode,
-        transcriptChars: transcript.length,
-        transcriptHash,
-        summary: String(parsed.summary ?? ""),
-        reportJson: JSON.stringify(parsed),
-        ip,
-      },
-    });
+    // ===== Save Conversation =====
+
+const AGENT_ID = process.env.DEFAULT_AGENT_ID || "PASTE_AGENT_ID_HERE";
+
+await prisma.conversation.create({
+  data: {
+    agentId: AGENT_ID,
+    transcript: transcript,
+    reportJson: JSON.stringify(parsed),
+    score: null,
+  },
+});
+
+// ===== Save Individual Report (старий функціонал залишаємо) =====
+
+await prisma.report.create({
+  data: {
+    mode,
+    transcriptChars: transcript.length,
+    transcriptHash,
+    summary: String(parsed.summary ?? ""),
+    reportJson: JSON.stringify(parsed),
+    ip,
+  },
+});
+
 
     return NextResponse.json(parsed);
   } catch (err: any) {

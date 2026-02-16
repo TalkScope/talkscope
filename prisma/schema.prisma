@@ -27,3 +27,66 @@ model Report {
   @@index([createdAt])
   @@index([transcriptHash])
 }
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  teams     Team[]
+  patterns  PatternReport[]
+}
+
+model Team {
+  id             String   @id @default(cuid())
+  name           String
+  organizationId String
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  agents       Agent[]
+  patterns     PatternReport[]
+}
+
+model Agent {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  teamId    String
+  createdAt DateTime @default(now())
+
+  team           Team           @relation(fields: [teamId], references: [id])
+  conversations  Conversation[]
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  agentId   String
+  createdAt DateTime @default(now())
+
+  transcript   String
+  reportJson   String?
+  score        Float?
+
+  agent Agent @relation(fields: [agentId], references: [id])
+
+  @@index([agentId])
+}
+
+model PatternReport {
+  id        String   @id @default(cuid())
+  level     String   // "agent" | "team" | "org"
+  refId     String   // agentId | teamId | orgId
+  createdAt DateTime @default(now())
+
+  windowSize Int
+  reportJson String
+
+  organizationId String?
+  teamId         String?
+
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  team         Team?         @relation(fields: [teamId], references: [id])
+
+  @@index([level, refId])
+}
