@@ -1,25 +1,23 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
+export async function GET(req: Request) {
   try {
-    const orgId = req.nextUrl.searchParams.get("orgId")?.trim() || "";
-    if (!orgId) {
-      return NextResponse.json({ ok: true, teams: [] });
-    }
+    const { searchParams } = new URL(req.url);
+    const orgId = (searchParams.get("orgId") ?? "").trim();
 
     const teams = await prisma.team.findMany({
-      where: { organizationId: orgId },
+      where: orgId ? { organizationId: orgId } : undefined,
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
         name: true,
         organizationId: true,
         createdAt: true,
-        _count: { select: { agents: true } },
+        _count: { select: { agents: true } }, // важно: lowerCase имя relation-поля
       },
     });
 
