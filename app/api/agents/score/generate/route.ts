@@ -155,6 +155,13 @@ export async function POST(req: Request) {
         keyPatterns: JSON.stringify(parsed.key_patterns),
       },
     });
+await prisma.agentScoreHistory.create({
+  data: {
+    agentId,
+    score: Number(parsed.overall_score),
+    windowSize,
+  },
+});
 
     return NextResponse.json({ ok: true, score: parsed, savedId: saved.id });
   } catch (e: any) {
