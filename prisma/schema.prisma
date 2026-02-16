@@ -126,19 +126,22 @@ model BatchJob {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  scope       String   // "team" | "org"
-  refId       String   // teamId or orgId
+  scope       String
+  refId       String
   windowSize  Int
-  status      String   // "queued" | "running" | "done" | "failed"
+  status      String
   progress    Int      @default(0)
   total       Int      @default(0)
 
   error       String?
 
+  tasks       BatchTask[]   
+
   @@index([createdAt])
   @@index([status])
   @@index([scope, refId])
 }
+
 
 model BatchTask {
   id         String   @id @default(cuid())
