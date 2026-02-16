@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { prisma } from "@/lib/prisma";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 type Level = "agent" | "team" | "org";
 
 const MAX_OUTPUT_TOKENS = 1200;
@@ -27,8 +30,8 @@ const schema = {
           additionalProperties: false,
           properties: {
             issue: { type: "string" },
-            frequency_estimate: { type: "string" }, // e.g. "high", "medium", "low" or "18/50"
-            impact: { type: "string" }, // revenue/churn/csat
+            frequency_estimate: { type: "string" },
+            impact: { type: "string" },
             evidence_examples: {
               type: "array",
               minItems: 2,
@@ -63,7 +66,15 @@ const schema = {
       quick_wins_next_7_days: { type: "array", minItems: 3, maxItems: 8, items: { type: "string" } },
       metrics_to_track: { type: "array", minItems: 3, maxItems: 10, items: { type: "string" } },
     },
-    required: ["window_size", "level", "ref_id", "executive_summary", "top_recurring_issues", "quick_wins_next_7_days", "metrics_to_track"],
+    required: [
+      "window_size",
+      "level",
+      "ref_id",
+      "executive_summary",
+      "top_recurring_issues",
+      "quick_wins_next_7_days",
+      "metrics_to_track",
+    ],
   },
 } as const;
 
@@ -106,76 +117,108 @@ async function fetchWindow(level: Level, refId: string, windowSize: number) {
 }
 
 export async function POST(req: Request) {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return new NextResponse("Missing OPENAI_API_KEY", { status: 500 });
-  const client = new OpenAI({ apiKey });
+  try {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) return new NextResponse("Missing OPENAI_API_KEY", { status: 500 });
+    const client = new OpenAI({ apiKey });
 
-  const body = await req.json();
-  const level = String(body?.level ?? "team") as Level;
-  const refId = String(body?.refId ?? "").trim();
-  const windowSize = Number(body?.windowSize ?? 50);
+    const body = await req.json();
 
-  if (!refId) return new NextResponse("Missing refId", { status: 400 });
-  if (!["agent", "team", "org"].includes(level)) return new NextResponse("Invalid level", { status: 400 });
-  if (!Number.isFinite(windowSize) || windowSize < 10 || windowSize > 100)
-    return new NextResponse("Invalid windowSize (10..100)", { status: 400 });
+    const levelRaw = String(body?.level ?? "team").toLowerCase();
+    const level = (["agent", "team", "org"].includes(levelRaw) ? levelRaw : "") as Level;
 
-  const convs = await fetchWindow(level, refId, windowSize);
-  if (convs.length < 5) return new NextResponse("Not enough conversations for pattern analysis", { status: 400 });
+    const refId = String(body?.refId ?? "").trim();
+    const windowSize = Number(body?.windowSize ?? 50);
 
-  // Build compact input: prefer existing per-conversation reportJson, fallback to transcript snippets
-  const payload = convs.map((c) => {
-    const base: any = {
-      conversation_id: c.id,
-      created_at: c.createdAt.toISOString(),
-      agent_id: c.agentId,
+    if (!refId) return new NextResponse("Missing refId", { status: 400 });
+    if (!level) return new NextResponse("Invalid level", { status: 400 });
+    if (!Number.isFinite(windowSize) || windowSize < 10 || windowSize > 100)
+      return new NextResponse("Invalid windowSize (10..100)", { status: 400 });
+
+    const convs = await fetchWindow(level, refId, windowSize);
+    if (convs.length < 5) return new NextResponse("Not enough conversations for pattern analysis", { status: 400 });
+
+    // Build compact input: prefer existing per-conversation reportJson, fallback to transcript snippets
+    const payload = convs.map((c) => {
+      const base: any = {
+        conversation_id: c.id,
+        created_at: c.createdAt.toISOString(),
+        agent_id: c.agentId,
+      };
+
+      if (c.reportJson) {
+        try {
+          base.report = JSON.parse(c.reportJson);
+        } catch {
+          base.report = null;
+        }
+      } else {
+        base.transcript_excerpt = (c.transcript || "").slice(0, 1200);
+      }
+      return base;
+    });
+
+    const inputText = [
+      "You will receive a JSON array of conversation items.",
+      "Each item has conversation_id, agent_id, created_at, and either a prior report or a transcript excerpt.",
+      "Task: produce a Pattern Intelligence Report following the provided JSON schema.",
+      "Focus: recurring issues, missed opportunities, and weak points that affect conversion/support outcomes.",
+      "",
+      JSON.stringify({ level, ref_id: refId, window_size: windowSize, items: payload }),
+    ].join("\n");
+
+    const resp = await client.responses.create({
+      model: "gpt-4.1-mini",
+      input: [
+        { role: "system", content: systemPrompt(level) },
+        { role: "user", content: inputText },
+      ],
+      max_output_tokens: MAX_OUTPUT_TOKENS,
+      text: { format: { type: "json_schema", ...schema } },
+    });
+
+    const outText = (resp as any)?.output_text;
+    if (!outText || typeof outText !== "string") {
+      return NextResponse.json(
+        { ok: false, error: "OpenAI returned empty output_text", debug: resp },
+        { status: 500 }
+      );
+    }
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(outText);
+    } catch {
+      return NextResponse.json(
+        { ok: false, error: "Failed to parse OpenAI JSON output", raw: outText.slice(0, 2000) },
+        { status: 500 }
+      );
+    }
+
+    // Save PatternReport
+    const data: any = {
+      level,
+      refId,
+      windowSize,
+      reportJson: JSON.stringify(parsed),
     };
 
-    if (c.reportJson) {
-      try {
-        base.report = JSON.parse(c.reportJson);
-      } catch {
-        base.report = null;
-      }
-    } else {
-      base.transcript_excerpt = c.transcript.slice(0, 1200);
-    }
-    return base;
-  });
+    if (level === "org") data.organizationId = refId;
+    if (level === "team") data.teamId = refId;
 
-  const inputText = [
-    "You will receive a JSON array of conversation items.",
-    "Each item has conversation_id, agent_id, created_at, and either a prior report or a transcript excerpt.",
-    "Task: produce a Pattern Intelligence Report following the provided JSON schema.",
-    "Focus: recurring issues, missed opportunities, and weak points that affect conversion/support outcomes.",
-    "",
-    JSON.stringify({ level, ref_id: refId, window_size: windowSize, items: payload }),
-  ].join("\n");
+    await prisma.patternReport.create({ data });
 
-  const resp = await client.responses.create({
-    model: "gpt-4.1-mini",
-    input: [
-      { role: "system", content: systemPrompt(level) },
-      { role: "user", content: inputText },
-    ],
-    max_output_tokens: MAX_OUTPUT_TOKENS,
-    text: { format: { type: "json_schema", ...schema } },
-  });
+    return NextResponse.json(parsed);
+  } catch (e: any) {
+    console.error("patterns_generate_error:", e);
 
-  const parsed = JSON.parse(resp.output_text);
-
-  // Save PatternReport
-  const data: any = {
-    level,
-    refId,
-    windowSize,
-    reportJson: JSON.stringify(parsed),
-  };
-
-  if (level === "org") data.organizationId = refId;
-  if (level === "team") data.teamId = refId;
-
-  await prisma.patternReport.create({ data });
-
-  return NextResponse.json(parsed);
+    return NextResponse.json(
+      {
+        ok: false,
+        error: e?.message || "Pattern generation failed (unknown error)",
+        name: e?.name,
+      },
+      { status: 500 }
+    );
+  }
 }
