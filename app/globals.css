@@ -24,3 +24,75 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+/* ===============================
+   TalkScope Design System
+   Clean / Enterprise / BI style
+================================ */
+
+/* ===== Typography ===== */
+
+.agent-name {
+  color: #406184;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.metric-number {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* ===== Tables ===== */
+
+.table-hover tbody tr:hover {
+  background: #f6f8fa;
+  transition: background 0.15s ease;
+}
+
+.table-divider tr {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* ===== Sections spacing ===== */
+
+.section-divider {
+  border-top: 1px solid #e5e7eb;
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+}
+
+/* ===== Cards ===== */
+
+.card {
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.card-soft {
+  border: 1px solid #f0f0f0;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+/* ===== Hover elevation ===== */
+
+.hover-lift:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+  transition: all 0.15s ease;
+}
+
+/* ===== Progress colors ===== */
+
+.risk-low { color: #2e7d32; }
+.risk-mid { color: #c77700; }
+.risk-high { color: #c62828; }
+
+/* ===== Smooth UI ===== */
+
+button {
+  transition: all 0.15s ease;
+}

@@ -266,25 +266,30 @@ export default function DashboardPage() {
   }
 
   async function runToCompletion() {
-for (let i = 0; i < 60; i++) {
-  const runRes = await fetch("/api/batch/score/run", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ jobId, take: 3 }),
-  });
+    if (!jobId) return;
 
-  await refreshJobStatus(jobId);
+    setRunningJob(true);
+    setJustFinished(false);
+    setErr(null);
+    setInfo(null);
 
-  const latest = await fetch(
-    `/api/batch/score/status?jobId=${encodeURIComponent(jobId)}`,
-    { cache: "no-store" }
-  ).then(r => r.json()).catch(() => null);
+    try {
+      let st = await refreshJobStatus(jobId);
 
-  if (latest?.job?.status === "done") break;
+      for (let i = 0; i < 80; i++) {
+        if (isJobFinished(st)) break;
 
-  await sleep(700);
-}
+        await fetch("/api/batch/score/run", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ jobId, take: 3 }),
+        });
 
+        st = await refreshJobStatus(jobId);
+        if (isJobFinished(st)) break;
+
+        await sleep(450);
+      }
 
       st = await refreshJobStatus(jobId);
 
