@@ -4,68 +4,62 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    const url = new URL(req.url);
-    const teamId = (url.searchParams.get("teamId") ?? "").trim();
-    const orgId = (url.searchParams.get("orgId") ?? "").trim();
-
-    const where: any = {};
-    if (teamId) where.teamId = teamId;
-    if (orgId) where.team = { organizationId: orgId };
-
-    // 1) агенты + org/team + count conversations (это relation существует)
+    // 1) Base agents + team/org
     const agents = await prisma.agent.findMany({
-      where,
       orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        createdAt: true,
+      include: {
         team: {
-          select: {
-            id: true,
-            name: true,
-            organization: { select: { id: true, name: true } },
+          include: {
+            organization: true,
           },
         },
-        _count: { select: { conversations: true } },
       },
     });
 
-    const agentIds = agents.map((a) => a.id);
-    if (agentIds.length === 0) {
-      return NextResponse.json({ ok: true, agents: [] });
-    }
-
-    // 2) count score snapshots (AgentScore) — НЕ relation, считаем groupBy
-    const scoreCounts = await prisma.agentScore.groupBy({
+    // 2) Conversations count per agent
+    const convAgg = await prisma.conversation.groupBy({
       by: ["agentId"],
-      where: { agentId: { in: agentIds } },
       _count: { _all: true },
     });
 
-    const scoresByAgentId = new Map<string, number>();
-    for (const row of scoreCounts) {
-      scoresByAgentId.set(row.agentId, row._count._all);
-    }
+    const convMap = new Map<string, number>();
+    for (const row of convAgg) convMap.set(row.agentId, row._count._all);
 
-    // 3) собрать красиво
-    const out = agents.map((a) => ({
+    // 3) Scores count per agent (AgentScore не связан relation-ом, поэтому считаем отдельно)
+    const scoreAgg = await prisma.agentScore.groupBy({
+      by: ["agentId"],
+      _count: { _all: true },
+    });
+
+    const scoreMap = new Map<string, number>();
+    for (const row of scoreAgg) scoreMap.set(row.agentId, row._count._all);
+
+    const result = agents.map((a) => ({
       id: a.id,
       name: a.name,
-      email: a.email,
+      email: a.email ?? "",
       createdAt: a.createdAt,
-      team: a.team,
-      conversationsCount: a._count.conversations,
-      scoresCount: scoresByAgentId.get(a.id) ?? 0,
+      team: a.team
+        ? {
+            id: a.team.id,
+            name: a.team.name,
+            organization: a.team.organization
+              ? { id: a.team.organization.id, name: a.team.organization.name }
+              : null,
+          }
+        : null,
+      teamName: a.team?.name ?? "",
+      orgName: a.team?.organization?.name ?? "",
+      conversationsCount: convMap.get(a.id) ?? 0,
+      scoresCount: scoreMap.get(a.id) ?? 0,
     }));
 
-    return NextResponse.json({ ok: true, agents: out });
+    return NextResponse.json({ ok: true, agents: result });
   } catch (e: any) {
     return NextResponse.json(
-      { ok: false, error: e?.message || "meta/agents failed" },
+      { ok: false, error: e?.message || "Failed to load agents" },
       { status: 500 }
     );
   }

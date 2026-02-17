@@ -2,15 +2,21 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-type AgentDTO = {
+type AgentMeta = {
   id: string;
   name: string;
-  email?: string | null;
+  email: string;
   createdAt: string;
-  team?: { id: string; name: string; organization?: { id: string; name: string } | null } | null;
+  teamName: string;
+  orgName: string;
+  team: null | {
+    id: string;
+    name: string;
+    organization: null | { id: string; name: string };
+  };
 };
 
-type ScoreDTO = {
+type AgentScore = {
   createdAt: string;
   windowSize: number;
   overallScore: number;
@@ -23,102 +29,111 @@ type ScoreDTO = {
   keyPatterns: string[];
 };
 
-type ConversationDTO = {
+type TrendPoint = { createdAt: string; score: number; windowSize: number };
+
+type Conv = {
   id: string;
   createdAt: string;
-  score?: number | null;
+  score: number | null;
   excerpt: string;
+  transcript: string;
 };
 
-type PatternDTO = {
-  id: string;
-  createdAt: string;
-  windowSize: number;
-};
-
-type AgentMetaResponse = {
+type AgentPayload = {
   ok: boolean;
-  agent?: AgentDTO;
-  lastScore?: ScoreDTO | null;
-  trend?: { createdAt: string; score: number; windowSize: number }[];
-  conversations?: ConversationDTO[];
-  lastPattern?: PatternDTO | null;
-  error?: string;
+  agent: AgentMeta;
+  lastScore: AgentScore | null;
+  trend: TrendPoint[];
+  conversations: Conv[];
+  lastPattern: null | { id: string; createdAt: string; windowSize: number };
 };
 
 function fmt(n: number | null | undefined) {
-  if (n === null || n === undefined || Number.isNaN(Number(n))) return "—";
-  return Number(n).toFixed(1);
+  if (n === null || n === undefined) return "—";
+  return Number(n).toFixed(0);
 }
 
-function safeJsonParse(text: string) {
-  // если вдруг прилетит HTML (например 404-страница), покажем понятную ошибку
-  const t = text.trim();
-  if (t.startsWith("<!DOCTYPE") || t.startsWith("<html") || t.startsWith("<")) {
-    throw new Error("API returned HTML instead of JSON (route not found or server error).");
-  }
-  return JSON.parse(t);
-}
-
-function Badge({ children }: { children: React.ReactNode }) {
+function badge(text: string) {
   return (
-    <span className="rounded-full border px-3 py-1 text-xs text-neutral-600">
-      {children}
+    <span className="rounded-full border px-3 py-1 text-xs text-neutral-700">
+      {text}
     </span>
-  );
-}
-
-function Card({ title, desc, children }: { title: string; desc?: string; children: React.ReactNode }) {
-  return (
-    <div className="rounded-2xl border p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="text-lg font-semibold">{title}</div>
-          {desc && <div className="mt-1 text-sm text-neutral-500">{desc}</div>}
-        </div>
-      </div>
-      <div className="mt-4">{children}</div>
-    </div>
-  );
-}
-
-function ScoreBar({ label, value }: { label: string; value: number }) {
-  const v = Math.max(0, Math.min(100, Number(value)));
-  return (
-    <div>
-      <div className="flex items-center justify-between text-sm">
-        <span className="text-neutral-600">{label}</span>
-        <span className="font-semibold">{fmt(v)}</span>
-      </div>
-      <div className="mt-2 h-2 w-full rounded-full bg-neutral-100">
-        <div className="h-2 rounded-full bg-black" style={{ width: `${v}%` }} />
-      </div>
-    </div>
   );
 }
 
 export default function AgentPage({ params }: { params: { id: string } }) {
   const agentId = decodeURIComponent(params.id);
 
-  const [data, setData] = useState<AgentMetaResponse | null>(null);
+  const [data, setData] = useState<AgentPayload | null>(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  const [win, setWin] = useState(30);
+  const [runLoading, setRunLoading] = useState(false);
+  const [runErr, setRunErr] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
     setErr(null);
     try {
-      const r = await fetch(`/api/meta/agent?id=${encodeURIComponent(agentId)}`, { cache: "no-store" });
-      const text = await r.text();
-      if (!r.ok) throw new Error(`HTTP ${r.status}: ${text.slice(0, 200)}`);
-      const j = safeJsonParse(text) as AgentMetaResponse;
-      if (!j.ok) throw new Error(j.error || "Agent API returned ok:false");
+      const r = await fetch(`/api/meta/agent?id=${encodeURIComponent(agentId)}`, {
+        cache: "no-store",
+      });
+      const txt = await r.text();
+      if (!r.ok) throw new Error(`HTTP ${r.status}: ${txt.slice(0, 200)}`);
+      const j = JSON.parse(txt) as AgentPayload;
+      if (!j.ok) throw new Error("API returned ok:false");
       setData(j);
     } catch (e: any) {
       setErr(e?.message || "Failed to load agent");
-      setData(null);
     } finally {
       setLoading(false);
+    }
+  }
+
+  // Generate score snapshot for this agent
+  async function generateScore() {
+    setRunLoading(true);
+    setRunErr(null);
+    try {
+      const r = await fetch(`/api/agents/score/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ agentId, windowSize: win }),
+      });
+      const txt = await r.text();
+      if (!r.ok) throw new Error(`Score failed ${r.status}: ${txt.slice(0, 200)}`);
+      const j = JSON.parse(txt);
+      if (!j.ok) throw new Error(j.error || "Score failed");
+      await load();
+    } catch (e: any) {
+      setRunErr(e?.message || "Failed to generate score");
+    } finally {
+      setRunLoading(false);
+    }
+  }
+
+  // Generate patterns for this agent (stores PatternReport in DB)
+  async function generatePatterns() {
+    setRunLoading(true);
+    setRunErr(null);
+    try {
+      const r = await fetch(`/api/patterns/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ level: "agent", refId: agentId, windowSize: win }),
+      });
+      const txt = await r.text();
+      if (!r.ok) throw new Error(`Patterns failed ${r.status}: ${txt.slice(0, 200)}`);
+      const j = JSON.parse(txt);
+      if (!j.ok) throw new Error(j.error || "Patterns failed");
+
+      // Go to patterns page with params (so no manual refId)
+      window.location.href = `/app/patterns?level=agent&refId=${encodeURIComponent(agentId)}`;
+    } catch (e: any) {
+      setRunErr(e?.message || "Failed to generate patterns");
+    } finally {
+      setRunLoading(false);
     }
   }
 
@@ -127,35 +142,28 @@ export default function AgentPage({ params }: { params: { id: string } }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agentId]);
 
-  const agent = data?.agent;
-  const lastScore = data?.lastScore;
+  const header = useMemo(() => {
+    const a = data?.agent;
+    if (!a) return { title: "Agent Intelligence", sub: agentId };
+    const team = a.teamName ? ` — ${a.teamName}` : "";
+    const org = a.orgName ? ` (${a.orgName})` : "";
+    return {
+      title: `${a.name}${team}${org}`,
+      sub: `Agent ID: ${a.id}`,
+    };
+  }, [data, agentId]);
 
-  const headerTitle = useMemo(() => {
-    if (!agent) return "Agent Intelligence";
-    return agent.name || `Agent ${agent.id}`;
-  }, [agent]);
-
-  const subline = useMemo(() => {
-    if (!agent) return "Profile, scores, risk, coaching priority, and pattern insights.";
-    const team = agent.team?.name ? `Team: ${agent.team.name}` : null;
-    const org = agent.team?.organization?.name ? `Org: ${agent.team.organization.name}` : null;
-    return [org, team].filter(Boolean).join(" - ") || "Agent profile";
-  }, [agent]);
+  const s = data?.lastScore;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{headerTitle}</h1>
-          <p className="text-sm text-neutral-500">{subline}</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Badge>Agent ID: <span className="font-mono">{agentId}</span></Badge>
-            {agent?.email ? <Badge>{agent.email}</Badge> : <Badge>Email: —</Badge>}
-            {agent?.createdAt ? <Badge>Created: {new Date(agent.createdAt).toLocaleString()}</Badge> : null}
-          </div>
+          <h1 className="text-2xl font-semibold tracking-tight">{header.title}</h1>
+          <p className="text-sm text-neutral-500">{header.sub}</p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center">
           <a href="/app/dashboard" className="rounded-lg border px-4 py-2 text-sm font-medium">
             Dashboard
           </a>
@@ -165,7 +173,7 @@ export default function AgentPage({ params }: { params: { id: string } }) {
           <button
             onClick={load}
             disabled={loading}
-            className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+            className="rounded-lg border px-4 py-2 text-sm font-medium disabled:opacity-50"
           >
             {loading ? "Refreshing..." : "Refresh"}
           </button>
@@ -178,148 +186,129 @@ export default function AgentPage({ params }: { params: { id: string } }) {
         </div>
       )}
 
-      {!err && !agent && (
-        <div className="mt-6 rounded-xl border p-4 text-sm text-neutral-700">
-          Loading agent...
+      <div className="mt-6 flex flex-wrap gap-2">
+        {badge(`Window: ${win}`)}
+        {badge(`Last score: ${s ? fmt(s.overallScore) : "—"}`)}
+        {badge(`Risk: ${s ? fmt(s.riskScore) : "—"}`)}
+        {badge(`Priority: ${s ? fmt(s.coachingPriority) : "—"}`)}
+        {data?.lastPattern ? badge(`Last patterns: ${new Date(data.lastPattern.createdAt).toLocaleString()}`) : badge("No patterns yet")}
+      </div>
+
+      <div className="mt-6 rounded-2xl border p-5">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">Actions</h2>
+            <p className="text-sm text-neutral-500">
+              Generate fresh score snapshot and pattern report without re-entering IDs.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-2 md:flex-row md:items-center">
+            <select
+              className="rounded-lg border px-3 py-2 text-sm"
+              value={win}
+              onChange={(e) => setWin(Number(e.target.value))}
+            >
+              {[20, 30, 50].map((n) => (
+                <option key={n} value={n}>
+                  last {n}
+                </option>
+              ))}
+            </select>
+
+            <button
+              onClick={generateScore}
+              disabled={runLoading}
+              className="rounded-lg border px-4 py-2 text-sm font-medium disabled:opacity-50"
+            >
+              {runLoading ? "Working..." : "Generate Score"}
+            </button>
+
+            <button
+              onClick={generatePatterns}
+              disabled={runLoading}
+              className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+            >
+              {runLoading ? "Working..." : "Generate Patterns (Agent)"}
+            </button>
+          </div>
         </div>
-      )}
 
-      {/* Score snapshot */}
+        {runErr && (
+          <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            {runErr}
+          </div>
+        )}
+      </div>
+
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <Card
-          title="Latest Score Snapshot"
-          desc="How this agent performs across key dimensions."
-        >
-          {!lastScore ? (
-            <div className="text-sm text-neutral-600">
-              No score snapshots yet. Generate scoring first.
-            </div>
+        <section className="rounded-2xl border p-5">
+          <h2 className="text-lg font-semibold">Latest Score Snapshot</h2>
+          {!s ? (
+            <p className="mt-2 text-sm text-neutral-600">No scores yet. Click Generate Score.</p>
           ) : (
-            <div className="space-y-4">
+            <div className="mt-3 space-y-3 text-sm">
               <div className="flex flex-wrap gap-2">
-                <Badge>At: {new Date(lastScore.createdAt).toLocaleString()}</Badge>
-                <Badge>Window: {lastScore.windowSize}</Badge>
+                {badge(`Overall: ${fmt(s.overallScore)}`)}
+                {badge(`Communication: ${fmt(s.communicationScore)}`)}
+                {badge(`Conversion: ${fmt(s.conversionScore)}`)}
+                {badge(`Risk: ${fmt(s.riskScore)}`)}
+                {badge(`Coaching priority: ${fmt(s.coachingPriority)}`)}
               </div>
 
-              <ScoreBar label="Overall" value={lastScore.overallScore} />
-              <ScoreBar label="Communication" value={lastScore.communicationScore} />
-              <ScoreBar label="Conversion" value={lastScore.conversionScore} />
-              <ScoreBar label="Risk" value={lastScore.riskScore} />
-              <ScoreBar label="Coaching priority" value={lastScore.coachingPriority} />
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <div className="text-sm font-semibold">Strengths</div>
-                  <ul className="mt-2 space-y-1 text-sm text-neutral-700">
-                    {(lastScore.strengths || []).slice(0, 6).map((x, i) => (
-                      <li key={i}>- {x}</li>
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="rounded-xl border p-4">
+                  <div className="text-xs text-neutral-500">Strengths</div>
+                  <ul className="mt-2 list-disc pl-5">
+                    {(s.strengths ?? []).slice(0, 6).map((x, i) => (
+                      <li key={i}>{x}</li>
                     ))}
                   </ul>
                 </div>
-                <div>
-                  <div className="text-sm font-semibold">Weaknesses</div>
-                  <ul className="mt-2 space-y-1 text-sm text-neutral-700">
-                    {(lastScore.weaknesses || []).slice(0, 6).map((x, i) => (
-                      <li key={i}>- {x}</li>
+                <div className="rounded-xl border p-4">
+                  <div className="text-xs text-neutral-500">Weaknesses</div>
+                  <ul className="mt-2 list-disc pl-5">
+                    {(s.weaknesses ?? []).slice(0, 6).map((x, i) => (
+                      <li key={i}>{x}</li>
                     ))}
                   </ul>
                 </div>
               </div>
 
-              <div>
-                <div className="text-sm font-semibold">Key patterns</div>
-                <ul className="mt-2 space-y-1 text-sm text-neutral-700">
-                  {(lastScore.keyPatterns || []).slice(0, 6).map((x, i) => (
-                    <li key={i}>- {x}</li>
+              <div className="rounded-xl border p-4">
+                <div className="text-xs text-neutral-500">Key Patterns</div>
+                <ul className="mt-2 list-disc pl-5">
+                  {(s.keyPatterns ?? []).slice(0, 6).map((x, i) => (
+                    <li key={i}>{x}</li>
                   ))}
                 </ul>
               </div>
             </div>
           )}
-        </Card>
+        </section>
 
-        <Card
-          title="Pattern Intelligence"
-          desc="Recurring issues with evidence examples from conversations."
-        >
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-wrap gap-2">
-              <Badge>Last pattern: {data?.lastPattern ? new Date(data.lastPattern.createdAt).toLocaleString() : "—"}</Badge>
-              <Badge>Window: {data?.lastPattern?.windowSize ?? "—"}</Badge>
-            </div>
+        <section className="rounded-2xl border p-5">
+          <h2 className="text-lg font-semibold">Recent Conversations</h2>
+          <p className="mt-1 text-sm text-neutral-500">Last 15 transcripts (excerpt).</p>
 
-            <div className="text-sm text-neutral-700">
-              This runs the Pattern Engine on the latest conversation window for this agent.
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <a
-                href={`/app/patterns?level=agent&refId=${encodeURIComponent(agentId)}&windowSize=20`}
-                className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white"
-              >
-                Open Patterns (window 20)
-              </a>
-              <a
-                href={`/app/patterns?level=agent&refId=${encodeURIComponent(agentId)}&windowSize=30`}
-                className="rounded-lg border px-4 py-2 text-sm font-medium"
-              >
-                Open Patterns (window 30)
-              </a>
-              <a
-                href={`/app/patterns?level=agent&refId=${encodeURIComponent(agentId)}&windowSize=50`}
-                className="rounded-lg border px-4 py-2 text-sm font-medium"
-              >
-                Open Patterns (window 50)
-              </a>
-            </div>
-
-            <div className="text-xs text-neutral-500">
-              Note: generation happens on the patterns page. Здесь мы даём быстрые ссылки, чтобы не вводить refId вручную.
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Recent conversations */}
-      <div className="mt-6">
-        <Card
-          title="Recent conversations"
-          desc="Short excerpts for quick scanning. Full transcript stored in DB."
-        >
-          <div className="overflow-x-auto rounded-xl border">
-            <table className="w-full text-sm">
-              <thead className="bg-neutral-50 text-neutral-600">
-                <tr>
-                  <th className="px-3 py-2 text-left">Created</th>
-                  <th className="px-3 py-2 text-left">Conversation ID</th>
-                  <th className="px-3 py-2 text-left">Excerpt</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(data?.conversations ?? []).map((c) => (
-                  <tr key={c.id} className="border-t align-top">
-                    <td className="px-3 py-2 whitespace-nowrap">
+          <div className="mt-3 space-y-3">
+            {(data?.conversations ?? []).length === 0 ? (
+              <div className="text-sm text-neutral-600">No conversations yet.</div>
+            ) : (
+              (data?.conversations ?? []).map((c) => (
+                <div key={c.id} className="rounded-xl border p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="font-mono text-xs text-neutral-600">{c.id}</div>
+                    <div className="text-xs text-neutral-500">
                       {new Date(c.createdAt).toLocaleString()}
-                    </td>
-                    <td className="px-3 py-2 font-mono text-xs whitespace-nowrap">
-                      {c.id}
-                    </td>
-                    <td className="px-3 py-2 text-neutral-700">
-                      {c.excerpt}
-                    </td>
-                  </tr>
-                ))}
-                {(!data || (data.conversations ?? []).length === 0) && (
-                  <tr>
-                    <td className="px-3 py-3 text-neutral-600" colSpan={3}>
-                      No conversations found for this agent.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-sm text-neutral-800">{c.excerpt}...</div>
+                </div>
+              ))
+            )}
           </div>
-        </Card>
+        </section>
       </div>
     </div>
   );
