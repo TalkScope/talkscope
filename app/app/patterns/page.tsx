@@ -1,7 +1,8 @@
 "use client";
 
-// app/app/patterns/page.tsx
-import { useEffect, useMemo, useState } from "react";
+export const dynamic = "force-dynamic";
+
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 type Level = "agent" | "team" | "org";
@@ -10,7 +11,7 @@ function isLevel(x: string): x is Level {
   return x === "agent" || x === "team" || x === "org";
 }
 
-export default function PatternIntelligencePage() {
+function PatternsInner() {
   const sp = useSearchParams();
 
   const [level, setLevel] = useState<Level>("agent");
@@ -33,7 +34,7 @@ export default function PatternIntelligencePage() {
     const n = Number(qWin);
     if (qWin && Number.isFinite(n) && n >= 10 && n <= 100) setWindowSize(n);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [sp]);
 
   const canGenerate = useMemo(() => {
     return refId.trim().length > 0 && windowSize >= 10 && windowSize <= 100;
@@ -60,15 +61,13 @@ export default function PatternIntelligencePage() {
         throw new Error(`Generate failed ${r.status}: ${txt.slice(0, 300)}`);
       }
 
-      // must be JSON
-      let j: any = null;
+      let j: any;
       try {
         j = JSON.parse(txt);
       } catch {
         throw new Error(`Invalid JSON from API: ${txt.slice(0, 200)}`);
       }
 
-      // If your API returns {ok:false,...} sometimes
       if (j?.ok === false && j?.error) throw new Error(j.error);
 
       setResult(j);
@@ -127,7 +126,7 @@ export default function PatternIntelligencePage() {
               onChange={(e) => setRefId(e.target.value)}
             />
             <div className="mt-1 text-xs text-neutral-500">
-              Tip: сюда refId подставится автоматически, если ты пришёл со страницы агента.
+              Tip: refId подставится автоматически, если ты пришёл со страницы агента.
             </div>
           </div>
 
@@ -175,7 +174,7 @@ export default function PatternIntelligencePage() {
         )}
 
         {loading && (
-          <p className="mt-2 text-sm text-neutral-600">Generating... (model is thinking)</p>
+          <p className="mt-2 text-sm text-neutral-600">Generating...</p>
         )}
 
         {result && (
@@ -185,5 +184,19 @@ export default function PatternIntelligencePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function PatternIntelligencePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-neutral-600">
+          Loading Pattern Intelligence...
+        </div>
+      }
+    >
+      <PatternsInner />
+    </Suspense>
   );
 }
