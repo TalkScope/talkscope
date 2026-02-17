@@ -163,28 +163,38 @@ export default function AgentPage({ params }: { params: { id: string } }) {
   const lastScore = data?.lastScore ?? null;
 
   async function generateScore() {
-    setActionLoading(true);
-    setActionErr(null);
-    setActionMsg(null);
-    try {
-      const body = JSON.stringify({ agentId, windowSize });
-      const r = await fetch(`/api/agents/score/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body,
-      });
-      const txt = await r.text();
-      if (!r.ok) throw new Error(`Score failed ${r.status}: ${txt.slice(0, 220)}`);
-      const j = JSON.parse(txt);
-      if (!j.ok) throw new Error(j.error || "Score failed");
-      setActionMsg(`Score generated (window ${windowSize}).`);
-      await load();
-    } catch (e: any) {
-      setActionErr(e?.message || "Failed to generate score");
-    } finally {
-      setActionLoading(false);
-    }
+  setActionLoading(true);
+  setActionErr(null);
+  setActionMsg(null);
+
+  try {
+    const payload = {
+      agentId,          // ✅ основной ключ
+      refId: agentId,   // ✅ запасной ключ (если у тебя где-то ожидают refId)
+      windowSize,
+    };
+
+    const r = await fetch(`/api/agents/score/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const txt = await r.text();
+    if (!r.ok) throw new Error(`Score failed ${r.status}: ${txt.slice(0, 220)}`);
+
+    const j = JSON.parse(txt);
+    if (!j.ok) throw new Error(j.error || "Score failed");
+
+    setActionMsg(`Score generated (window ${windowSize}).`);
+    await load();
+  } catch (e: any) {
+    setActionErr(e?.message || "Failed to generate score");
+  } finally {
+    setActionLoading(false);
   }
+}
+
 
   async function generatePatternsAgent() {
     setActionLoading(true);
