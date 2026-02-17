@@ -25,20 +25,6 @@ type Score = {
   coachingPriority: number;
 };
 
-type AgentMetaResponse = {
-  ok: boolean;
-  agent: AgentRow;
-  lastScore?: Score | null;
-};
-
-type AgentsListResponse = {
-  ok: boolean;
-  agents: AgentRow[];
-};
-
-type OrgsResponse = { ok: boolean; orgs: Org[] };
-type TeamsResponse = { ok: boolean; teams: Team[] };
-
 type BatchCreateResponse = { ok: boolean; jobId: string; total?: number; status?: string };
 type BatchStatusResponse = {
   ok: boolean;
@@ -93,6 +79,15 @@ async function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+function isJobFinished(st: BatchStatusResponse | null) {
+  if (!st?.job) return false;
+  const status = String(st.job.status ?? "").toLowerCase();
+  const pct = Number(st.job.percent ?? 0);
+  const queued = Number(st.counts?.queued ?? 0);
+  const running = Number(st.counts?.running ?? 0);
+  return status === "done" || pct >= 100 || (queued === 0 && running === 0);
+}
+
 export default function DashboardPage() {
   // scope (org/team) selector
   const [orgs, setOrgs] = useState<Org[]>([]);
@@ -116,6 +111,7 @@ export default function DashboardPage() {
   const [loadingScope, setLoadingScope] = useState(false);
   const [creatingJob, setCreatingJob] = useState(false);
   const [runningJob, setRunningJob] = useState(false);
+  const [justFinished, setJustFinished] = useState(false);
 
   const [err, setErr] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -128,11 +124,7 @@ export default function DashboardPage() {
   const totals = useMemo(() => {
     const conversations = agents.reduce((acc, a) => acc + (a.conversationsCount ?? 0), 0);
     const scoreSnapshots = agents.reduce((acc, a) => acc + (a.scoresCount ?? 0), 0);
-    return {
-      agents: agents.length,
-      conversations,
-      scoreSnapshots,
-    };
+    return { agents: agents.length, conversations, scoreSnapshots };
   }, [agents]);
 
   async function loadScope() {
@@ -149,7 +141,6 @@ export default function DashboardPage() {
       const orgsList: Org[] = orgParsed.json.orgs ?? [];
       setOrgs(orgsList);
 
-      // keep or pick first org
       let orgId = selectedOrgId;
       if (!orgId || !orgsList.some((o) => o.id === orgId)) orgId = orgsList[0]?.id ?? "";
       setSelectedOrgId(orgId);
@@ -185,7 +176,6 @@ export default function DashboardPage() {
     setInfo(null);
 
     try {
-      // list of agents (names live here)
       const res = await fetch("/api/meta/agents", { cache: "no-store" });
       const parsed = await safeJson(res);
       if (!res.ok || !parsed.ok || !parsed.json?.ok) {
@@ -194,8 +184,6 @@ export default function DashboardPage() {
       const list: AgentRow[] = parsed.json.agents ?? [];
       setAgents(list);
 
-      // fetch lastScore per agent (11 agents = ok)
-      // small concurrency limiter
       const limit = 6;
       const queue = [...list];
       const scores: Record<string, Score | null> = {};
@@ -230,7 +218,7 @@ export default function DashboardPage() {
   }
 
   async function refreshJobStatus(currentJobId: string) {
-    if (!currentJobId) return;
+    if (!currentJobId) return null;
 
     try {
       const res = await fetch(`/api/batch/score/status?jobId=${encodeURIComponent(currentJobId)}`, { cache: "no-store" });
@@ -238,9 +226,12 @@ export default function DashboardPage() {
       if (!res.ok || !parsed.ok || !parsed.json?.ok) {
         throw new Error(parsed.text || "Failed to load job status");
       }
-      setJobStatus(parsed.json as BatchStatusResponse);
+      const st = parsed.json as BatchStatusResponse;
+      setJobStatus(st);
+      return st;
     } catch (e: any) {
       setErr(e?.message || "Failed to load job status");
+      return null;
     }
   }
 
@@ -250,11 +241,7 @@ export default function DashboardPage() {
     setInfo(null);
 
     try {
-      const body = JSON.stringify({
-        scope: scopeType,
-        refId: activeRefId,
-        windowSize,
-      });
+      const body = JSON.stringify({ scope: scopeType, refId: activeRefId, windowSize });
 
       const res = await fetch("/api/batch/score/create", {
         method: "POST",
@@ -282,32 +269,38 @@ export default function DashboardPage() {
     if (!jobId) return;
 
     setRunningJob(true);
+    setJustFinished(false);
     setErr(null);
     setInfo(null);
 
     try {
-      // loop: run -> status -> until done or no queued/running
-      for (let i = 0; i < 60; i++) {
-        // run worker chunk
-        const runRes = await fetch("/api/batch/score/run", {
+      let st = await refreshJobStatus(jobId);
+
+      for (let i = 0; i < 80; i++) {
+        if (isJobFinished(st)) break;
+
+        await fetch("/api/batch/score/run", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ jobId, take: 3 }),
         });
 
-        // even if runRes fails, we still try to read status to show why
-        await refreshJobStatus(jobId);
+        st = await refreshJobStatus(jobId);
+        if (isJobFinished(st)) break;
 
-        const st = jobStatus;
-        if (st?.job?.status === "done") break;
-
-        // small delay so UI breathes
-        await sleep(700);
+        await sleep(450);
       }
 
-      await refreshJobStatus(jobId);
-      setInfo("Worker finished (or reached max steps).");
-      // refresh top tables so names + numbers update after scoring
+      st = await refreshJobStatus(jobId);
+
+      if (isJobFinished(st)) {
+        setInfo("Done. Scores updated.");
+        setJustFinished(true);
+        setTimeout(() => setJustFinished(false), 2000);
+      } else {
+        setInfo("Stopped (max steps reached).");
+      }
+
       await loadAgentsAndScores();
     } catch (e: any) {
       setErr(e?.message || "Run worker failed");
@@ -316,14 +309,12 @@ export default function DashboardPage() {
     }
   }
 
-  // initial load
   useEffect(() => {
     loadScope();
     loadAgentsAndScores();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // when org changes, reload teams
   useEffect(() => {
     (async () => {
       if (!selectedOrgId) {
@@ -348,7 +339,6 @@ export default function DashboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedOrgId]);
 
-  // computed views (human names)
   const agentById = useMemo(() => {
     const m = new Map<string, AgentRow>();
     for (const a of agents) m.set(a.id, a);
@@ -357,14 +347,8 @@ export default function DashboardPage() {
 
   const rowsWithScore = useMemo(() => {
     return agents
-      .map((a) => {
-        const s = agentScores[a.id] ?? null;
-        return {
-          agent: a,
-          score: s,
-        };
-      })
-      .filter((x) => x.score); // only those with score
+      .map((a) => ({ agent: a, score: agentScores[a.id] ?? null }))
+      .filter((x) => x.score);
   }, [agents, agentScores]);
 
   const coachingQueue = useMemo(() => {
@@ -381,31 +365,35 @@ export default function DashboardPage() {
   }, [rowsWithScore]);
 
   const topPerformers = useMemo(() => {
-    return [...rowsWithScore]
-      .sort((a, b) => Number(b.score!.overallScore) - Number(a.score!.overallScore))
-      .slice(0, 8);
+    return [...rowsWithScore].sort((a, b) => Number(b.score!.overallScore) - Number(a.score!.overallScore)).slice(0, 8);
   }, [rowsWithScore]);
 
   const lowPerformers = useMemo(() => {
-    return [...rowsWithScore]
-      .sort((a, b) => Number(a.score!.overallScore) - Number(b.score!.overallScore))
-      .slice(0, 8);
+    return [...rowsWithScore].sort((a, b) => Number(a.score!.overallScore) - Number(b.score!.overallScore)).slice(0, 8);
   }, [rowsWithScore]);
 
   function AgentCell({ id }: { id: string }) {
     const a = agentById.get(id);
     const name = a?.name || id;
-    const teamName = a?.team?.name;
-    const orgName = a?.team?.organization?.name;
-    const subtitle = [teamName, orgName].filter(Boolean).join(" — ");
 
     return (
       <a href={`/app/agents/${encodeURIComponent(id)}`} className="hover:underline">
-        <div className="font-medium">{name}</div>
-        {subtitle ? <div className="text-sm opacity-70">{subtitle}</div> : null}
+        <div className="font-semibold">{name}</div>
       </a>
     );
   }
+
+  function RiskBadge({ risk }: { risk: number }) {
+    if (!Number.isFinite(risk) || risk < 70) return null;
+    return (
+      <span className="ml-2 inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-900">
+        High risk
+      </span>
+    );
+  }
+
+  const numCell = "font-semibold tabular-nums";
+  const numPill = "font-semibold tabular-nums";
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
@@ -437,15 +425,20 @@ export default function DashboardPage() {
 
       {/* counters */}
       <div className="mt-6 flex flex-wrap gap-3">
-        <div className="rounded-full border px-4 py-2">Agents: {totals.agents || "—"}</div>
-        <div className="rounded-full border px-4 py-2">Conversations: {totals.conversations || "—"}</div>
         <div className="rounded-full border px-4 py-2">
-          Pattern reports: {jobStatus?.job ? "—" : "—"}
+          Agents: <span className={numPill}>{totals.agents || "—"}</span>
         </div>
-        <div className="rounded-full border px-4 py-2">Score snapshots: {totals.scoreSnapshots || "—"}</div>
+        <div className="rounded-full border px-4 py-2">
+          Conversations: <span className={numPill}>{totals.conversations || "—"}</span>
+        </div>
+        <div className="rounded-full border px-4 py-2">
+          Pattern reports: <span className={numPill}>—</span>
+        </div>
+        <div className="rounded-full border px-4 py-2">
+          Score snapshots: <span className={numPill}>{totals.scoreSnapshots || "—"}</span>
+        </div>
       </div>
 
-      {/* messages */}
       {err ? (
         <div className="mt-6 rounded-2xl border border-red-300 bg-red-50 px-5 py-4 text-red-700">{err}</div>
       ) : null}
@@ -509,8 +502,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="mt-3 text-sm opacity-70">
-          Active refId for batch:{" "}
-          <span className="font-mono">{activeRefId ? activeRefId : "—"}</span>
+          Active refId for batch: <span className="font-mono">{activeRefId ? activeRefId : "—"}</span>
         </div>
       </div>
 
@@ -519,9 +511,7 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <div className="text-2xl font-semibold">Batch Scoring</div>
-            <div className="mt-1 opacity-70">
-              Create a job for selected scope - then run worker to 100% in controlled steps.
-            </div>
+            <div className="mt-1 opacity-70">Create a job for selected scope - then run worker to 100%.</div>
           </div>
 
           <div className="flex flex-wrap items-center justify-end gap-2">
@@ -576,25 +566,29 @@ export default function DashboardPage() {
 
               <button
                 onClick={runToCompletion}
-                className={cx("rounded-xl px-4 py-2", jobId ? "bg-black text-white" : "bg-gray-300 text-gray-600")}
+                className={cx(
+                  "rounded-xl px-4 py-2",
+                  jobId ? "bg-black text-white" : "bg-gray-300 text-gray-600",
+                  justFinished ? "bg-emerald-700" : ""
+                )}
                 disabled={!jobId || runningJob}
                 title={!jobId ? "Create job first" : "Run worker until done"}
               >
-                {runningJob ? "Running…" : "Run to 100%"}
+                {runningJob ? "Running…" : justFinished ? "Done ✓" : "Run to 100%"}
               </button>
             </div>
           </div>
 
           <div className="rounded-2xl border p-4">
             <div className="text-sm opacity-70">Progress</div>
-            <div className="mt-2 text-4xl font-semibold">{jobStatus?.job ? `${jobStatus.job.percent}%` : "—"}</div>
-            <div className="mt-2 opacity-70 text-sm">
+            <div className="mt-2 text-4xl font-semibold tabular-nums">{jobStatus?.job ? `${jobStatus.job.percent}%` : "—"}</div>
+            <div className="mt-2 opacity-70 text-sm tabular-nums">
               {jobStatus?.counts
                 ? `${jobStatus.counts.done} done - ${jobStatus.counts.queued} queued - ${jobStatus.counts.failed} failed`
                 : "—"}
             </div>
             <div className="mt-1 text-sm opacity-70">
-              Status: <span className="font-medium">{jobStatus?.job?.status ?? "—"}</span>
+              Status: <span className="font-semibold">{jobStatus?.job?.status ?? "—"}</span>
             </div>
             {jobStatus?.job?.error ? (
               <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
@@ -611,11 +605,7 @@ export default function DashboardPage() {
               ) : (
                 (jobStatus?.lastFailed ?? []).slice(0, 5).map((f, idx) => (
                   <div key={idx} className="rounded-xl border px-3 py-2">
-                    <div className="font-medium">
-                      {f.agentName || f.agentId}
-                      {f.teamName ? <span className="opacity-70"> — {f.teamName}</span> : null}
-                    </div>
-                    <div className="text-sm opacity-70">{f.orgName ? f.orgName : ""}</div>
+                    <div className="font-semibold">{f.agentName || f.agentId}</div>
                     <div className="mt-1 text-sm">{f.error ? clip(f.error, 140) : "Failed"}</div>
                   </div>
                 ))
@@ -651,16 +641,22 @@ export default function DashboardPage() {
                     </td>
                   </tr>
                 ) : (
-                  coachingQueue.map((x) => (
-                    <tr key={x.agent.id} className="border-b last:border-0">
-                      <td className="px-4 py-3">
-                        <AgentCell id={x.agent.id} />
-                      </td>
-                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.coachingPriority)}</td>
-                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.overallScore)}</td>
-                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.riskScore)}</td>
-                    </tr>
-                  ))
+                  coachingQueue.map((x) => {
+                    const risk = Number(x.score!.riskScore);
+                    return (
+                      <tr key={x.agent.id} className="border-b last:border-0">
+                        <td className="px-4 py-3">
+                          <div className="flex items-center">
+                            <AgentCell id={x.agent.id} />
+                            <RiskBadge risk={risk} />
+                          </div>
+                        </td>
+                        <td className={cx("px-4 py-3", numCell)}>{fmtNum(x.score!.coachingPriority)}</td>
+                        <td className={cx("px-4 py-3", numCell)}>{fmtNum(x.score!.overallScore)}</td>
+                        <td className={cx("px-4 py-3", numCell)}>{fmtNum(x.score!.riskScore)}</td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -694,11 +690,14 @@ export default function DashboardPage() {
                   highRisk.map((x) => (
                     <tr key={x.agent.id} className="border-b last:border-0">
                       <td className="px-4 py-3">
-                        <AgentCell id={x.agent.id} />
+                        <div className="flex items-center">
+                          <AgentCell id={x.agent.id} />
+                          <RiskBadge risk={Number(x.score!.riskScore)} />
+                        </div>
                       </td>
-                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.riskScore)}</td>
-                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.overallScore)}</td>
-                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.coachingPriority)}</td>
+                      <td className={cx("px-4 py-3", numCell)}>{fmtNum(x.score!.riskScore)}</td>
+                      <td className={cx("px-4 py-3", numCell)}>{fmtNum(x.score!.overallScore)}</td>
+                      <td className={cx("px-4 py-3", numCell)}>{fmtNum(x.score!.coachingPriority)}</td>
                     </tr>
                   ))
                 )}
@@ -735,12 +734,15 @@ export default function DashboardPage() {
                   topPerformers.map((x) => (
                     <tr key={x.agent.id} className="border-b last:border-0">
                       <td className="px-4 py-3">
-                        <AgentCell id={x.agent.id} />
+                        <div className="flex items-center">
+                          <AgentCell id={x.agent.id} />
+                          <RiskBadge risk={Number(x.score!.riskScore)} />
+                        </div>
                       </td>
-                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.overallScore)}</td>
-                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.communicationScore)}</td>
-                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.conversionScore)}</td>
-                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.riskScore)}</td>
+                      <td className={cx("px-4 py-3", numCell)}>{fmtNum(x.score!.overallScore)}</td>
+                      <td className={cx("px-4 py-3", numCell)}>{fmtNum(x.score!.communicationScore)}</td>
+                      <td className={cx("px-4 py-3", numCell)}>{fmtNum(x.score!.conversionScore)}</td>
+                      <td className={cx("px-4 py-3", numCell)}>{fmtNum(x.score!.riskScore)}</td>
                     </tr>
                   ))
                 )}
@@ -776,11 +778,14 @@ export default function DashboardPage() {
                   lowPerformers.map((x) => (
                     <tr key={x.agent.id} className="border-b last:border-0">
                       <td className="px-4 py-3">
-                        <AgentCell id={x.agent.id} />
+                        <div className="flex items-center">
+                          <AgentCell id={x.agent.id} />
+                          <RiskBadge risk={Number(x.score!.riskScore)} />
+                        </div>
                       </td>
-                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.overallScore)}</td>
-                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.riskScore)}</td>
-                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.coachingPriority)}</td>
+                      <td className={cx("px-4 py-3", numCell)}>{fmtNum(x.score!.overallScore)}</td>
+                      <td className={cx("px-4 py-3", numCell)}>{fmtNum(x.score!.riskScore)}</td>
+                      <td className={cx("px-4 py-3", numCell)}>{fmtNum(x.score!.coachingPriority)}</td>
                     </tr>
                   ))
                 )}
@@ -790,9 +795,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* footer */}
       <div className="mt-10 opacity-60 text-sm">
-        Tip: all agent rows are clickable. If team/org are blank, it means seeding didn’t attach agents to teams – UI
+        Tip: all agent rows are clickable. If team/org are blank, it means seeding didn’t attach agents to teams - UI
         still shows agent names.
       </div>
     </div>
