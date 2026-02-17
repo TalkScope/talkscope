@@ -81,25 +81,27 @@ export default function AgentPage() {
   async function load() {
     setLoading(true);
     setMsgErr(null);
-    try {
-      if (!agentId) throw new Error("Missing route param: agent id");
+   try {
+  if (!agentId) throw new Error("Missing route param: agent id");
 
-      const r = await fetch(`/api/meta/agent?id=${encodeURIComponent(agentId)}`, { cache: "no-store" });
-      const txt = await r.text();
-      if (!r.ok) throw new Error(`HTTP ${r.status}: ${txt.slice(0, 220)}`);
+  const r = await fetch(`/api/meta/agent?id=${encodeURIComponent(agentId)}`, { cache: "no-store" });
+  const txt = await r.text();
+  if (!r.ok) throw new Error(`HTTP ${r.status}: ${txt.slice(0, 220)}`);
 
-      const parsed = safeJsonParse(txt);
-      if (!parsed.ok) throw new Error(`JSON error: ${parsed.error}. Head: ${parsed.head}`);
+  const parsed = safeJsonParse(txt);
+  if (!parsed.ok) throw new Error(`JSON error: ${parsed.error}. Head: ${parsed.head}`);
 
-      const j = parsed.json as AgentResponse;
-      if (!j.ok) throw new Error(j as any?.error || "Agent API returned ok:false");
-      setData(j);
-    } catch (e: any) {
-      setMsgErr(e?.message || "Failed to load agent");
-      setData(null);
-    } finally {
-      setLoading(false);
-    }
+  const j = parsed.json as AgentResponse;
+  if (!j.ok) throw new Error((j as any)?.error || "Agent API returned ok:false");
+
+  setData(j);
+} catch (e: any) {
+  setMsgErr(e?.message || "Failed to load agent");
+  setData(null);
+} finally {
+  setLoading(false);
+}
+
   }
 
   async function generateScore() {
