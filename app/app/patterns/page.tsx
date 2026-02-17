@@ -164,7 +164,17 @@ function PatternsInner() {
       </div>
 
       <div className="mt-6 rounded-2xl border p-5">
-        <h2 className="text-lg font-semibold">Report</h2>
+        {result?.meta && (
+  <div className="mb-4 rounded-xl border bg-neutral-50 p-4">
+    <div className="text-lg font-semibold">
+      {result.meta.agentName}
+    </div>
+    <div className="text-sm text-neutral-600">
+      {result.meta.teamName} — {result.meta.orgName}
+    </div>
+  </div>
+)}
+
 
         {!result && !loading && (
           <p className="mt-2 text-sm text-neutral-600">

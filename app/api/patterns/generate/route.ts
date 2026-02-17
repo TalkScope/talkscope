@@ -207,6 +207,29 @@ export async function POST(req: Request) {
     if (level === "team") data.teamId = refId;
 
     await prisma.patternReport.create({ data });
+	
+	let meta: any = null;
+
+if (level === "agent") {
+  const agent = await prisma.agent.findUnique({
+    where: { id: refId },
+    include: {
+      team: {
+        include: { organization: true },
+      },
+    },
+  });
+
+  if (agent) {
+    meta = {
+      agentName: agent.name,
+      teamName: agent.team?.name ?? null,
+      orgName: agent.team?.organization?.name ?? null,
+    };
+  }
+}
+
+return NextResponse.json({ ok: true, meta, report: parsed });
 
     return NextResponse.json(parsed);
   } catch (e: any) {
