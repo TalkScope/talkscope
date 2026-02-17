@@ -5,15 +5,9 @@ import { useEffect, useMemo, useState } from "react";
 type AgentMeta = {
   id: string;
   name: string;
-  email: string;
+  email?: string | null;
   createdAt: string;
-  teamName: string;
-  orgName: string;
-  team: null | {
-    id: string;
-    name: string;
-    organization: null | { id: string; name: string };
-  };
+  team?: { id: string; name: string; organization?: { id: string; name: string } } | null;
 };
 
 type AgentScore = {
@@ -24,65 +18,67 @@ type AgentScore = {
   conversionScore: number;
   riskScore: number;
   coachingPriority: number;
-  strengths: string[];
-  weaknesses: string[];
-  keyPatterns: string[];
+  strengths: string; // JSON string or array stringified
+  weaknesses: string;
+  keyPatterns: string;
 };
 
-type TrendPoint = { createdAt: string; score: number; windowSize: number };
-
-type Conv = {
+type ConversationItem = {
   id: string;
   createdAt: string;
-  score: number | null;
-  excerpt: string;
-  transcript: string;
+  score?: number | null;
+  excerpt?: string;
+  transcript?: string;
 };
 
-type AgentPayload = {
+type AgentApiResponse = {
   ok: boolean;
-  agent: AgentMeta;
-  lastScore: AgentScore | null;
-  trend: TrendPoint[];
-  conversations: Conv[];
-  lastPattern: null | { id: string; createdAt: string; windowSize: number };
+  agent?: AgentMeta;
+  lastScore?: AgentScore | null;
+  trend?: { createdAt: string; score: number; windowSize: number }[] | null;
+  conversations?: ConversationItem[];
+  lastPattern?: { id: string; createdAt: string; windowSize: number } | null;
+  error?: string;
 };
 
 function fmt(n: number | null | undefined) {
-  if (n === null || n === undefined) return "—";
-  return Number(n).toFixed(0);
+  if (n === null || n === undefined || Number.isNaN(Number(n))) return "—";
+  return Number(n).toFixed(1);
 }
 
-function badge(text: string) {
-  return (
-    <span className="rounded-full border px-3 py-1 text-xs text-neutral-700">
-      {text}
-    </span>
-  );
+function safeJsonArray(v: any): string[] {
+  try {
+    const parsed = typeof v === "string" ? JSON.parse(v) : v;
+    return Array.isArray(parsed) ? parsed.map(String) : [];
+  } catch {
+    return [];
+  }
 }
 
 export default function AgentPage({ params }: { params: { id: string } }) {
-  const agentId = decodeURIComponent(params.id);
+  const agentId = params?.id;
 
-  const [data, setData] = useState<AgentPayload | null>(null);
+  const [windowSize, setWindowSize] = useState<number>(30);
+  const [data, setData] = useState<AgentApiResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  const [win, setWin] = useState(30);
-  const [runLoading, setRunLoading] = useState(false);
-  const [runErr, setRunErr] = useState<string | null>(null);
+  const [actionMsg, setActionMsg] = useState<string | null>(null);
+  const [actionErr, setActionErr] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   async function load() {
+    if (!agentId) return;
     setLoading(true);
     setErr(null);
     try {
-      const r = await fetch(`/api/meta/agent?id=${encodeURIComponent(agentId)}`, {
-        cache: "no-store",
-      });
+      // IMPORTANT: absolute /api
+      const r = await fetch(`/api/meta/agent?id=${encodeURIComponent(agentId)}`, { cache: "no-store" });
       const txt = await r.text();
       if (!r.ok) throw new Error(`HTTP ${r.status}: ${txt.slice(0, 200)}`);
-      const j = JSON.parse(txt) as AgentPayload;
-      if (!j.ok) throw new Error("API returned ok:false");
+
+      const j = JSON.parse(txt) as AgentApiResponse;
+      if (!j.ok) throw new Error(j.error || "Agent API returned ok:false");
       setData(j);
     } catch (e: any) {
       setErr(e?.message || "Failed to load agent");
@@ -91,49 +87,52 @@ export default function AgentPage({ params }: { params: { id: string } }) {
     }
   }
 
-  // Generate score snapshot for this agent
   async function generateScore() {
-    setRunLoading(true);
-    setRunErr(null);
+    if (!agentId) return;
+    setActionLoading(true);
+    setActionMsg(null);
+    setActionErr(null);
     try {
       const r = await fetch(`/api/agents/score/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ agentId, windowSize: win }),
+        body: JSON.stringify({ agentId, windowSize }),
       });
       const txt = await r.text();
       if (!r.ok) throw new Error(`Score failed ${r.status}: ${txt.slice(0, 200)}`);
       const j = JSON.parse(txt);
       if (!j.ok) throw new Error(j.error || "Score failed");
+      setActionMsg("Score generated.");
       await load();
     } catch (e: any) {
-      setRunErr(e?.message || "Failed to generate score");
+      setActionErr(e?.message || "Failed to generate score");
     } finally {
-      setRunLoading(false);
+      setActionLoading(false);
     }
   }
 
-  // Generate patterns for this agent (stores PatternReport in DB)
   async function generatePatterns() {
-    setRunLoading(true);
-    setRunErr(null);
+    if (!agentId) return;
+    setActionLoading(true);
+    setActionMsg(null);
+    setActionErr(null);
     try {
       const r = await fetch(`/api/patterns/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ level: "agent", refId: agentId, windowSize: win }),
+        body: JSON.stringify({ level: "agent", refId: agentId, windowSize }),
       });
       const txt = await r.text();
       if (!r.ok) throw new Error(`Patterns failed ${r.status}: ${txt.slice(0, 200)}`);
       const j = JSON.parse(txt);
       if (!j.ok) throw new Error(j.error || "Patterns failed");
-
-      // Go to patterns page with params (so no manual refId)
-      window.location.href = `/app/patterns?level=agent&refId=${encodeURIComponent(agentId)}`;
+      setActionMsg("Pattern report generated.");
+      // открыть Pattern Intelligence сразу с refId
+      window.location.href = `/app/patterns?level=agent&refId=${encodeURIComponent(agentId)}&windowSize=${encodeURIComponent(String(windowSize))}`;
     } catch (e: any) {
-      setRunErr(e?.message || "Failed to generate patterns");
+      setActionErr(e?.message || "Failed to generate patterns");
     } finally {
-      setRunLoading(false);
+      setActionLoading(false);
     }
   }
 
@@ -144,16 +143,16 @@ export default function AgentPage({ params }: { params: { id: string } }) {
 
   const header = useMemo(() => {
     const a = data?.agent;
-    if (!a) return { title: "Agent Intelligence", sub: agentId };
-    const team = a.teamName ? ` — ${a.teamName}` : "";
-    const org = a.orgName ? ` (${a.orgName})` : "";
-    return {
-      title: `${a.name}${team}${org}`,
-      sub: `Agent ID: ${a.id}`,
-    };
-  }, [data, agentId]);
+    if (!a) return { title: "Agent Intelligence", sub: "" };
+    const teamName = a.team?.name ? ` - ${a.team.name}` : "";
+    const orgName = a.team?.organization?.name ? ` - ${a.team.organization.name}` : "";
+    return { title: a.name || a.id, sub: `${a.id}${teamName}${orgName}` };
+  }, [data]);
 
-  const s = data?.lastScore;
+  const last = data?.lastScore;
+  const strengths = safeJsonArray(last?.strengths);
+  const weaknesses = safeJsonArray(last?.weaknesses);
+  const keyPatterns = safeJsonArray(last?.keyPatterns);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -163,125 +162,97 @@ export default function AgentPage({ params }: { params: { id: string } }) {
           <p className="text-sm text-neutral-500">{header.sub}</p>
         </div>
 
-        <div className="flex flex-col gap-2 md:flex-row md:items-center">
-          <a href="/app/dashboard" className="rounded-lg border px-4 py-2 text-sm font-medium">
-            Dashboard
-          </a>
-          <a href="/app/patterns" className="rounded-lg border px-4 py-2 text-sm font-medium">
+        <div className="flex gap-2">
+          <a href="/app/dashboard" className="rounded-lg border px-4 py-2 text-sm font-medium">Dashboard</a>
+          <a href={`/app/patterns?level=agent&refId=${encodeURIComponent(agentId)}&windowSize=${encodeURIComponent(String(windowSize))}`}
+             className="rounded-lg border px-4 py-2 text-sm font-medium">
             Pattern Intelligence
           </a>
-          <button
-            onClick={load}
-            disabled={loading}
-            className="rounded-lg border px-4 py-2 text-sm font-medium disabled:opacity-50"
-          >
+          <button onClick={load} disabled={loading} className="rounded-lg border px-4 py-2 text-sm font-medium disabled:opacity-50">
             {loading ? "Refreshing..." : "Refresh"}
           </button>
         </div>
       </div>
 
       {err && (
-        <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          {err}
-        </div>
+        <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{err}</div>
       )}
 
       <div className="mt-6 flex flex-wrap gap-2">
-        {badge(`Window: ${win}`)}
-        {badge(`Last score: ${s ? fmt(s.overallScore) : "—"}`)}
-        {badge(`Risk: ${s ? fmt(s.riskScore) : "—"}`)}
-        {badge(`Priority: ${s ? fmt(s.coachingPriority) : "—"}`)}
-        {data?.lastPattern ? badge(`Last patterns: ${new Date(data.lastPattern.createdAt).toLocaleString()}`) : badge("No patterns yet")}
+        <span className="rounded-full border px-3 py-1 text-xs text-neutral-700">Window: {windowSize}</span>
+        <span className="rounded-full border px-3 py-1 text-xs text-neutral-700">Last overall: {fmt(last?.overallScore)}</span>
+        <span className="rounded-full border px-3 py-1 text-xs text-neutral-700">Risk: {fmt(last?.riskScore)}</span>
+        <span className="rounded-full border px-3 py-1 text-xs text-neutral-700">Priority: {fmt(last?.coachingPriority)}</span>
+        <span className="rounded-full border px-3 py-1 text-xs text-neutral-700">{data?.lastPattern ? "Has patterns" : "No patterns yet"}</span>
       </div>
 
       <div className="mt-6 rounded-2xl border p-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-lg font-semibold">Actions</h2>
-            <p className="text-sm text-neutral-500">
-              Generate fresh score snapshot and pattern report without re-entering IDs.
-            </p>
+            <p className="text-sm text-neutral-500">Generate fresh score snapshot or patterns without re-entering IDs.</p>
           </div>
 
           <div className="flex flex-col gap-2 md:flex-row md:items-center">
             <select
               className="rounded-lg border px-3 py-2 text-sm"
-              value={win}
-              onChange={(e) => setWin(Number(e.target.value))}
+              value={windowSize}
+              onChange={(e) => setWindowSize(Number(e.target.value))}
             >
               {[20, 30, 50].map((n) => (
-                <option key={n} value={n}>
-                  last {n}
-                </option>
+                <option key={n} value={n}>last {n}</option>
               ))}
             </select>
 
             <button
               onClick={generateScore}
-              disabled={runLoading}
+              disabled={actionLoading}
               className="rounded-lg border px-4 py-2 text-sm font-medium disabled:opacity-50"
             >
-              {runLoading ? "Working..." : "Generate Score"}
+              Generate Score
             </button>
 
             <button
               onClick={generatePatterns}
-              disabled={runLoading}
+              disabled={actionLoading}
               className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
             >
-              {runLoading ? "Working..." : "Generate Patterns (Agent)"}
+              Generate Patterns (Agent)
             </button>
           </div>
         </div>
 
-        {runErr && (
-          <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            {runErr}
-          </div>
-        )}
+        {actionMsg && <div className="mt-4 rounded-xl border bg-neutral-50 p-3 text-sm text-neutral-800">{actionMsg}</div>}
+        {actionErr && <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{actionErr}</div>}
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <section className="rounded-2xl border p-5">
           <h2 className="text-lg font-semibold">Latest Score Snapshot</h2>
-          {!s ? (
+          {!last ? (
             <p className="mt-2 text-sm text-neutral-600">No scores yet. Click Generate Score.</p>
           ) : (
             <div className="mt-3 space-y-3 text-sm">
-              <div className="flex flex-wrap gap-2">
-                {badge(`Overall: ${fmt(s.overallScore)}`)}
-                {badge(`Communication: ${fmt(s.communicationScore)}`)}
-                {badge(`Conversion: ${fmt(s.conversionScore)}`)}
-                {badge(`Risk: ${fmt(s.riskScore)}`)}
-                {badge(`Coaching priority: ${fmt(s.coachingPriority)}`)}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-xl border p-3"><div className="text-xs text-neutral-500">Overall</div><div className="text-xl font-semibold">{fmt(last.overallScore)}</div></div>
+                <div className="rounded-xl border p-3"><div className="text-xs text-neutral-500">Risk</div><div className="text-xl font-semibold">{fmt(last.riskScore)}</div></div>
+                <div className="rounded-xl border p-3"><div className="text-xs text-neutral-500">Communication</div><div className="text-xl font-semibold">{fmt(last.communicationScore)}</div></div>
+                <div className="rounded-xl border p-3"><div className="text-xs text-neutral-500">Conversion</div><div className="text-xl font-semibold">{fmt(last.conversionScore)}</div></div>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-2">
-                <div className="rounded-xl border p-4">
-                  <div className="text-xs text-neutral-500">Strengths</div>
-                  <ul className="mt-2 list-disc pl-5">
-                    {(s.strengths ?? []).slice(0, 6).map((x, i) => (
-                      <li key={i}>{x}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="rounded-xl border p-4">
-                  <div className="text-xs text-neutral-500">Weaknesses</div>
-                  <ul className="mt-2 list-disc pl-5">
-                    {(s.weaknesses ?? []).slice(0, 6).map((x, i) => (
-                      <li key={i}>{x}</li>
-                    ))}
-                  </ul>
-                </div>
+              <div className="rounded-xl border p-3">
+                <div className="text-xs text-neutral-500">Strengths</div>
+                <ul className="mt-2 list-disc pl-5">{strengths.slice(0, 6).map((s, i) => <li key={i}>{s}</li>)}</ul>
               </div>
 
-              <div className="rounded-xl border p-4">
-                <div className="text-xs text-neutral-500">Key Patterns</div>
-                <ul className="mt-2 list-disc pl-5">
-                  {(s.keyPatterns ?? []).slice(0, 6).map((x, i) => (
-                    <li key={i}>{x}</li>
-                  ))}
-                </ul>
+              <div className="rounded-xl border p-3">
+                <div className="text-xs text-neutral-500">Weaknesses</div>
+                <ul className="mt-2 list-disc pl-5">{weaknesses.slice(0, 6).map((s, i) => <li key={i}>{s}</li>)}</ul>
+              </div>
+
+              <div className="rounded-xl border p-3">
+                <div className="text-xs text-neutral-500">Key patterns</div>
+                <ul className="mt-2 list-disc pl-5">{keyPatterns.slice(0, 6).map((s, i) => <li key={i}>{s}</li>)}</ul>
               </div>
             </div>
           )}
@@ -293,17 +264,17 @@ export default function AgentPage({ params }: { params: { id: string } }) {
 
           <div className="mt-3 space-y-3">
             {(data?.conversations ?? []).length === 0 ? (
-              <div className="text-sm text-neutral-600">No conversations yet.</div>
+              <div className="rounded-xl border p-3 text-sm text-neutral-600">No conversations yet.</div>
             ) : (
-              (data?.conversations ?? []).map((c) => (
-                <div key={c.id} className="rounded-xl border p-4">
-                  <div className="flex items-center justify-between gap-3">
+              (data?.conversations ?? []).slice(0, 15).map((c) => (
+                <div key={c.id} className="rounded-xl border p-3">
+                  <div className="flex items-center justify-between">
                     <div className="font-mono text-xs text-neutral-600">{c.id}</div>
-                    <div className="text-xs text-neutral-500">
-                      {new Date(c.createdAt).toLocaleString()}
-                    </div>
+                    <div className="text-xs text-neutral-500">{new Date(c.createdAt).toLocaleString()}</div>
                   </div>
-                  <div className="mt-2 text-sm text-neutral-800">{c.excerpt}...</div>
+                  <div className="mt-2 text-sm text-neutral-800 whitespace-pre-wrap">
+                    {(c.excerpt || c.transcript || "").slice(0, 600)}
+                  </div>
                 </div>
               ))
             )}
