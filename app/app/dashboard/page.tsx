@@ -1,625 +1,622 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
-type OverviewRow = {
-  agentId: string;
-  agentName?: string | null;
-  teamName?: string | null;
-  orgName?: string | null;
-  overall: number;
-  communication?: number;
-  conversion?: number;
-  risk: number;
-  coachingPriority?: number;
-  at?: string;
-};
+type Org = { id: string; name: string; createdAt?: string };
+type Team = { id: string; name: string; organizationId: string; createdAt?: string };
 
-type Overview = {
-  ok: boolean;
-  stats: {
-    totalAgents: number;
-    conversationsCount: number;
-    patternReportsCount: number;
-    agentScoresCount: number;
-  };
-  highRisk: OverviewRow[];
-  coachingQueue: OverviewRow[];
-  topPerformers: OverviewRow[];
-  lowPerformers: OverviewRow[];
-};
-
-type OrgItem = {
+type AgentRow = {
   id: string;
   name: string;
+  email?: string | null;
   createdAt?: string;
-  _count?: { teams?: number };
+  team?: { id: string; name: string; organization?: { id: string; name: string } } | null;
+  conversationsCount?: number;
+  scoresCount?: number;
 };
 
-type TeamItem = {
-  id: string;
-  name: string;
-  organizationId: string;
-  createdAt?: string;
-  _count?: { agents?: number };
+type Score = {
+  createdAt: string;
+  windowSize: number;
+  overallScore: number;
+  communicationScore: number;
+  conversionScore: number;
+  riskScore: number;
+  coachingPriority: number;
 };
 
-type BatchStatus = {
+type AgentMetaResponse = {
   ok: boolean;
-  job?: {
+  agent: AgentRow;
+  lastScore?: Score | null;
+};
+
+type AgentsListResponse = {
+  ok: boolean;
+  agents: AgentRow[];
+};
+
+type OrgsResponse = { ok: boolean; orgs: Org[] };
+type TeamsResponse = { ok: boolean; teams: Team[] };
+
+type BatchCreateResponse = { ok: boolean; jobId: string; total?: number; status?: string };
+type BatchStatusResponse = {
+  ok: boolean;
+  job: {
     id: string;
     scope: string;
     refId: string;
     windowSize: number;
     status: string;
-    progress?: number;
-    total?: number;
-    percent?: number;
-    createdAt?: string;
-    updatedAt?: string;
+    percent: number;
+    total: number;
+    progress: number;
+    error?: string | null;
+    createdAt: string;
+    updatedAt: string;
   };
-  counts?: { done?: number; queued?: number; failed?: number; total?: number };
-  lastFailed?: { agentId?: string; error?: string }[];
-  error?: string;
+  counts: { queued: number; running: number; done: number; failed: number; total: number };
+  lastFailed: Array<{
+    agentId: string;
+    agentName?: string | null;
+    teamName?: string | null;
+    orgName?: string | null;
+    error?: string | null;
+    at: string;
+  }>;
 };
 
-function fmt(n: number | null | undefined, digits = 1) {
-  if (n === null || n === undefined || Number.isNaN(Number(n))) return "—";
-  return Number(n).toFixed(digits);
+function cx(...a: Array<string | false | null | undefined>) {
+  return a.filter(Boolean).join(" ");
 }
 
-function pill(label: string) {
-  return (
-    <span className="rounded-full border px-3 py-1 text-xs text-neutral-700">
-      {label}
-    </span>
-  );
+function fmtNum(n: any) {
+  const x = Number(n);
+  return Number.isFinite(x) ? x.toFixed(1) : "—";
 }
 
-function ScoreCell({ value }: { value: number | null | undefined }) {
-  return <span className="font-semibold">{fmt(value)}</span>;
+function clip(s: string, max = 120) {
+  const t = String(s ?? "").replace(/\s+/g, " ").trim();
+  return t.length > max ? t.slice(0, max) + "…" : t;
 }
 
-function agentLabel(r: { agentId: string; agentName?: string | null; teamName?: string | null }) {
-  const name = (r.agentName || "").trim();
-  const team = (r.teamName || "").trim();
-  if (name && team) return `${name} - ${team}`;
-  if (name) return name;
-  return r.agentId;
-}
-
-function humanizeFailure(msg: string) {
-  const raw = msg || "";
-  const s = raw.toLowerCase();
-
-  if (s.includes("not enough conversations")) return "Not enough conversations for this window";
-  if (s.includes("missing agentid")) return "Internal: agentId was not passed (UI bug)";
-  if (s.includes("missing refid")) return "Internal: refId was not passed (UI bug)";
-  if (s.includes("unexpected token") && s.includes("<!doctype")) return "Upstream returned HTML (server error/404)";
-  if (s.includes("is not valid json")) return "Model returned invalid JSON (needs stricter parsing / retry)";
-  if (s.includes("timeout")) return "Timeout while scoring";
-  if (raw.length > 140) return raw.slice(0, 140) + "…";
-  return raw;
-}
-
-async function safeJson<T = any>(r: Response): Promise<{ ok: boolean; json?: T; text: string; error?: string }> {
-  const text = await r.text();
+async function safeJson(res: Response) {
+  const text = await res.text();
   try {
-    const json = JSON.parse(text) as T;
-    return { ok: true, json, text };
+    return { ok: true, json: JSON.parse(text), text };
   } catch {
-    // html / plaintext
-    const trimmed = text.trim();
-    if (trimmed.startsWith("<!DOCTYPE") || trimmed.startsWith("<html")) {
-      return { ok: false, text, error: "Upstream returned HTML (likely 404/500)" };
-    }
-    return { ok: false, text, error: "Response is not valid JSON" };
+    return { ok: false, json: null, text };
   }
 }
 
-const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
+async function sleep(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
+}
 
 export default function DashboardPage() {
-  // overview
-  const [limit, setLimit] = useState(12);
-  const [data, setData] = useState<Overview | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  // scope (org/team) selector
+  const [orgs, setOrgs] = useState<Org[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [selectedOrgId, setSelectedOrgId] = useState<string>("");
+  const [selectedTeamId, setSelectedTeamId] = useState<string>("");
 
-  // scope meta
-  const [orgs, setOrgs] = useState<OrgItem[]>([]);
-  const [teams, setTeams] = useState<TeamItem[]>([]);
-  const [orgId, setOrgId] = useState<string>("");
-  const [teamId, setTeamId] = useState<string>("");
-  const [metaLoading, setMetaLoading] = useState(false);
-  const [metaErr, setMetaErr] = useState<string | null>(null);
+  // agents + scores
+  const [agents, setAgents] = useState<AgentRow[]>([]);
+  const [agentScores, setAgentScores] = useState<Record<string, Score | null>>({});
 
-  // batch
-  const [batchScope, setBatchScope] = useState<"team" | "org">("team");
-  const [batchWindow, setBatchWindow] = useState<number>(30);
+  // batch controls
+  const [scopeType, setScopeType] = useState<"team" | "org">("team");
+  const [windowSize, setWindowSize] = useState<number>(30);
 
   const [jobId, setJobId] = useState<string>("");
-  const [jobStatus, setJobStatus] = useState<BatchStatus | null>(null);
-  const [jobLoading, setJobLoading] = useState(false);
-  const [jobErr, setJobErr] = useState<string | null>(null);
+  const [jobStatus, setJobStatus] = useState<BatchStatusResponse | null>(null);
 
-  const stats = useMemo(() => data?.stats, [data]);
+  // ui messages
+  const [loadingMeta, setLoadingMeta] = useState(false);
+  const [loadingScope, setLoadingScope] = useState(false);
+  const [creatingJob, setCreatingJob] = useState(false);
+  const [runningJob, setRunningJob] = useState(false);
 
-  // derived refId
+  const [err, setErr] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
+
   const activeRefId = useMemo(() => {
-    if (batchScope === "org") return orgId || "";
-    return teamId || "";
-  }, [batchScope, orgId, teamId]);
+    if (scopeType === "org") return selectedOrgId || "";
+    return selectedTeamId || "";
+  }, [scopeType, selectedOrgId, selectedTeamId]);
 
-  async function loadOverview() {
-    setLoading(true);
+  const totals = useMemo(() => {
+    const conversations = agents.reduce((acc, a) => acc + (a.conversationsCount ?? 0), 0);
+    const scoreSnapshots = agents.reduce((acc, a) => acc + (a.scoresCount ?? 0), 0);
+    return {
+      agents: agents.length,
+      conversations,
+      scoreSnapshots,
+    };
+  }, [agents]);
+
+  async function loadScope() {
+    setLoadingScope(true);
     setErr(null);
+    setInfo(null);
+
     try {
-      const r = await fetch(`/api/dashboard/overview?limit=${limit}`, { cache: "no-store" });
-      const parsed = await safeJson<Overview>(r);
-      if (!r.ok) throw new Error(`Overview failed ${r.status}: ${parsed.error || parsed.text.slice(0, 160)}`);
-      const j = parsed.json as Overview;
-      if (!j?.ok) throw new Error("Dashboard API returned ok:false");
-      setData(j);
-    } catch (e: any) {
-      setErr(e?.message || "Failed to load dashboard");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function loadMeta(initial = false) {
-    setMetaLoading(true);
-    setMetaErr(null);
-    try {
-      const r1 = await fetch(`/api/meta/orgs`, { cache: "no-store" });
-      const p1 = await safeJson<{ ok: boolean; orgs: OrgItem[]; error?: string }>(r1);
-      if (!r1.ok || !p1.ok || !p1.json?.ok) {
-        throw new Error(`Orgs failed ${r1.status}: ${p1.error || p1.text.slice(0, 160)}`);
+      const orgRes = await fetch("/api/meta/orgs", { cache: "no-store" });
+      const orgParsed = await safeJson(orgRes);
+      if (!orgRes.ok || !orgParsed.ok || !orgParsed.json?.ok) {
+        throw new Error(orgParsed.text || "Failed to load orgs");
       }
-      const listOrgs = p1.json.orgs || [];
-      setOrgs(listOrgs);
+      const orgsList: Org[] = orgParsed.json.orgs ?? [];
+      setOrgs(orgsList);
 
-      // choose org if none
-      let nextOrgId = orgId;
-      if (!nextOrgId && listOrgs.length) nextOrgId = listOrgs[0].id;
+      // keep or pick first org
+      let orgId = selectedOrgId;
+      if (!orgId || !orgsList.some((o) => o.id === orgId)) orgId = orgsList[0]?.id ?? "";
+      setSelectedOrgId(orgId);
 
-      // keep if still exists
-      if (nextOrgId && !listOrgs.some((o) => o.id === nextOrgId)) {
-        nextOrgId = listOrgs.length ? listOrgs[0].id : "";
-      }
-      if (nextOrgId !== orgId) setOrgId(nextOrgId);
-
-      if (nextOrgId) {
-        const r2 = await fetch(`/api/meta/teams?orgId=${encodeURIComponent(nextOrgId)}`, { cache: "no-store" });
-        const p2 = await safeJson<{ ok: boolean; teams: TeamItem[]; error?: string }>(r2);
-        if (!r2.ok || !p2.ok || !p2.json?.ok) {
-          throw new Error(`Teams failed ${r2.status}: ${p2.error || p2.text.slice(0, 160)}`);
+      if (orgId) {
+        const teamRes = await fetch(`/api/meta/teams?orgId=${encodeURIComponent(orgId)}`, { cache: "no-store" });
+        const teamParsed = await safeJson(teamRes);
+        if (!teamRes.ok || !teamParsed.ok || !teamParsed.json?.ok) {
+          throw new Error(teamParsed.text || "Failed to load teams");
         }
-        const listTeams = p2.json.teams || [];
-        setTeams(listTeams);
+        const teamsList: Team[] = teamParsed.json.teams ?? [];
+        setTeams(teamsList);
 
-        let nextTeamId = teamId;
-        if (!nextTeamId && listTeams.length) nextTeamId = listTeams[0].id;
-        if (nextTeamId && !listTeams.some((t) => t.id === nextTeamId)) {
-          nextTeamId = listTeams.length ? listTeams[0].id : "";
-        }
-        if (nextTeamId !== teamId) setTeamId(nextTeamId);
+        let teamId = selectedTeamId;
+        if (!teamId || !teamsList.some((t) => t.id === teamId)) teamId = teamsList[0]?.id ?? "";
+        setSelectedTeamId(teamId);
       } else {
         setTeams([]);
-        setTeamId("");
+        setSelectedTeamId("");
       }
 
-      if (initial) {
-        // restore last job id
-        const last = typeof window !== "undefined" ? localStorage.getItem("talkscope_last_job_id") : "";
-        if (last) {
-          setJobId(last);
-          // no await here, let UI mount first
-          fetchJobStatus(last);
+      setInfo("Scope loaded.");
+    } catch (e: any) {
+      setErr(e?.message || "Failed to load scope");
+    } finally {
+      setLoadingScope(false);
+    }
+  }
+
+  async function loadAgentsAndScores() {
+    setLoadingMeta(true);
+    setErr(null);
+    setInfo(null);
+
+    try {
+      // list of agents (names live here)
+      const res = await fetch("/api/meta/agents", { cache: "no-store" });
+      const parsed = await safeJson(res);
+      if (!res.ok || !parsed.ok || !parsed.json?.ok) {
+        throw new Error(parsed.text || "Failed to load agents");
+      }
+      const list: AgentRow[] = parsed.json.agents ?? [];
+      setAgents(list);
+
+      // fetch lastScore per agent (11 agents = ok)
+      // small concurrency limiter
+      const limit = 6;
+      const queue = [...list];
+      const scores: Record<string, Score | null> = {};
+
+      async function worker() {
+        while (queue.length) {
+          const a = queue.shift();
+          if (!a) break;
+          try {
+            const r = await fetch(`/api/meta/agent?id=${encodeURIComponent(a.id)}`, { cache: "no-store" });
+            const p = await safeJson(r);
+            if (r.ok && p.ok && p.json?.ok) {
+              scores[a.id] = (p.json.lastScore ?? null) as Score | null;
+            } else {
+              scores[a.id] = null;
+            }
+          } catch {
+            scores[a.id] = null;
+          }
         }
       }
+
+      await Promise.all(Array.from({ length: Math.min(limit, list.length) }, () => worker()));
+      setAgentScores(scores);
+
+      setInfo("Dashboard data loaded.");
     } catch (e: any) {
-      setMetaErr(e?.message || "Failed to load orgs/teams");
+      setErr(e?.message || "Failed to load dashboard data");
     } finally {
-      setMetaLoading(false);
+      setLoadingMeta(false);
     }
   }
 
-  async function onOrgChange(next: string) {
-    setOrgId(next);
-    setTeamId("");
-    setTeams([]);
-    setMetaErr(null);
+  async function refreshJobStatus(currentJobId: string) {
+    if (!currentJobId) return;
+
     try {
-      const r2 = await fetch(`/api/meta/teams?orgId=${encodeURIComponent(next)}`, { cache: "no-store" });
-      const p2 = await safeJson<{ ok: boolean; teams: TeamItem[]; error?: string }>(r2);
-      if (!r2.ok || !p2.ok || !p2.json?.ok) {
-        throw new Error(`Teams failed ${r2.status}: ${p2.error || p2.text.slice(0, 160)}`);
+      const res = await fetch(`/api/batch/score/status?jobId=${encodeURIComponent(currentJobId)}`, { cache: "no-store" });
+      const parsed = await safeJson(res);
+      if (!res.ok || !parsed.ok || !parsed.json?.ok) {
+        throw new Error(parsed.text || "Failed to load job status");
       }
-      const listTeams = p2.json.teams || [];
-      setTeams(listTeams);
-      if (listTeams.length) setTeamId(listTeams[0].id);
+      setJobStatus(parsed.json as BatchStatusResponse);
     } catch (e: any) {
-      setMetaErr(e?.message || "Failed to load teams");
+      setErr(e?.message || "Failed to load job status");
     }
   }
 
-  async function createBatch() {
-    setJobLoading(true);
-    setJobErr(null);
-    try {
-      const refId = activeRefId.trim();
-      if (!refId) throw new Error("Select org/team first (refId is empty)");
+  async function createJob() {
+    setCreatingJob(true);
+    setErr(null);
+    setInfo(null);
 
-      const r = await fetch(`/api/batch/score/create`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scope: batchScope, refId, windowSize: batchWindow }),
+    try {
+      const body = JSON.stringify({
+        scope: scopeType,
+        refId: activeRefId,
+        windowSize,
       });
 
-      const parsed = await safeJson<{ ok: boolean; jobId: string; error?: string }>(r);
-      if (!r.ok || !parsed.ok) throw new Error(`Create job failed ${r.status}: ${parsed.error || parsed.text.slice(0, 160)}`);
-      const j = parsed.json!;
-      if (!j.ok) throw new Error(j.error || "Create job failed");
+      const res = await fetch("/api/batch/score/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+      });
 
+      const parsed = await safeJson(res);
+      if (!res.ok || !parsed.ok || !parsed.json?.ok) {
+        throw new Error(parsed.text || "Create job failed");
+      }
+
+      const j = parsed.json as BatchCreateResponse;
       setJobId(j.jobId);
-      localStorage.setItem("talkscope_last_job_id", j.jobId);
-      await fetchJobStatus(j.jobId);
+      setInfo(`Job created: ${j.jobId}`);
+      await refreshJobStatus(j.jobId);
     } catch (e: any) {
-      setJobErr(e?.message || "Failed to create batch job");
+      setErr(e?.message || "Create job failed");
     } finally {
-      setJobLoading(false);
+      setCreatingJob(false);
     }
   }
 
-  async function fetchJobStatus(id?: string) {
-    const jid = (id ?? jobId).trim();
-    if (!jid) return;
+  async function runToCompletion() {
+    if (!jobId) return;
+
+    setRunningJob(true);
+    setErr(null);
+    setInfo(null);
 
     try {
-      const r = await fetch(`/api/batch/score/status?jobId=${encodeURIComponent(jid)}`, { cache: "no-store" });
-      const parsed = await safeJson<BatchStatus>(r);
-      if (!r.ok || !parsed.ok) throw new Error(`Status failed ${r.status}: ${parsed.error || parsed.text.slice(0, 160)}`);
-      const j = parsed.json!;
-      if (!j.ok) throw new Error(j.error || "Status failed");
-      setJobStatus(j);
-    } catch (e: any) {
-      setJobErr(e?.message || "Failed to load batch status");
-    }
-  }
-
-  async function runWorkerOnce(take = 6) {
-    const jid = jobId.trim();
-    if (!jid) return;
-
-    setJobLoading(true);
-    setJobErr(null);
-    try {
-      const r = await fetch(`/api/batch/score/run`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ jobId: jid, take }),
-      });
-
-      const parsed = await safeJson<{ ok: boolean; error?: string }>(r);
-      if (!r.ok || !parsed.ok) throw new Error(`Worker failed ${r.status}: ${parsed.error || parsed.text.slice(0, 160)}`);
-      if (!parsed.json?.ok) throw new Error(parsed.json?.error || "Worker failed");
-
-      await fetchJobStatus(jid);
-      await loadOverview();
-    } catch (e: any) {
-      setJobErr(e?.message || "Failed to run worker");
-    } finally {
-      setJobLoading(false);
-    }
-  }
-
-  // main demo button: run until done / timeout
-  async function runTo100() {
-    const jid = jobId.trim();
-    if (!jid) return;
-
-    setJobLoading(true);
-    setJobErr(null);
-
-    const startedAt = Date.now();
-    const maxMs = 90_000; // демо: 90 сек
-    const take = 8; // быстрее, но не слишком
-
-    try {
-      // ensure we have fresh status before loop
-      await fetchJobStatus(jid);
-
-      while (Date.now() - startedAt < maxMs) {
-        // read current snapshot from state is unreliable inside loop,
-        // so re-fetch status each iteration and decide
-        const rStatus = await fetch(`/api/batch/score/status?jobId=${encodeURIComponent(jid)}`, { cache: "no-store" });
-        const pStatus = await safeJson<BatchStatus>(rStatus);
-        if (!rStatus.ok || !pStatus.ok) throw new Error(`Status failed ${rStatus.status}: ${pStatus.error || pStatus.text.slice(0, 160)}`);
-        const st = pStatus.json!;
-        if (!st.ok) throw new Error(st.error || "Status failed");
-        setJobStatus(st);
-
-        const status = (st.job?.status || "").toLowerCase();
-        const queued = Number(st.counts?.queued ?? 0);
-        const total = Number(st.counts?.total ?? st.job?.total ?? 0);
-        const done = Number(st.counts?.done ?? 0);
-        const failed = Number(st.counts?.failed ?? 0);
-
-        const isDone = status === "done" || (total > 0 && done + failed >= total) || queued === 0;
-        if (isDone) break;
-
-        // run worker
-        const rRun = await fetch(`/api/batch/score/run`, {
+      // loop: run -> status -> until done or no queued/running
+      for (let i = 0; i < 60; i++) {
+        // run worker chunk
+        const runRes = await fetch("/api/batch/score/run", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ jobId: jid, take }),
+          body: JSON.stringify({ jobId, take: 3 }),
         });
-        const pRun = await safeJson<{ ok: boolean; error?: string }>(rRun);
-        if (!rRun.ok || !pRun.ok) throw new Error(`Worker failed ${rRun.status}: ${pRun.error || pRun.text.slice(0, 160)}`);
-        if (!pRun.json?.ok) throw new Error(pRun.json?.error || "Worker failed");
 
-        await sleep(650);
+        // even if runRes fails, we still try to read status to show why
+        await refreshJobStatus(jobId);
+
+        const st = jobStatus;
+        if (st?.job?.status === "done") break;
+
+        // small delay so UI breathes
+        await sleep(700);
       }
 
-      await fetchJobStatus(jid);
-      await loadOverview();
+      await refreshJobStatus(jobId);
+      setInfo("Worker finished (or reached max steps).");
+      // refresh top tables so names + numbers update after scoring
+      await loadAgentsAndScores();
     } catch (e: any) {
-      setJobErr(e?.message || "Failed to run to 100%");
+      setErr(e?.message || "Run worker failed");
     } finally {
-      setJobLoading(false);
+      setRunningJob(false);
     }
   }
 
+  // initial load
   useEffect(() => {
-    loadMeta(true);
+    loadScope();
+    loadAgentsAndScores();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // when org changes, reload teams
   useEffect(() => {
-    loadOverview();
+    (async () => {
+      if (!selectedOrgId) {
+        setTeams([]);
+        setSelectedTeamId("");
+        return;
+      }
+      try {
+        const res = await fetch(`/api/meta/teams?orgId=${encodeURIComponent(selectedOrgId)}`, { cache: "no-store" });
+        const parsed = await safeJson(res);
+        if (!res.ok || !parsed.ok || !parsed.json?.ok) return;
+        const list: Team[] = parsed.json.teams ?? [];
+        setTeams(list);
+
+        if (!list.some((t) => t.id === selectedTeamId)) {
+          setSelectedTeamId(list[0]?.id ?? "");
+        }
+      } catch {
+        // silent
+      }
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [limit]);
+  }, [selectedOrgId]);
 
-  const progressPercent = useMemo(() => {
-    const p = jobStatus?.job?.percent;
-    if (typeof p === "number") return Math.max(0, Math.min(100, Math.round(p)));
-    const done = Number(jobStatus?.counts?.done ?? 0);
-    const failed = Number(jobStatus?.counts?.failed ?? 0);
-    const total = Number(jobStatus?.counts?.total ?? jobStatus?.job?.total ?? 0);
-    if (total <= 0) return 0;
-    return Math.max(0, Math.min(100, Math.round(((done + failed) / total) * 100)));
-  }, [jobStatus]);
+  // computed views (human names)
+  const agentById = useMemo(() => {
+    const m = new Map<string, AgentRow>();
+    for (const a of agents) m.set(a.id, a);
+    return m;
+  }, [agents]);
 
-  const countsLine = useMemo(() => {
-    const done = Number(jobStatus?.counts?.done ?? 0);
-    const queued = Number(jobStatus?.counts?.queued ?? 0);
-    const failed = Number(jobStatus?.counts?.failed ?? 0);
-    return `${done} done - ${queued} queued - ${failed} failed`;
-  }, [jobStatus]);
+  const rowsWithScore = useMemo(() => {
+    return agents
+      .map((a) => {
+        const s = agentScores[a.id] ?? null;
+        return {
+          agent: a,
+          score: s,
+        };
+      })
+      .filter((x) => x.score); // only those with score
+  }, [agents, agentScores]);
+
+  const coachingQueue = useMemo(() => {
+    return [...rowsWithScore]
+      .sort((a, b) => Number(b.score!.coachingPriority) - Number(a.score!.coachingPriority))
+      .slice(0, 12);
+  }, [rowsWithScore]);
+
+  const highRisk = useMemo(() => {
+    return [...rowsWithScore]
+      .filter((x) => Number(x.score!.riskScore) >= 70)
+      .sort((a, b) => Number(b.score!.riskScore) - Number(a.score!.riskScore))
+      .slice(0, 8);
+  }, [rowsWithScore]);
+
+  const topPerformers = useMemo(() => {
+    return [...rowsWithScore]
+      .sort((a, b) => Number(b.score!.overallScore) - Number(a.score!.overallScore))
+      .slice(0, 8);
+  }, [rowsWithScore]);
+
+  const lowPerformers = useMemo(() => {
+    return [...rowsWithScore]
+      .sort((a, b) => Number(a.score!.overallScore) - Number(b.score!.overallScore))
+      .slice(0, 8);
+  }, [rowsWithScore]);
+
+  function AgentCell({ id }: { id: string }) {
+    const a = agentById.get(id);
+    const name = a?.name || id;
+    const teamName = a?.team?.name;
+    const orgName = a?.team?.organization?.name;
+    const subtitle = [teamName, orgName].filter(Boolean).join(" — ");
+
+    return (
+      <a href={`/app/agents/${encodeURIComponent(id)}`} className="hover:underline">
+        <div className="font-medium">{name}</div>
+        {subtitle ? <div className="text-sm opacity-70">{subtitle}</div> : null}
+      </a>
+    );
+  }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      {/* Header */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+    <div className="mx-auto max-w-6xl px-6 py-10">
+      <div className="flex items-start justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Operations Dashboard</h1>
-          <p className="text-sm text-neutral-500">Coaching queue, risk signals, and performance overview.</p>
+          <h1 className="text-4xl font-semibold">Operations Dashboard</h1>
+          <div className="mt-2 opacity-70">Coaching queue, risk signals, and performance overview.</div>
         </div>
 
-        <div className="flex flex-col gap-2 md:flex-row md:items-center">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-neutral-500">Rows</span>
-            <select
-              className="rounded-lg border px-3 py-2 text-sm"
-              value={limit}
-              onChange={(e) => setLimit(Number(e.target.value))}
-            >
-              {[8, 12, 20, 40].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </div>
-
+        <div className="flex gap-2">
           <button
-            onClick={loadOverview}
-            disabled={loading}
-            className="rounded-lg border px-4 py-2 text-sm font-medium disabled:opacity-50"
+            onClick={() => {
+              setErr(null);
+              setInfo(null);
+              loadAgentsAndScores();
+              loadScope();
+              if (jobId) refreshJobStatus(jobId);
+            }}
+            className="rounded-xl border px-4 py-2"
+            disabled={loadingMeta || loadingScope}
           >
-            {loading ? "Refreshing..." : "Refresh"}
+            Refresh
           </button>
-
-          <a href="/app" className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white">
+          <a href="/" className="rounded-xl border bg-black px-4 py-2 text-white">
             Home
           </a>
         </div>
       </div>
 
-      {/* Errors */}
-      {err && (
-        <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{err}</div>
-      )}
-
-      {/* Stats */}
-      <div className="mt-6 flex flex-wrap gap-2">
-        {pill(`Agents: ${stats?.totalAgents ?? "—"}`)}
-        {pill(`Conversations: ${stats?.conversationsCount ?? "—"}`)}
-        {pill(`Pattern reports: ${stats?.patternReportsCount ?? "—"}`)}
-        {pill(`Score snapshots: ${stats?.agentScoresCount ?? "—"}`)}
+      {/* counters */}
+      <div className="mt-6 flex flex-wrap gap-3">
+        <div className="rounded-full border px-4 py-2">Agents: {totals.agents || "—"}</div>
+        <div className="rounded-full border px-4 py-2">Conversations: {totals.conversations || "—"}</div>
+        <div className="rounded-full border px-4 py-2">
+          Pattern reports: {jobStatus?.job ? "—" : "—"}
+        </div>
+        <div className="rounded-full border px-4 py-2">Score snapshots: {totals.scoreSnapshots || "—"}</div>
       </div>
 
-      {/* Scope */}
-      <div className="mt-6 rounded-2xl border p-5">
-        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+      {/* messages */}
+      {err ? (
+        <div className="mt-6 rounded-2xl border border-red-300 bg-red-50 px-5 py-4 text-red-700">{err}</div>
+      ) : null}
+      {info ? (
+        <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-emerald-800">
+          {info}
+        </div>
+      ) : null}
+
+      {/* scope */}
+      <div className="mt-8 rounded-3xl border p-6">
+        <div className="flex items-start justify-between gap-6">
           <div>
-            <h2 className="text-lg font-semibold">Scope</h2>
-            <p className="text-sm text-neutral-500">Select organization and team. Used by Batch Scoring below.</p>
+            <div className="text-2xl font-semibold">Scope</div>
+            <div className="mt-1 opacity-70">Select organization and team. Used by Batch Scoring below.</div>
           </div>
 
           <button
-            onClick={() => loadMeta(false)}
-            disabled={metaLoading}
-            className="rounded-lg border px-4 py-2 text-sm font-medium disabled:opacity-50"
-            title="Reload orgs and teams from DB"
+            onClick={loadScope}
+            className="rounded-xl border px-4 py-2"
+            disabled={loadingScope}
+            title="Reload orgs and teams"
           >
-            {metaLoading ? "Loading..." : "Reload orgs/teams"}
+            {loadingScope ? "Loading…" : "Reload orgs/teams"}
           </button>
         </div>
 
-        {metaErr && (
-          <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{metaErr}</div>
-        )}
-
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          <div className="rounded-xl border p-4">
-            <div className="text-xs text-neutral-500">Organization</div>
+        <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="rounded-2xl border p-4">
+            <div className="mb-2 text-sm opacity-70">Organization</div>
             <select
-              className="mt-2 w-full rounded-lg border px-3 py-2 text-sm"
-              value={orgId}
-              onChange={(e) => onOrgChange(e.target.value)}
-              disabled={metaLoading || orgs.length === 0}
+              className="w-full rounded-xl border px-3 py-3"
+              value={selectedOrgId}
+              onChange={(e) => setSelectedOrgId(e.target.value)}
             >
-              {orgs.length === 0 ? (
-                <option value="">No orgs</option>
-              ) : (
-                orgs.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.name} ({o.id})
-                  </option>
-                ))
-              )}
+              <option value="">Select org</option>
+              {orgs.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.name} ({o.id})
+                </option>
+              ))}
             </select>
           </div>
 
-          <div className="rounded-xl border p-4">
-            <div className="text-xs text-neutral-500">Team</div>
+          <div className="rounded-2xl border p-4">
+            <div className="mb-2 text-sm opacity-70">Team</div>
             <select
-              className="mt-2 w-full rounded-lg border px-3 py-2 text-sm"
-              value={teamId}
-              onChange={(e) => setTeamId(e.target.value)}
-              disabled={metaLoading || teams.length === 0}
+              className="w-full rounded-xl border px-3 py-3"
+              value={selectedTeamId}
+              onChange={(e) => setSelectedTeamId(e.target.value)}
+              disabled={!selectedOrgId}
             >
-              {teams.length === 0 ? (
-                <option value="">No teams</option>
-              ) : (
-                teams.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name} ({t.id})
-                  </option>
-                ))
-              )}
+              <option value="">Select team</option>
+              {teams.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name} ({t.id})
+                </option>
+              ))}
             </select>
           </div>
         </div>
 
-        <div className="mt-3 text-xs text-neutral-500">
-          Active refId for batch: <span className="font-mono">{activeRefId || "—"}</span>
+        <div className="mt-3 text-sm opacity-70">
+          Active refId for batch:{" "}
+          <span className="font-mono">{activeRefId ? activeRefId : "—"}</span>
         </div>
       </div>
 
-      {/* Batch Scoring */}
-      <div className="mt-6 rounded-2xl border p-5">
-        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+      {/* batch scoring */}
+      <div className="mt-8 rounded-3xl border p-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <h2 className="text-lg font-semibold">Batch Scoring</h2>
-            <p className="text-sm text-neutral-500">Create a job for selected scope - then run worker to completion.</p>
+            <div className="text-2xl font-semibold">Batch Scoring</div>
+            <div className="mt-1 opacity-70">
+              Create a job for selected scope - then run worker to 100% in controlled steps.
+            </div>
           </div>
 
-          <div className="flex flex-col gap-2 md:flex-row md:items-center">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <select
-              className="rounded-lg border px-3 py-2 text-sm"
-              value={batchScope}
-              onChange={(e) => setBatchScope(e.target.value as any)}
-              title="Scope determines which refId will be used: orgId or teamId"
+              className="rounded-xl border px-3 py-2"
+              value={scopeType}
+              onChange={(e) => setScopeType(e.target.value as any)}
             >
               <option value="team">team</option>
               <option value="org">org</option>
             </select>
 
             <select
-              className="rounded-lg border px-3 py-2 text-sm"
-              value={batchWindow}
-              onChange={(e) => setBatchWindow(Number(e.target.value))}
+              className="rounded-xl border px-3 py-2"
+              value={windowSize}
+              onChange={(e) => setWindowSize(Number(e.target.value))}
             >
-              {[20, 30, 50].map((n) => (
-                <option key={n} value={n}>
-                  window {n}
+              {[20, 30, 50].map((w) => (
+                <option key={w} value={w}>
+                  window {w}
                 </option>
               ))}
             </select>
 
             <button
-              onClick={createBatch}
-              disabled={jobLoading || !activeRefId}
-              className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-              title={!activeRefId ? "Select org/team first" : "Create a batch job"}
+              onClick={createJob}
+              disabled={creatingJob || !activeRefId}
+              className={cx(
+                "rounded-xl px-4 py-2",
+                !activeRefId ? "bg-gray-300 text-gray-600" : "bg-black text-white"
+              )}
+              title={!activeRefId ? "Select org/team first" : "Create job"}
             >
-              {jobLoading ? "Working..." : "Create Job"}
+              {creatingJob ? "Creating…" : "Create Job"}
             </button>
           </div>
         </div>
 
-        {jobErr && (
-          <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{jobErr}</div>
-        )}
+        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="rounded-2xl border p-4">
+            <div className="text-sm opacity-70">Job ID</div>
+            <div className="mt-2 font-mono text-sm">{jobId || "—"}</div>
 
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <div className="rounded-xl border p-4">
-            <div className="text-xs text-neutral-500">Job ID</div>
-            <div className="mt-1 break-all font-mono text-xs">{jobId || "—"}</div>
-
-            <div className="mt-2 flex flex-wrap gap-2">
+            <div className="mt-4 flex flex-wrap gap-2">
               <button
-                onClick={() => runTo100()}
-                disabled={jobLoading || !jobId}
-                className="rounded-lg bg-black px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
-                title="Run worker in steps until done (or timeout)"
+                onClick={() => jobId && refreshJobStatus(jobId)}
+                className="rounded-xl border px-4 py-2"
+                disabled={!jobId}
               >
-                {jobLoading ? "Running..." : "Run to 100%"}
+                Refresh status
               </button>
 
               <button
-                onClick={() => runWorkerOnce(6)}
-                disabled={jobLoading || !jobId}
-                className="rounded-lg border px-3 py-2 text-sm font-medium disabled:opacity-50"
-                title="Advanced: run one worker step"
+                onClick={runToCompletion}
+                className={cx("rounded-xl px-4 py-2", jobId ? "bg-black text-white" : "bg-gray-300 text-gray-600")}
+                disabled={!jobId || runningJob}
+                title={!jobId ? "Create job first" : "Run worker until done"}
               >
-                Run once (x6)
-              </button>
-
-              <button
-                onClick={() => fetchJobStatus()}
-                disabled={jobLoading || !jobId}
-                className="rounded-lg border px-3 py-2 text-sm font-medium disabled:opacity-50"
-                title="Advanced: refresh status"
-              >
-                Refresh
+                {runningJob ? "Running…" : "Run to 100%"}
               </button>
             </div>
           </div>
 
-          <div className="rounded-xl border p-4">
-            <div className="text-xs text-neutral-500">Progress</div>
-            <div className="mt-2 text-2xl font-semibold">{progressPercent}%</div>
-            <div className="mt-1 text-sm text-neutral-600">{countsLine}</div>
-            <div className="mt-2 text-xs text-neutral-500">
-              Status: <span className="font-semibold">{jobStatus?.job?.status ?? "—"}</span>
+          <div className="rounded-2xl border p-4">
+            <div className="text-sm opacity-70">Progress</div>
+            <div className="mt-2 text-4xl font-semibold">{jobStatus?.job ? `${jobStatus.job.percent}%` : "—"}</div>
+            <div className="mt-2 opacity-70 text-sm">
+              {jobStatus?.counts
+                ? `${jobStatus.counts.done} done - ${jobStatus.counts.queued} queued - ${jobStatus.counts.failed} failed`
+                : "—"}
             </div>
+            <div className="mt-1 text-sm opacity-70">
+              Status: <span className="font-medium">{jobStatus?.job?.status ?? "—"}</span>
+            </div>
+            {jobStatus?.job?.error ? (
+              <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                {jobStatus.job.error}
+              </div>
+            ) : null}
           </div>
 
-          <div className="rounded-xl border p-4">
-            <div className="text-xs text-neutral-500">Last failures</div>
-            <div className="mt-2 space-y-2 text-sm text-neutral-700">
+          <div className="rounded-2xl border p-4">
+            <div className="text-sm opacity-70">Last failures</div>
+            <div className="mt-3 space-y-2">
               {(jobStatus?.lastFailed ?? []).length === 0 ? (
-                <div className="text-neutral-600">No failures.</div>
+                <div className="opacity-70 text-sm">No failures.</div>
               ) : (
-                (jobStatus?.lastFailed ?? []).map((x: any, i: number) => (
-                  <div key={i} className="rounded-lg border p-2">
-                    <div className="font-mono text-xs">{x.agentId || "—"}</div>
-                    <div className="mt-1 text-xs text-neutral-600">{humanizeFailure(String(x.error || ""))}</div>
+                (jobStatus?.lastFailed ?? []).slice(0, 5).map((f, idx) => (
+                  <div key={idx} className="rounded-xl border px-3 py-2">
+                    <div className="font-medium">
+                      {f.agentName || f.agentId}
+                      {f.teamName ? <span className="opacity-70"> — {f.teamName}</span> : null}
+                    </div>
+                    <div className="text-sm opacity-70">{f.orgName ? f.orgName : ""}</div>
+                    <div className="mt-1 text-sm">{f.error ? clip(f.error, 140) : "Failed"}</div>
                   </div>
                 ))
               )}
@@ -628,194 +625,175 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Main tables */}
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        {/* Coaching Queue */}
-        <section className="rounded-2xl border p-5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Coaching Queue</h2>
-            <span className="text-xs text-neutral-500">Highest priority first</span>
+      {/* tables */}
+      <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="rounded-3xl border p-6">
+          <div className="flex items-baseline justify-between">
+            <div className="text-2xl font-semibold">Coaching Queue</div>
+            <div className="text-sm opacity-70">Highest priority first</div>
           </div>
 
-          <div className="mt-3 overflow-x-auto rounded-xl border">
-            <table className="w-full text-sm">
-              <thead className="bg-neutral-50 text-neutral-600">
-                <tr>
-                  <th className="px-3 py-2 text-left">Agent</th>
-                  <th className="px-3 py-2 text-left">Priority</th>
-                  <th className="px-3 py-2 text-left">Overall</th>
-                  <th className="px-3 py-2 text-left">Risk</th>
+          <div className="mt-4 overflow-hidden rounded-2xl border">
+            <table className="w-full text-left">
+              <thead className="border-b">
+                <tr className="opacity-70">
+                  <th className="px-4 py-3">Agent</th>
+                  <th className="px-4 py-3">Priority</th>
+                  <th className="px-4 py-3">Overall</th>
+                  <th className="px-4 py-3">Risk</th>
                 </tr>
               </thead>
               <tbody>
-                {(data?.coachingQueue ?? []).map((r, i) => (
-                  <tr key={i} className="border-t">
-                    <td className="px-3 py-2">
-                      <a className="hover:underline" href={`/app/agents/${encodeURIComponent(r.agentId)}`}>
-                        {agentLabel(r)}
-                      </a>
-                      <div className="text-xs text-neutral-500">{r.orgName ? `${r.orgName}${r.teamName ? ` - ${r.teamName}` : ""}` : ""}</div>
-                    </td>
-                    <td className="px-3 py-2"><ScoreCell value={r.coachingPriority ?? null} /></td>
-                    <td className="px-3 py-2"><ScoreCell value={r.overall} /></td>
-                    <td className="px-3 py-2"><ScoreCell value={r.risk} /></td>
-                  </tr>
-                ))}
-
-                {(!data || data.coachingQueue.length === 0) && (
+                {coachingQueue.length === 0 ? (
                   <tr>
-                    <td className="px-3 py-3 text-neutral-600" colSpan={4}>
-                      No data yet. Generate scores for more agents.
+                    <td className="px-4 py-4 opacity-70" colSpan={4}>
+                      No scores yet. Run scoring first.
                     </td>
                   </tr>
+                ) : (
+                  coachingQueue.map((x) => (
+                    <tr key={x.agent.id} className="border-b last:border-0">
+                      <td className="px-4 py-3">
+                        <AgentCell id={x.agent.id} />
+                      </td>
+                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.coachingPriority)}</td>
+                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.overallScore)}</td>
+                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.riskScore)}</td>
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>
           </div>
-        </section>
+        </div>
 
-        {/* High Risk */}
-        <section className="rounded-2xl border p-5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">High Risk</h2>
-            <span className="text-xs text-neutral-500">Risk ≥ 70</span>
+        <div className="rounded-3xl border p-6">
+          <div className="flex items-baseline justify-between">
+            <div className="text-2xl font-semibold">High Risk</div>
+            <div className="text-sm opacity-70">Risk ≥ 70</div>
           </div>
 
-          <div className="mt-3 overflow-x-auto rounded-xl border">
-            <table className="w-full text-sm">
-              <thead className="bg-neutral-50 text-neutral-600">
-                <tr>
-                  <th className="px-3 py-2 text-left">Agent</th>
-                  <th className="px-3 py-2 text-left">Risk</th>
-                  <th className="px-3 py-2 text-left">Overall</th>
-                  <th className="px-3 py-2 text-left">Priority</th>
+          <div className="mt-4 overflow-hidden rounded-2xl border">
+            <table className="w-full text-left">
+              <thead className="border-b">
+                <tr className="opacity-70">
+                  <th className="px-4 py-3">Agent</th>
+                  <th className="px-4 py-3">Risk</th>
+                  <th className="px-4 py-3">Overall</th>
+                  <th className="px-4 py-3">Priority</th>
                 </tr>
               </thead>
               <tbody>
-                {(data?.highRisk ?? []).map((r, i) => (
-                  <tr key={i} className="border-t">
-                    <td className="px-3 py-2">
-                      <a className="hover:underline" href={`/app/agents/${encodeURIComponent(r.agentId)}`}>
-                        {agentLabel(r)}
-                      </a>
-                      <div className="text-xs text-neutral-500">{r.orgName ? `${r.orgName}${r.teamName ? ` - ${r.teamName}` : ""}` : ""}</div>
-                    </td>
-                    <td className="px-3 py-2"><ScoreCell value={r.risk} /></td>
-                    <td className="px-3 py-2"><ScoreCell value={r.overall} /></td>
-                    <td className="px-3 py-2"><ScoreCell value={r.coachingPriority ?? null} /></td>
-                  </tr>
-                ))}
-
-                {(!data || data.highRisk.length === 0) && (
+                {highRisk.length === 0 ? (
                   <tr>
-                    <td className="px-3 py-3 text-neutral-600" colSpan={4}>
+                    <td className="px-4 py-4 opacity-70" colSpan={4}>
                       No high-risk agents detected (yet).
                     </td>
                   </tr>
+                ) : (
+                  highRisk.map((x) => (
+                    <tr key={x.agent.id} className="border-b last:border-0">
+                      <td className="px-4 py-3">
+                        <AgentCell id={x.agent.id} />
+                      </td>
+                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.riskScore)}</td>
+                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.overallScore)}</td>
+                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.coachingPriority)}</td>
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>
           </div>
-        </section>
+        </div>
 
-        {/* Top Performers */}
-        <section className="rounded-2xl border p-5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Top Performers</h2>
-            <span className="text-xs text-neutral-500">Highest overall first</span>
+        <div className="rounded-3xl border p-6">
+          <div className="flex items-baseline justify-between">
+            <div className="text-2xl font-semibold">Top Performers</div>
+            <div className="text-sm opacity-70">Highest overall first</div>
           </div>
 
-          <div className="mt-3 overflow-x-auto rounded-xl border">
-            <table className="w-full text-sm">
-              <thead className="bg-neutral-50 text-neutral-600">
-                <tr>
-                  <th className="px-3 py-2 text-left">Agent</th>
-                  <th className="px-3 py-2 text-left">Overall</th>
-                  <th className="px-3 py-2 text-left">Comm</th>
-                  <th className="px-3 py-2 text-left">Conv</th>
-                  <th className="px-3 py-2 text-left">Risk</th>
+          <div className="mt-4 overflow-hidden rounded-2xl border">
+            <table className="w-full text-left">
+              <thead className="border-b">
+                <tr className="opacity-70">
+                  <th className="px-4 py-3">Agent</th>
+                  <th className="px-4 py-3">Overall</th>
+                  <th className="px-4 py-3">Comm</th>
+                  <th className="px-4 py-3">Conv</th>
+                  <th className="px-4 py-3">Risk</th>
                 </tr>
               </thead>
               <tbody>
-                {(data?.topPerformers ?? []).map((r, i) => (
-                  <tr key={i} className="border-t">
-                    <td className="px-3 py-2">
-                      <a className="hover:underline" href={`/app/agents/${encodeURIComponent(r.agentId)}`}>
-                        {agentLabel(r)}
-                      </a>
-                      <div className="text-xs text-neutral-500">{r.orgName ? `${r.orgName}${r.teamName ? ` - ${r.teamName}` : ""}` : ""}</div>
-                    </td>
-                    <td className="px-3 py-2"><ScoreCell value={r.overall} /></td>
-                    <td className="px-3 py-2"><ScoreCell value={r.communication ?? null} /></td>
-                    <td className="px-3 py-2"><ScoreCell value={r.conversion ?? null} /></td>
-                    <td className="px-3 py-2"><ScoreCell value={r.risk} /></td>
-                  </tr>
-                ))}
-
-                {(!data || data.topPerformers.length === 0) && (
+                {topPerformers.length === 0 ? (
                   <tr>
-                    <td className="px-3 py-3 text-neutral-600" colSpan={5}>
+                    <td className="px-4 py-4 opacity-70" colSpan={5}>
                       No scores yet.
                     </td>
                   </tr>
+                ) : (
+                  topPerformers.map((x) => (
+                    <tr key={x.agent.id} className="border-b last:border-0">
+                      <td className="px-4 py-3">
+                        <AgentCell id={x.agent.id} />
+                      </td>
+                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.overallScore)}</td>
+                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.communicationScore)}</td>
+                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.conversionScore)}</td>
+                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.riskScore)}</td>
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>
           </div>
-        </section>
+        </div>
 
-        {/* Low Performers */}
-        <section className="rounded-2xl border p-5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Low Performers</h2>
-            <span className="text-xs text-neutral-500">Lowest overall first</span>
+        <div className="rounded-3xl border p-6">
+          <div className="flex items-baseline justify-between">
+            <div className="text-2xl font-semibold">Low Performers</div>
+            <div className="text-sm opacity-70">Lowest overall first</div>
           </div>
 
-          <div className="mt-3 overflow-x-auto rounded-xl border">
-            <table className="w-full text-sm">
-              <thead className="bg-neutral-50 text-neutral-600">
-                <tr>
-                  <th className="px-3 py-2 text-left">Agent</th>
-                  <th className="px-3 py-2 text-left">Overall</th>
-                  <th className="px-3 py-2 text-left">Risk</th>
-                  <th className="px-3 py-2 text-left">Priority</th>
+          <div className="mt-4 overflow-hidden rounded-2xl border">
+            <table className="w-full text-left">
+              <thead className="border-b">
+                <tr className="opacity-70">
+                  <th className="px-4 py-3">Agent</th>
+                  <th className="px-4 py-3">Overall</th>
+                  <th className="px-4 py-3">Risk</th>
+                  <th className="px-4 py-3">Priority</th>
                 </tr>
               </thead>
               <tbody>
-                {(data?.lowPerformers ?? []).map((r, i) => (
-                  <tr key={i} className="border-t">
-                    <td className="px-3 py-2">
-                      <a className="hover:underline" href={`/app/agents/${encodeURIComponent(r.agentId)}`}>
-                        {agentLabel(r)}
-                      </a>
-                      <div className="text-xs text-neutral-500">{r.orgName ? `${r.orgName}${r.teamName ? ` - ${r.teamName}` : ""}` : ""}</div>
-                    </td>
-                    <td className="px-3 py-2"><ScoreCell value={r.overall} /></td>
-                    <td className="px-3 py-2"><ScoreCell value={r.risk} /></td>
-                    <td className="px-3 py-2"><ScoreCell value={r.coachingPriority ?? null} /></td>
-                  </tr>
-                ))}
-
-                {(!data || data.lowPerformers.length === 0) && (
+                {lowPerformers.length === 0 ? (
                   <tr>
-                    <td className="px-3 py-3 text-neutral-600" colSpan={4}>
+                    <td className="px-4 py-4 opacity-70" colSpan={4}>
                       No scores yet.
                     </td>
                   </tr>
+                ) : (
+                  lowPerformers.map((x) => (
+                    <tr key={x.agent.id} className="border-b last:border-0">
+                      <td className="px-4 py-3">
+                        <AgentCell id={x.agent.id} />
+                      </td>
+                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.overallScore)}</td>
+                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.riskScore)}</td>
+                      <td className="px-4 py-3 font-medium">{fmtNum(x.score!.coachingPriority)}</td>
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>
           </div>
-        </section>
+        </div>
       </div>
 
-      {/* Footer hint */}
-      <div className="mt-6 rounded-2xl border p-5">
-        <h2 className="text-lg font-semibold">Next layer</h2>
-        <p className="mt-2 text-sm text-neutral-600">
-          Дальше логично: авто-run для batch по расписанию + нормальные human-readable ошибки из воркера,
-          чтобы “Last failures” был не стыдный даже в демо.
-        </p>
+      {/* footer */}
+      <div className="mt-10 opacity-60 text-sm">
+        Tip: all agent rows are clickable. If team/org are blank, it means seeding didn’t attach agents to teams – UI
+        still shows agent names.
       </div>
     </div>
   );
