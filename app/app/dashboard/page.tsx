@@ -795,6 +795,67 @@ export default function DashboardPage() {
         </div>
       </div>
 
+{/* HELP / EXPLANATION ACCORDION */}
+<div className="mt-10 rounded-3xl border p-6">
+  <div className="text-2xl font-semibold">How to read this dashboard</div>
+  <div className="mt-1 opacity-70">Quick guide to analysis, scoring and coaching signals.</div>
+
+  <div className="mt-5 space-y-3">
+
+    <details className="group rounded-2xl border p-4 open:bg-gray-50">
+      <summary className="cursor-pointer font-semibold">
+        What does Batch Scoring do?
+      </summary>
+      <div className="mt-2 text-sm opacity-80">
+        Batch Scoring analyzes recent conversations of selected scope (team or organization)
+        and generates performance intelligence for every agent: overall quality, communication,
+        conversion effectiveness, risk level, and coaching priority.  
+        Run it until 100% to refresh the whole system snapshot.
+      </div>
+    </details>
+
+    <details className="group rounded-2xl border p-4 open:bg-gray-50">
+      <summary className="cursor-pointer font-semibold">
+        How to run a full analysis
+      </summary>
+      <div className="mt-2 text-sm opacity-80">
+        1. Select organization or team in Scope.  
+        2. Click Create Job.  
+        3. Click Run to 100%.  
+        When progress reaches 100%, all tables update automatically with new intelligence.
+      </div>
+    </details>
+
+    <details className="group rounded-2xl border p-4 open:bg-gray-50">
+      <summary className="cursor-pointer font-semibold">
+        What the numbers mean
+      </summary>
+      <div className="mt-2 text-sm opacity-80 space-y-1">
+        <div><b>Overall</b> — combined agent effectiveness score.</div>
+        <div><b>Communication</b> — clarity, structure, empathy, control.</div>
+        <div><b>Conversion</b> — ability to move conversation to target outcome.</div>
+        <div><b>Risk</b> — probability of customer dissatisfaction or loss.</div>
+        <div><b>Coaching Priority</b> — where intervention will create maximum impact.</div>
+      </div>
+    </details>
+
+    <details className="group rounded-2xl border p-4 open:bg-gray-50">
+      <summary className="cursor-pointer font-semibold">
+        How to interpret tables
+      </summary>
+      <div className="mt-2 text-sm opacity-80">
+        Coaching Queue shows where coaching delivers fastest improvement.  
+        High Risk highlights agents requiring immediate attention.  
+        Top Performers reveal best behavioral patterns to replicate.  
+        Low Performers indicate capability gaps or structural issues.
+      </div>
+    </details>
+
+  </div>
+</div>
+
+
+
       <div className="mt-10 opacity-60 text-sm">
         Tip: all agent rows are clickable. If team/org are blank, it means seeding didn’t attach agents to teams - UI
         still shows agent names.
