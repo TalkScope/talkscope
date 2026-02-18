@@ -383,3 +383,37 @@ a {
 .ts-card .ts-list li {
   margin-bottom: 10px;
 }
+
+
+/* Force white surfaces for cards in light mode */
+@media (prefers-color-scheme: light) {
+  .ts-card {
+    background: #ffffff !important;
+  }
+}
+
+
+.ts-card-pad {
+  background: transparent;
+}
+
+
+/* Primary button text visibility (for <a> and <button>) */
+.ts-btn-primary,
+.ts-btn-primary:link,
+.ts-btn-primary:visited {
+  color: #fff !important;
+}
+
+
+/* Agent links (tables) */
+.ts-table a {
+  color: var(--ts-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.ts-table a:hover {
+  text-decoration-thickness: 2px;
+}
