@@ -323,7 +323,21 @@ export default function DashboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // reload teams when org changes
+    // header refresh action (from topbar)
+  useEffect(() => {
+    const handler = () => {
+      setErr(null);
+      setInfo(null);
+      loadAgentsAndScores();
+      loadScope();
+      if (jobId) refreshJobStatus(jobId);
+    };
+    window.addEventListener("ts:refresh", handler as any);
+    return () => window.removeEventListener("ts:refresh", handler as any);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobId]);
+
+// reload teams when org changes
   useEffect(() => {
     (async () => {
       if (!selectedOrgId) {
@@ -382,12 +396,12 @@ export default function DashboardPage() {
   const isComplete = jobStatus?.job?.status === "done" || progressPct === 100;
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-10">
+    <div className="ts-container">
       {/* Header */}
-      <div className="flex items-start justify-between gap-6">
+      <div className="ts-pagehead">
         <div>
-          <h1 className="text-4xl font-semibold ts-ink">Operations Dashboard</h1>
-          <div className="mt-2 ts-muted">Coaching queue, risk signals, and performance overview.</div>
+          <h1 className="ts-title">Operations Dashboard</h1>
+          <div className="ts-subtitle">Coaching queue, risk signals, and performance overview.</div>
         </div>
 
         <div className="flex gap-2">
@@ -432,7 +446,7 @@ export default function DashboardPage() {
 
       {/* Scope */}
       <div className="mt-8 rounded-3xl border p-6">
-        <div className="flex items-start justify-between gap-6">
+        <div className="ts-pagehead">
           <div>
             <div className="text-2xl font-semibold ts-ink">Scope</div>
             <div className="mt-1 ts-muted">Select organization and team. Used by Batch Scoring below.</div>
@@ -763,7 +777,7 @@ export default function DashboardPage() {
       {/* Help Accordion */}
       <div className="mt-10">
         <div className="text-2xl font-semibold ts-ink">How to use this dashboard</div>
-        <div className="mt-2 ts-muted">
+        <div className="ts-subtitle">
           Think of it as an air-traffic control room: you’re not “reading calls”, you’re spotting patterns and deciding where coaching pays back fastest.
         </div>
 

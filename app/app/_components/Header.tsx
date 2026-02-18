@@ -12,6 +12,7 @@ function isActive(pathname: string, href: string) {
 
 export default function Header() {
   const pathname = usePathname() || "/";
+  const onDashboard = pathname === "/app/dashboard" || pathname.startsWith("/app/dashboard/");
 
   return (
     <header className="ts-topbar">
@@ -31,13 +32,7 @@ export default function Header() {
             const active = isActive(pathname, item.href);
             const cls = active ? "ts-navlink ts-navlink-active" : "ts-navlink";
             return item.external ? (
-              <a
-                key={item.href}
-                href={item.href}
-                className={cls}
-                target="_blank"
-                rel="noreferrer"
-              >
+              <a key={item.href} href={item.href} className={cls} target="_blank" rel="noreferrer">
                 {item.label}
               </a>
             ) : (
@@ -48,7 +43,18 @@ export default function Header() {
           })}
         </nav>
 
-        <div className="ts-topbar-right">
+        <div className="ts-topbar-right" style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          {onDashboard && (
+            <button
+              type="button"
+              className="ts-btn"
+              onClick={() => window.dispatchEvent(new Event("ts:refresh"))}
+              aria-label="Refresh dashboard data"
+              title="Refresh dashboard data"
+            >
+              Refresh
+            </button>
+          )}
           <Link href="/" className="ts-btn ts-btn-primary">
             Home
           </Link>
