@@ -1,806 +1,444 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 
-type Org = { id: string; name: string; createdAt?: string };
-type Team = { id: string; name: string; organizationId: string; createdAt?: string };
-
-type AgentRow = {
-  id: string;
-  name: string;
-  email?: string | null;
-  createdAt?: string;
-  team?: { id: string; name: string; organization?: { id: string; name: string } } | null;
-  conversationsCount?: number;
-  scoresCount?: number;
-};
-
-type Score = {
-  createdAt: string;
-  windowSize: number;
-  overallScore: number;
-  communicationScore: number;
-  conversionScore: number;
-  riskScore: number;
-  coachingPriority: number;
-};
-
-type BatchCreateResponse = { ok: boolean; jobId: string; total?: number; status?: string };
-
-type BatchStatusResponse = {
+type AgentResponse = {
   ok: boolean;
-  job: {
+  agent?: {
     id: string;
-    scope: string;
-    refId: string;
-    windowSize: number;
-    status: string;
-    percent: number;
-    total: number;
-    progress: number;
-    error?: string | null;
-    createdAt: string;
-    updatedAt: string;
+    name: string;
+    email?: string | null;
+    createdAt?: string;
+    team?: {
+      id: string;
+      name: string;
+      organizationId: string;
+      organization?: { id: string; name: string };
+    } | null;
   };
-  counts: { queued: number; running: number; done: number; failed: number; total: number };
-  lastFailed: Array<{
-    agentId: string;
-    agentName?: string | null;
-    teamName?: string | null;
-    orgName?: string | null;
-    error?: string | null;
-    at: string;
-  }>;
+  lastScore?: any;
+  trend?: any[];
+  conversations?: {
+    id: string;
+    createdAt: string;
+    transcript: string;
+    excerpt?: string;
+    score?: number | null;
+  }[];
+  lastPattern?: { id: string; createdAt: string; windowSize: number } | null;
 };
 
-function cx(...a: Array<string | false | null | undefined>) {
-  return a.filter(Boolean).join(" ");
+function fmt(n: number | null | undefined) {
+  if (n === null || n === undefined || Number.isNaN(Number(n))) return "—";
+  return Number(n).toFixed(1);
 }
 
-function fmtNum(n: any) {
-  const x = Number(n);
-  return Number.isFinite(x) ? x.toFixed(1) : "—";
+
+
+function normalizeList(val: any, limit = 6): string[] {
+  if (!val) return [];
+  if (Array.isArray(val)) {
+    return val
+      .map((x) => (typeof x === "string" ? x : String(x)))
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .slice(0, limit);
+  }
+  if (typeof val === "string") {
+    return val
+      .split(/\r?\n|•|\u2022|\-\s+/g)
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .slice(0, limit);
+  }
+  return [String(val)].map((s) => s.trim()).filter(Boolean).slice(0, limit);
 }
 
-function clip(s: string, max = 120) {
-  const t = String(s ?? "").replace(/\s+/g, " ").trim();
-  return t.length > max ? t.slice(0, max) + "…" : t;
-}
-
-async function safeJson(res: Response) {
-  const text = await res.text();
+function safeJsonParse(txt: string) {
   try {
-    return { ok: true, json: JSON.parse(text), text };
-  } catch {
-    return { ok: false, json: null, text };
+    return { ok: true as const, json: JSON.parse(txt) };
+  } catch (e: any) {
+    return { ok: false as const, error: e?.message || "Invalid JSON", head: txt.slice(0, 220) };
   }
 }
 
-function sleep(ms: number) {
-  return new Promise((r) => setTimeout(r, ms));
+function clipTranscript(text: string, max = 520) {
+  const t = (text || "").trim();
+  if (t.length <= max) return t;
+  return t.slice(0, max).trimEnd() + "…";
 }
 
-function riskClass(v: number) {
-  if (!Number.isFinite(v)) return "";
-  if (v >= 70) return "risk-high";
-  if (v >= 50) return "risk-mid";
-  return "risk-low";
+function chipStyle(kind: "accent" | "success" | "warn" | "danger" | "muted") {
+  if (kind === "danger") return { color: "var(--ts-danger)", borderColor: "rgba(180,35,24,.35)", background: "transparent" } as const;
+  if (kind === "warn") return { color: "var(--ts-warn)", borderColor: "rgba(184,106,0,.35)", background: "transparent" } as const;
+  if (kind === "success") return { color: "var(--ts-success)", borderColor: "rgba(31,122,58,.35)", background: "transparent" } as const;
+  if (kind === "accent") return { color: "var(--ts-accent)", borderColor: "rgba(64,97,132,.35)", background: "transparent" } as const;
+  return { color: "var(--ts-muted)", borderColor: "var(--ts-border)", background: "transparent" } as const;
 }
 
-export default function DashboardPage() {
-  // scope selectors
-  const [orgs, setOrgs] = useState<Org[]>([]);
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [selectedOrgId, setSelectedOrgId] = useState<string>("");
-  const [selectedTeamId, setSelectedTeamId] = useState<string>("");
+function scoreChipClass(kind: "accent" | "success" | "warn" | "danger" | "muted") {
+  // keep class simple, style carries the semantic color without loud fills
+  return "ts-chip";
+}
 
-  // data
-  const [agents, setAgents] = useState<AgentRow[]>([]);
-  const [agentScores, setAgentScores] = useState<Record<string, Score | null>>({});
+function classifyRisk(risk: number | null | undefined) {
+  if (risk === null || risk === undefined || Number.isNaN(Number(risk))) return "muted" as const;
+  if (risk >= 70) return "danger" as const;
+  if (risk >= 45) return "warn" as const;
+  return "success" as const;
+}
 
-  // batch controls
-  const [scopeType, setScopeType] = useState<"team" | "org">("team");
+function classifyOverall(overall: number | null | undefined) {
+  if (overall === null || overall === undefined || Number.isNaN(Number(overall))) return "muted" as const;
+  if (overall >= 80) return "success" as const;
+  if (overall >= 60) return "accent" as const;
+  if (overall >= 40) return "warn" as const;
+  return "danger" as const;
+}
+
+export default function AgentPage() {
+  const params = useParams<{ id: string }>();
+
+  const agentId = useMemo(() => {
+    const raw = params?.id ? String(params.id) : "";
+    return decodeURIComponent(raw);
+  }, [params]);
+
   const [windowSize, setWindowSize] = useState<number>(30);
+  const [data, setData] = useState<AgentResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [msgErr, setMsgErr] = useState<string | null>(null);
 
-  const [jobId, setJobId] = useState<string>("");
-  const [jobStatus, setJobStatus] = useState<BatchStatusResponse | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionErr, setActionErr] = useState<string | null>(null);
+  const [actionOk, setActionOk] = useState<string | null>(null);
 
-  // UI state
-  const [loadingScope, setLoadingScope] = useState(false);
-  const [loadingMeta, setLoadingMeta] = useState(false);
-  const [creatingJob, setCreatingJob] = useState(false);
-  const [runningJob, setRunningJob] = useState(false);
+  const agentName = data?.agent?.name || "Agent";
+  const teamName = data?.agent?.team?.name || "";
+  const orgName = data?.agent?.team?.organization?.name || "";
+  const last = data?.lastScore || null;
 
-  const [err, setErr] = useState<string | null>(null);
-  const [info, setInfo] = useState<string | null>(null);
-
-  // guard to stop old loops
-  const runTokenRef = useRef(0);
-
-  const activeRefId = useMemo(() => {
-    if (scopeType === "org") return selectedOrgId || "";
-    return selectedTeamId || "";
-  }, [scopeType, selectedOrgId, selectedTeamId]);
-
-  const totals = useMemo(() => {
-    const conversations = agents.reduce((acc, a) => acc + (a.conversationsCount ?? 0), 0);
-    const scoreSnapshots = agents.reduce((acc, a) => acc + (a.scoresCount ?? 0), 0);
-    return { agents: agents.length, conversations, scoreSnapshots };
-  }, [agents]);
-
-  const agentById = useMemo(() => {
-    const m = new Map<string, AgentRow>();
-    for (const a of agents) m.set(a.id, a);
-    return m;
-  }, [agents]);
-
-  async function loadScope() {
-    setLoadingScope(true);
-    setErr(null);
-    setInfo(null);
-
+  async function load() {
+    setLoading(true);
+    setMsgErr(null);
     try {
-      const orgRes = await fetch("/api/meta/orgs", { cache: "no-store" });
-      const orgParsed = await safeJson(orgRes);
-      if (!orgRes.ok || !orgParsed.ok || !orgParsed.json?.ok) throw new Error(orgParsed.text || "Failed to load orgs");
+      if (!agentId) throw new Error("Missing route param: agent id");
 
-      const orgsList: Org[] = orgParsed.json.orgs ?? [];
-      setOrgs(orgsList);
+      const r = await fetch(`/api/meta/agent?id=${encodeURIComponent(agentId)}`, { cache: "no-store" });
+      const txt = await r.text();
+      if (!r.ok) throw new Error(`HTTP ${r.status}: ${txt.slice(0, 220)}`);
 
-      let orgId = selectedOrgId;
-      if (!orgId || !orgsList.some((o) => o.id === orgId)) orgId = orgsList[0]?.id ?? "";
-      setSelectedOrgId(orgId);
+      const parsed = safeJsonParse(txt);
+      if (!parsed.ok) throw new Error(`JSON error: ${parsed.error}. Head: ${parsed.head}`);
 
-      if (orgId) {
-        const teamRes = await fetch(`/api/meta/teams?orgId=${encodeURIComponent(orgId)}`, { cache: "no-store" });
-        const teamParsed = await safeJson(teamRes);
-        if (!teamRes.ok || !teamParsed.ok || !teamParsed.json?.ok) throw new Error(teamParsed.text || "Failed to load teams");
+      const j = parsed.json as AgentResponse;
+      if (!j.ok) throw new Error((j as any)?.error || "Agent API returned ok:false");
 
-        const teamsList: Team[] = teamParsed.json.teams ?? [];
-        setTeams(teamsList);
-
-        let teamId = selectedTeamId;
-        if (!teamId || !teamsList.some((t) => t.id === teamId)) teamId = teamsList[0]?.id ?? "";
-        setSelectedTeamId(teamId);
-      } else {
-        setTeams([]);
-        setSelectedTeamId("");
-      }
-
-      setInfo("Scope loaded.");
+      setData(j);
     } catch (e: any) {
-      setErr(e?.message || "Failed to load scope");
+      setMsgErr(e?.message || "Failed to load agent");
+      setData(null);
     } finally {
-      setLoadingScope(false);
+      setLoading(false);
     }
   }
 
-  async function loadAgentsAndScores() {
-    setLoadingMeta(true);
-    setErr(null);
-    setInfo(null);
-
+  async function fetchLatestPatternReport() {
     try {
-      const res = await fetch("/api/meta/agents", { cache: "no-store" });
-      const parsed = await safeJson(res);
-      if (!res.ok || !parsed.ok || !parsed.json?.ok) throw new Error(parsed.text || "Failed to load agents");
+      if (!agentId) return;
+      setPatternLoading(true);
+      setPatternErr(null);
 
-      const list: AgentRow[] = parsed.json.agents ?? [];
-      setAgents(list);
+      // Try a few likely endpoints (project variants). We gracefully fallback if not present.
+      const candidates = [
+        `/api/patterns/report?level=agent&refId=${encodeURIComponent(agentId)}`,
+        `/api/patterns/latest?level=agent&refId=${encodeURIComponent(agentId)}`,
+        `/api/patterns/agent?refId=${encodeURIComponent(agentId)}`,
+        `/api/patterns?level=agent&refId=${encodeURIComponent(agentId)}`,
+      ];
 
-      // fetch lastScore per agent (small pool)
-      const pool = 6;
-      const queue = [...list];
-      const scores: Record<string, Score | null> = {};
-
-      async function worker() {
-        while (queue.length) {
-          const a = queue.shift();
-          if (!a) break;
-          try {
-            const r = await fetch(`/api/meta/agent?id=${encodeURIComponent(a.id)}`, { cache: "no-store" });
-            const p = await safeJson(r);
-            if (r.ok && p.ok && p.json?.ok) scores[a.id] = (p.json.lastScore ?? null) as Score | null;
-            else scores[a.id] = null;
-          } catch {
-            scores[a.id] = null;
-          }
+      let lastErr = "";
+      for (const url of candidates) {
+        const r = await fetch(url);
+        const txt = await r.text();
+        if (!r.ok) {
+          lastErr = `${r.status}: ${txt.slice(0, 160)}`;
+          continue;
         }
+
+        const parsed = safeJsonParse(txt);
+        if (!parsed.ok) {
+          lastErr = parsed.error || "JSON parse error";
+          continue;
+        }
+
+        const j: any = parsed.json;
+
+        // Accept either {ok:true, report:{...}} or {ok:true, patterns:[...]} or direct report object
+        if (j?.ok === true) {
+          const report = j.report ?? j.patternReport ?? j.data ?? j;
+          setPatternReport(report);
+          setPatternLoading(false);
+          return;
+        }
+
+        // Some endpoints may return the report directly (no ok flag)
+        if (j && (j.patterns || j.coachingFocus || j.riskTriggers || j.summary)) {
+          setPatternReport(j);
+          setPatternLoading(false);
+          return;
+        }
+
+        lastErr = j?.error || "No report in response";
       }
 
-      await Promise.all(Array.from({ length: Math.min(pool, list.length) }, () => worker()));
-      setAgentScores(scores);
-
-      setInfo("Dashboard data loaded.");
+      setPatternErr(lastErr || "Pattern report not available on this endpoint.");
     } catch (e: any) {
-      setErr(e?.message || "Failed to load dashboard data");
+      setPatternErr(e?.message || "Failed to load pattern report");
     } finally {
-      setLoadingMeta(false);
+      setPatternLoading(false);
     }
   }
 
-  async function refreshJobStatus(currentJobId: string) : Promise<BatchStatusResponse | null> {
-    if (!currentJobId) return null;
+
+  async function generateScore() {
+    setActionLoading(true);
+    setActionErr(null);
+    setActionOk(null);
     try {
-      const res = await fetch(`/api/batch/score/status?jobId=${encodeURIComponent(currentJobId)}`, { cache: "no-store" });
-      const parsed = await safeJson(res);
-      if (!res.ok || !parsed.ok || !parsed.json?.ok) throw new Error(parsed.text || "Failed to load job status");
+      if (!agentId) throw new Error("Missing agentId");
 
-      const st = parsed.json as BatchStatusResponse;
-      setJobStatus(st);
-      return st;
-    } catch (e: any) {
-      setErr(e?.message || "Failed to load job status");
-      return null;
-    }
-  }
-
-  async function createJob() {
-    setCreatingJob(true);
-    setErr(null);
-    setInfo(null);
-
-    try {
-      const body = JSON.stringify({ scope: scopeType, refId: activeRefId, windowSize });
-
-      const res = await fetch("/api/batch/score/create", {
+      const r = await fetch(`/api/agents/score/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body,
+        body: JSON.stringify({ agentId, windowSize }),
       });
 
-      const parsed = await safeJson(res);
-      if (!res.ok || !parsed.ok || !parsed.json?.ok) throw new Error(parsed.text || "Create job failed");
+      const txt = await r.text();
+      if (!r.ok) throw new Error(`Score failed ${r.status}: ${txt.slice(0, 220)}`);
 
-      const j = parsed.json as BatchCreateResponse;
-      setJobId(j.jobId);
-      setInfo(`Job created: ${j.jobId}`);
-      await refreshJobStatus(j.jobId);
+      const parsed = safeJsonParse(txt);
+      if (!parsed.ok) throw new Error(`Score JSON error: ${parsed.error}. Head: ${parsed.head}`);
+
+      const j = parsed.json;
+      if (!j.ok) throw new Error(j.error || "Score returned ok:false");
+
+      setActionOk("Score generated.");
+      await load();
     } catch (e: any) {
-      setErr(e?.message || "Create job failed");
+      setActionErr(e?.message || "Failed to generate score");
     } finally {
-      setCreatingJob(false);
+      setActionLoading(false);
     }
   }
 
-  async function runToCompletion() {
-    if (!jobId) return;
-
-    // invalidate previous runs
-    runTokenRef.current += 1;
-    const token = runTokenRef.current;
-
-    setRunningJob(true);
-    setErr(null);
-    setInfo(null);
-
+  async function generatePatternsAgent() {
+    setActionLoading(true);
+    setActionErr(null);
+    setActionOk(null);
     try {
-      // Hard cap to avoid endless loop
-      for (let i = 0; i < 80; i++) {
-        if (runTokenRef.current !== token) break; // cancelled by new run
+      if (!agentId) throw new Error("Missing refId (agentId)");
 
-        // 1) run worker chunk
-        const runRes = await fetch("/api/batch/score/run", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ jobId, take: 3 }),
-        });
+      const r = await fetch(`/api/patterns/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ level: "agent", refId: agentId, windowSize }),
+      });
 
-        // 2) always refresh status to drive UI + exit condition
-        const st = await refreshJobStatus(jobId);
+      const txt = await r.text();
+      if (!r.ok) throw new Error(`Patterns failed ${r.status}: ${txt.slice(0, 220)}`);
 
-        // 3) done condition
-        if (st?.job?.status === "done" || st?.job?.percent === 100) break;
+      const parsed = safeJsonParse(txt);
+      if (!parsed.ok) throw new Error(`Patterns JSON error: ${parsed.error}. Head: ${parsed.head}`);
 
-        // If API returned error page/html, show it early
-        if (!runRes.ok) {
-          const txt = await runRes.text().catch(() => "");
-          throw new Error(`Worker failed ${runRes.status}: ${txt.slice(0, 160)}`);
-        }
+      const j = parsed.json;
+      if (!j.ok) throw new Error(j.error || "Patterns returned ok:false");
 
-        await sleep(650);
-      }
-
-      const stFinal = await refreshJobStatus(jobId);
-      if (stFinal?.job?.status === "done" || stFinal?.job?.percent === 100) {
-        setInfo("Completed: 100%.");
-      } else {
-        setInfo("Stopped (max steps reached). You can press Run to 100% again.");
-      }
-
-      await loadAgentsAndScores();
+      setActionOk("Patterns generated.");
+      await load();
     } catch (e: any) {
-      setErr(e?.message || "Run worker failed");
+      setActionErr(e?.message || "Failed to generate patterns");
     } finally {
-      setRunningJob(false);
+      setActionLoading(false);
     }
   }
 
-  // initial load
-  useEffect(() => {
-    loadScope();
-    loadAgentsAndScores();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Auto-load once we have an id (kept explicit to avoid useEffect loops in turbopack)
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  if (!data && !loading && !msgErr && agentId) load();
 
-  
-  // header refresh action (triggered from topbar)
-  useEffect(() => {
-    const handler = () => {
-      setErr(null);
-      setInfo(null);
-      loadAgentsAndScores();
-      loadScope();
-      if (jobId) refreshJobStatus(jobId);
-    };
-    window.addEventListener("ts:refresh", handler as any);
-    return () => window.removeEventListener("ts:refresh", handler as any);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [jobId]);
-
-// reload teams when org changes
-  useEffect(() => {
-    (async () => {
-      if (!selectedOrgId) {
-        setTeams([]);
-        setSelectedTeamId("");
-        return;
-      }
-      try {
-        const res = await fetch(`/api/meta/teams?orgId=${encodeURIComponent(selectedOrgId)}`, { cache: "no-store" });
-        const parsed = await safeJson(res);
-        if (!res.ok || !parsed.ok || !parsed.json?.ok) return;
-        const list: Team[] = parsed.json.teams ?? [];
-        setTeams(list);
-        if (!list.some((t) => t.id === selectedTeamId)) setSelectedTeamId(list[0]?.id ?? "");
-      } catch {}
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedOrgId]);
-
-  const rowsWithScore = useMemo(() => {
-    return agents
-      .map((a) => ({ agent: a, score: agentScores[a.id] ?? null }))
-      .filter((x) => x.score);
-  }, [agents, agentScores]);
-
-  const coachingQueue = useMemo(() => {
-    return [...rowsWithScore].sort((a, b) => Number(b.score!.coachingPriority) - Number(a.score!.coachingPriority)).slice(0, 12);
-  }, [rowsWithScore]);
-
-  const highRisk = useMemo(() => {
-    return [...rowsWithScore].filter((x) => Number(x.score!.riskScore) >= 70).sort((a, b) => Number(b.score!.riskScore) - Number(a.score!.riskScore)).slice(0, 8);
-  }, [rowsWithScore]);
-
-  const topPerformers = useMemo(() => {
-    return [...rowsWithScore].sort((a, b) => Number(b.score!.overallScore) - Number(a.score!.overallScore)).slice(0, 8);
-  }, [rowsWithScore]);
-
-  const lowPerformers = useMemo(() => {
-    return [...rowsWithScore].sort((a, b) => Number(a.score!.overallScore) - Number(b.score!.overallScore)).slice(0, 8);
-  }, [rowsWithScore]);
-
-  function AgentCell({ id }: { id: string }) {
-    const a = agentById.get(id);
-    const name = a?.name || id;
-    return (
-      <a href={`/app/agents/${encodeURIComponent(id)}`} className="ts-link">
-        <div className="agent-name">{name}</div>
-      </a>
-    );
-  }
-
-  const progressPct = jobStatus?.job?.percent ?? 0;
-  const progressDone = jobStatus?.counts?.done ?? 0;
-  const progressQueued = jobStatus?.counts?.queued ?? 0;
-  const progressFailed = jobStatus?.counts?.failed ?? 0;
-  const isComplete = jobStatus?.job?.status === "done" || progressPct === 100;
+  const overallKind = classifyOverall(last?.overallScore);
+  const riskKind = classifyRisk(last?.riskScore);
+  const priorityKind =
+    last?.coachingPriority === null || last?.coachingPriority === undefined
+      ? ("muted" as const)
+      : last.coachingPriority >= 70
+      ? ("danger" as const)
+      : last.coachingPriority >= 45
+      ? ("warn" as const)
+      : ("success" as const);
 
   return (
     <div className="ts-container">
-      {/* Header */}
       <div className="ts-pagehead">
         <div>
-          <h1 className="ts-title">Operations Dashboard</h1>
-          <div className="ts-subtitle">Coaching queue, risk signals, and performance overview.</div>
-        </div>
-
-      </div>
-
-      {/* KPI cards */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="ts-card ts-card-pad">
-          <div className="ts-card-title">Agents</div>
-          <div className="ts-metric-sm">{totals.agents || "—"}</div>
-        </div>
-        <div className="ts-card ts-card-pad">
-          <div className="ts-card-title">Conversations</div>
-          <div className="ts-metric-sm">{totals.conversations || "—"}</div>
-        </div>
-        <div className="ts-card ts-card-pad">
-          <div className="ts-card-title">Score snapshots</div>
-          <div className="ts-metric-sm">{totals.scoreSnapshots || "—"}</div>
-        </div>
-</div>
-
-{/* Scope */}
-      <div className="mt-8 rounded-3xl border p-6">
-        <div className="ts-pagehead">
-          <div>
-            <div className="text-2xl font-semibold ts-ink">Scope</div>
-            <div className="mt-1 ts-muted">Select organization and team. Used by Batch Scoring below.</div>
+          <div className="ts-chip ts-chip-muted" style={{ marginBottom: 10 }}>
+            <span>Agent</span>
+            <span className="ts-muted">/</span>
+            <span>{agentName}</span>
           </div>
 
-          <button onClick={loadScope} className="ts-btn" disabled={loadingScope}>
-            {loadingScope ? "Loading…" : "Reload orgs/teams"}
-          </button>
-        </div>
-
-        <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border p-4">
-            <div className="mb-2 text-sm ts-muted">Organization</div>
-            <select className="w-full ts-select" value={selectedOrgId} onChange={(e) => setSelectedOrgId(e.target.value)}>
-              <option value="">Select org</option>
-              {orgs.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.name}
-                </option>
-              ))}
-            </select>
+          <div className="ts-title">Agent Intelligence</div>
+          <div className="ts-subtitle">
+            {teamName && orgName ? `${teamName} - ${orgName}` : teamName || orgName || "-"}
           </div>
-
-          <div className="rounded-2xl border p-4">
-            <div className="mb-2 text-sm ts-muted">Team</div>
-            <select
-              className="w-full ts-select"
-              value={selectedTeamId}
-              onChange={(e) => setSelectedTeamId(e.target.value)}
-              disabled={!selectedOrgId}
-            >
-              <option value="">Select team</option>
-              {teams.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="mt-3 text-sm ts-muted">
-          Active refId for batch: <span className="font-mono ts-ink">{activeRefId ? activeRefId : "—"}</span>
         </div>
       </div>
 
-      {/* Batch Scoring */}
-      <div className="mt-8 rounded-3xl border p-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div>
-            <div className="text-2xl font-semibold ts-ink">Batch Scoring</div>
-            <div className="mt-1 ts-muted">Create a job for selected scope — then run worker to 100%.</div>
-          </div>
+      {(msgErr || actionErr) && <div className="ts-alert ts-alert-error">{msgErr || actionErr}</div>}
+      {actionOk && <div className="ts-alert ts-alert-ok">{actionOk}</div>}
 
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <select className="ts-select" value={scopeType} onChange={(e) => setScopeType(e.target.value as any)}>
-              <option value="team">team</option>
-              <option value="org">org</option>
-            </select>
-
-            <select className="ts-select" value={windowSize} onChange={(e) => setWindowSize(Number(e.target.value))}>
-              {[20, 30, 50].map((w) => (
-                <option key={w} value={w}>
-                  window {w}
-                </option>
-              ))}
-            </select>
-
-            <button
-              onClick={createJob}
-              disabled={creatingJob || !activeRefId}
-              className={cx("ts-btn", !activeRefId ? "" : "ts-btn-primary")}
-              title={!activeRefId ? "Select org/team first" : "Create job"}
-            >
-              {creatingJob ? "Creating…" : "Create Job"}
-            </button>
-
-            {/* One main action */}
-            <button
-              onClick={runToCompletion}
-              disabled={!jobId || runningJob}
-              className={cx("ts-btn", !jobId ? "" : "ts-btn-primary")}
-              title={!jobId ? "Create job first" : "Run worker until done"}
-            >
-              {runningJob ? "Running…" : isComplete ? "Done ✓" : "Run to 100%"}
-            </button>
+      <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(12, minmax(0, 1fr))", marginTop: 14 }}>
+        <div className="ts-card" style={{ gridColumn: "span 4" }}>
+          <div className="ts-card-pad">
+            <div className="ts-card-title">Overall</div>
+            <div className="ts-metric">{fmt(last?.overallScore)}</div>
+            <div style={{ marginTop: 10 }}>
+              <span className={scoreChipClass(overallKind)}>{overallKind === "muted" ? "No data" : "Status"}</span>
+            </div>
           </div>
         </div>
 
-        <div className="ts-divider mt-6" />
-
-        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border p-4">
-            <div className="text-sm ts-muted">Job</div>
-            <div className="mt-2 font-mono text-sm ts-ink">{jobId || "—"}</div>
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button onClick={() => jobId && refreshJobStatus(jobId)} className="rounded-xl border px-4 py-2" disabled={!jobId}>
-                Refresh status
-              </button>
-              <button
-                onClick={() => {
-                  setJobId("");
-                  setJobStatus(null);
-                  setInfo("Job cleared (UI only).");
-                }}
-                className="rounded-xl border px-4 py-2"
-              >
-                Clear
-              </button>
+        <div className="ts-card" style={{ gridColumn: "span 4" }}>
+          <div className="ts-card-pad">
+            <div className="ts-card-title">Risk</div>
+            <div className="ts-metric">{fmt(last?.riskScore)}</div>
+            <div style={{ marginTop: 10 }}>
+              <span className={scoreChipClass(riskKind)}>
+                {riskKind === "danger" ? "High" : riskKind === "warn" ? "Medium" : riskKind === "success" ? "Low" : "No data"}
+              </span>
             </div>
           </div>
+        </div>
 
-          <div className="rounded-2xl border p-4">
-            <div className="text-sm ts-muted">Progress</div>
-            <div className="mt-2 text-4xl font-semibold ts-ink">
-              <span className="metric-number">{jobStatus?.job ? `${progressPct}%` : "—"}</span>
+        <div className="ts-card" style={{ gridColumn: "span 4" }}>
+          <div className="ts-card-pad">
+            <div className="ts-card-title">Coaching priority</div>
+            <div className="ts-metric">{fmt(last?.coachingPriority)}</div>
+            <div style={{ marginTop: 10 }}>
+              <span className={scoreChipClass(priorityKind)}>
+                {priorityKind === "danger" ? "Urgent" : priorityKind === "warn" ? "Focus" : priorityKind === "success" ? "Monitor" : "No data"}
+              </span>
             </div>
+          </div>
+        </div>
+      </div>
 
-            <div className="mt-3 ts-progress">
-              <div style={{ width: `${Math.max(0, Math.min(100, progressPct))}%` }} />
-            </div>
-
-            <div className="mt-3 text-sm ts-muted">
-              <span className="metric-number ts-ink">{progressDone}</span> done •{" "}
-              <span className="metric-number ts-ink">{progressQueued}</span> queued •{" "}
-              <span className={cx("metric-number", progressFailed > 0 ? "risk-high" : "ts-ink")}>{progressFailed}</span> failed
-            </div>
-
-            <div className="mt-1 text-sm ts-muted">
-              Status: <span className="font-semibold ts-ink">{jobStatus?.job?.status ?? "—"}</span>
-            </div>
-
-            {jobStatus?.job?.error ? (
-              <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-                {jobStatus.job.error}
+      <div className="ts-card" style={{ marginTop: 14 }}>
+        <div className="ts-card-pad">
+          <div style={{ display: "flex", gap: 10, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
+            <div>
+              <div className="ts-card-title">Actions</div>
+              <div className="ts-subtitle" style={{ marginTop: 6 }}>
+                Generate a new score snapshot or pattern report for this agent.
               </div>
-            ) : null}
+            </div>
+
+            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+              <select className="ts-select" value={windowSize} onChange={(e) => setWindowSize(Number(e.target.value))}>
+                {[20, 30, 50].map((n) => (
+                  <option key={n} value={n}>
+                    last {n}
+                  </option>
+                ))}
+              </select>
+
+              <button className="ts-btn" onClick={generateScore} disabled={actionLoading || !agentId}>
+                {actionLoading ? "Working..." : "Generate Score"}
+              </button>
+
+              <button className="ts-btn ts-btn-primary" onClick={generatePatternsAgent} disabled={actionLoading || !agentId}>
+                {actionLoading ? "Working..." : "Generate Patterns"}
+              </button>
+
+              <button
+                className="ts-btn"
+                onClick={() => navigator.clipboard.writeText(agentId)}
+                title="Copy agent id"
+                disabled={!agentId}
+              >
+                Copy ID
+              </button>
+            </div>
           </div>
 
-          <div className="rounded-2xl border p-4">
-            <div className="text-sm ts-muted">Last failures</div>
-            <div className="mt-3 space-y-2">
-              {(jobStatus?.lastFailed ?? []).length === 0 ? (
-                <div className="ts-muted text-sm">No failures.</div>
-              ) : (
-                (jobStatus?.lastFailed ?? []).slice(0, 5).map((f, idx) => (
-                  <div key={idx} className="ts-select">
-                    <div className="font-semibold ts-ink">{f.agentName || f.agentId}</div>
-                    <div className="mt-1 text-sm ts-muted">{f.error ? clip(f.error, 150) : "Failed"}</div>
-                  </div>
-                ))
-              )}
-            </div>
+          <div className="ts-divider" />
+
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <span className="ts-chip ts-chip-muted">Window: {windowSize}</span>
+            <span className="ts-chip ts-chip-muted">Patterns: {data?.lastPattern ? "yes" : "no"}</span>
+            <span className={scoreChipClass(overallKind)} style={chipStyle(overallKind)}>Last overall: {fmt(last?.overallScore)}</span>
+            <span className={scoreChipClass(riskKind)} style={chipStyle(riskKind)}>Risk: {fmt(last?.riskScore)}</span>
+            <span className={scoreChipClass(priorityKind)} style={chipStyle(priorityKind)}>Priority: {fmt(last?.coachingPriority)}</span>
           </div>
         </div>
       </div>
 
-      {/* Tables */}
-      <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-        {/* Coaching Queue */}
-        <div className="ts-card ts-card-pad">
-          <div className="flex items-baseline justify-between">
-            <div className="text-2xl font-semibold ts-ink">Coaching Queue</div>
-            <div className="text-sm ts-muted">Highest priority first</div>
-          </div>
+      <div style={{ display: "grid", gap: 14, gridTemplateColumns: "repeat(12, minmax(0, 1fr))", marginTop: 14 }}>
+        <section className="ts-card" style={{ gridColumn: "span 6" }}>
+          <div className="ts-card-pad">
+            <div className="ts-sectionhead">
+              <div>
+                <div className="ts-h2">Pattern Intelligence</div>
+                <div className="ts-hint">Repeating signals and coaching focus for this agent.</div>
+              </div>
+              <a
+                className="ts-btn"
+                href={`/app/patterns?level=agent&refId=${encodeURIComponent(agentId)}&windowSize=${encodeURIComponent(String(windowSize))}`}
+              >
+                Open Patterns
+              </a>
+            </div>
 
-          <div className="mt-4 overflow-hidden rounded-2xl border">
-            <table className="ts-table">
-              <thead className="border-b">
-                <tr className="ts-muted">
-                  <th className="px-4 py-3">Agent</th>
-                  <th className="px-4 py-3">Priority</th>
-                  <th className="px-4 py-3">Overall</th>
-                  <th className="px-4 py-3">Risk</th>
-                </tr>
-              </thead>
-              <tbody>
-                {coachingQueue.length === 0 ? (
-                  <tr>
-                    <td className="px-4 py-4 ts-muted" colSpan={4}>
-                      No scores yet. Run scoring first.
-                    </td>
-                  </tr>
-                ) : (
-                  coachingQueue.map((x) => (
-                    <tr key={x.agent.id} className="ts-row-hover">
-                      <td className="px-4 py-3">
-                        <AgentCell id={x.agent.id} />
-                      </td>
-                      <td className="px-4 py-3 metric-number ts-ink">{fmtNum(x.score!.coachingPriority)}</td>
-                      <td className="px-4 py-3 metric-number ts-ink">{fmtNum(x.score!.overallScore)}</td>
-                      <td className={cx("px-4 py-3 metric-number", riskClass(Number(x.score!.riskScore)))}>{fmtNum(x.score!.riskScore)}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+            <div className="ts-divider" />
 
-        {/* High Risk */}
-        <div className="ts-card ts-card-pad">
-          <div className="flex items-baseline justify-between">
-            <div className="text-2xl font-semibold ts-ink">High Risk</div>
-            <div className="text-sm ts-muted">Risk ≥ 70</div>
-          </div>
+            {!data?.lastPattern ? (
+              <div className="ts-panel" style={{ padding: 16 }}>
+                <div style={{ fontWeight: 750 }}>No pattern report yet.</div>
+                <div className="ts-muted" style={{ marginTop: 6 }}>
+                  Click <b>Generate Patterns</b> above to create the first report.
+                </div>
+              </div>
+            ) : (
+              <div className="ts-panel" style={{ padding: 16 }}>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                  <span className="ts-chip ts-chip-muted">Last generated</span>
+                  <span className="ts-chip" style={chipStyle("accent")}>
+                    window {data.lastPattern.windowSize}
+                  </span>
+                  <span className="ts-muted">
+                    {new Date(data.lastPattern.createdAt).toLocaleString()}
+                  </span>
+                </div>
 
-          <div className="mt-4 overflow-hidden rounded-2xl border">
-            <table className="ts-table">
-              <thead className="border-b">
-                <tr className="ts-muted">
-                  <th className="px-4 py-3">Agent</th>
-                  <th className="px-4 py-3">Risk</th>
-                  <th className="px-4 py-3">Overall</th>
-                  <th className="px-4 py-3">Priority</th>
-                </tr>
-              </thead>
-              <tbody>
-                {highRisk.length === 0 ? (
-                  <tr>
-                    <td className="px-4 py-4 ts-muted" colSpan={4}>
-                      No high-risk agents detected (yet).
-                    </td>
-                  </tr>
-                ) : (
-                  highRisk.map((x) => (
-                    <tr key={x.agent.id} className="ts-row-hover">
-                      <td className="px-4 py-3">
-                        <AgentCell id={x.agent.id} />
-                      </td>
-                      <td className={cx("px-4 py-3 metric-number", riskClass(Number(x.score!.riskScore)))}>{fmtNum(x.score!.riskScore)}</td>
-                      <td className="px-4 py-3 metric-number ts-ink">{fmtNum(x.score!.overallScore)}</td>
-                      <td className="px-4 py-3 metric-number ts-ink">{fmtNum(x.score!.coachingPriority)}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                <div className="ts-muted" style={{ marginTop: 10 }}>
+                  Open Pattern Intelligence to review clusters, risk triggers, and coaching recommendations.
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-
-        {/* Top Performers */}
-        <div className="ts-card ts-card-pad">
-          <div className="flex items-baseline justify-between">
-            <div className="text-2xl font-semibold ts-ink">Top Performers</div>
-            <div className="text-sm ts-muted">Highest overall first</div>
-          </div>
-
-          <div className="mt-4 overflow-hidden rounded-2xl border">
-            <table className="ts-table">
-              <thead className="border-b">
-                <tr className="ts-muted">
-                  <th className="px-4 py-3">Agent</th>
-                  <th className="px-4 py-3">Overall</th>
-                  <th className="px-4 py-3">Comm</th>
-                  <th className="px-4 py-3">Conv</th>
-                  <th className="px-4 py-3">Risk</th>
-                </tr>
-              </thead>
-              <tbody>
-                {topPerformers.length === 0 ? (
-                  <tr>
-                    <td className="px-4 py-4 ts-muted" colSpan={5}>
-                      No scores yet.
-                    </td>
-                  </tr>
-                ) : (
-                  topPerformers.map((x) => (
-                    <tr key={x.agent.id} className="ts-row-hover">
-                      <td className="px-4 py-3">
-                        <AgentCell id={x.agent.id} />
-                      </td>
-                      <td className="px-4 py-3 metric-number ts-ink">{fmtNum(x.score!.overallScore)}</td>
-                      <td className="px-4 py-3 metric-number ts-ink">{fmtNum(x.score!.communicationScore)}</td>
-                      <td className="px-4 py-3 metric-number ts-ink">{fmtNum(x.score!.conversionScore)}</td>
-                      <td className={cx("px-4 py-3 metric-number", riskClass(Number(x.score!.riskScore)))}>{fmtNum(x.score!.riskScore)}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Low Performers */}
-        <div className="ts-card ts-card-pad">
-          <div className="flex items-baseline justify-between">
-            <div className="text-2xl font-semibold ts-ink">Low Performers</div>
-            <div className="text-sm ts-muted">Lowest overall first</div>
-          </div>
-
-          <div className="mt-4 overflow-hidden rounded-2xl border">
-            <table className="ts-table">
-              <thead className="border-b">
-                <tr className="ts-muted">
-                  <th className="px-4 py-3">Agent</th>
-                  <th className="px-4 py-3">Overall</th>
-                  <th className="px-4 py-3">Risk</th>
-                  <th className="px-4 py-3">Priority</th>
-                </tr>
-              </thead>
-              <tbody>
-                {lowPerformers.length === 0 ? (
-                  <tr>
-                    <td className="px-4 py-4 ts-muted" colSpan={4}>
-                      No scores yet.
-                    </td>
-                  </tr>
-                ) : (
-                  lowPerformers.map((x) => (
-                    <tr key={x.agent.id} className="ts-row-hover">
-                      <td className="px-4 py-3">
-                        <AgentCell id={x.agent.id} />
-                      </td>
-                      <td className="px-4 py-3 metric-number ts-ink">{fmtNum(x.score!.overallScore)}</td>
-                      <td className={cx("px-4 py-3 metric-number", riskClass(Number(x.score!.riskScore)))}>{fmtNum(x.score!.riskScore)}</td>
-                      <td className="px-4 py-3 metric-number ts-ink">{fmtNum(x.score!.coachingPriority)}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        </section>
       </div>
 
-      {/* Help Accordion */}
-      <div className="mt-10">
-        <div className="text-2xl font-semibold ts-ink">How to use this dashboard</div>
-        <div className="ts-subtitle">
-          Think of it as an air-traffic control room: you’re not “reading calls”, you’re spotting patterns and deciding where coaching pays back fastest.
+      <div className="ts-card" style={{ marginTop: 14 }}>
+        <div className="ts-card-pad">
+          <div className="ts-card-title">Agent id</div>
+          <div style={{ marginTop: 8, fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace", fontSize: 12 }}>
+            {agentId || "-"}
+          </div>
         </div>
-
-        <div className="mt-5 ts-accordion">
-          <details open>
-            <summary>1) What should I do first?</summary>
-            <div className="ts-acc-body">
-              Choose the <b>Scope</b> (org or team), then click <b>Create Job</b>, then <b>Run to 100%</b>.
-              When it reaches 100%, refresh tables automatically updates and agents get score snapshots.
-            </div>
-          </details>
-
-          <details>
-            <summary>2) What do the numbers mean?</summary>
-            <div className="ts-acc-body">
-              <b>Overall</b> - general performance score (0..100).<br/>
-              <b>Comm</b> - clarity, empathy timing, structure of communication.<br/>
-              <b>Conv</b> - conversion mechanics: discovery, objections, closing, next steps.<br/>
-              <b>Risk</b> - churn / escalation / trust loss probability signals.<br/>
-              <b>Priority</b> - coaching ROI indicator: who to coach first.
-            </div>
-          </details>
-
-          <details>
-            <summary>3) How to read Coaching Queue vs High Risk?</summary>
-            <div className="ts-acc-body">
-              <b>Coaching Queue</b> is a “where coaching will move the needle” list.
-              <b>High Risk</b> is a “stop the bleeding” list. If Risk is high, fix it even if Overall is okay.
-            </div>
-          </details>
-
-          <details>
-            <summary>4) What is “Last failures”?</summary>
-            <div className="ts-acc-body">
-              This is technical visibility: if an agent failed to score, you see the last 5 failures with human names.
-              In production we usually hide raw errors behind “Retry / View details” for admins only — we’ll do that next.
-            </div>
-          </details>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="mt-10 ts-muted text-sm">
-        Tip: all agent rows are clickable. If team/org are blank, it means seeding didn’t attach agents to teams — UI still shows agent names.
       </div>
     </div>
   );
