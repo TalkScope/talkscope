@@ -115,6 +115,11 @@ export default function AgentPage() {
   const [actionErr, setActionErr] = useState<string | null>(null);
   const [actionOk, setActionOk] = useState<string | null>(null);
 
+
+  const [patternLoading, setPatternLoading] = useState(false);
+  const [patternErr, setPatternErr] = useState<string | null>(null);
+  const [patternReport, setPatternReport] = useState<any | null>(null);
+
   const agentName = data?.agent?.name || "Agent";
   const teamName = data?.agent?.team?.name || "";
   const orgName = data?.agent?.team?.organization?.name || "";
@@ -145,62 +150,46 @@ export default function AgentPage() {
     }
   }
 
+
   async function fetchLatestPatternReport() {
     try {
       if (!agentId) return;
       setPatternLoading(true);
       setPatternErr(null);
 
-      // Try a few likely endpoints (project variants). We gracefully fallback if not present.
-      const candidates = [
-        `/api/patterns/report?level=agent&refId=${encodeURIComponent(agentId)}`,
-        `/api/patterns/latest?level=agent&refId=${encodeURIComponent(agentId)}`,
-        `/api/patterns/agent?refId=${encodeURIComponent(agentId)}`,
-        `/api/patterns?level=agent&refId=${encodeURIComponent(agentId)}`,
-      ];
+      const url = `/api/patterns/list?level=agent&refId=${encodeURIComponent(agentId)}&take=1`;
+      const r = await fetch(url, { cache: "no-store" });
+      const txt = await r.text();
+      if (!r.ok) throw new Error(`HTTP ${r.status}: ${txt.slice(0, 180)}`);
 
-      let lastErr = "";
-      for (const url of candidates) {
-        const r = await fetch(url);
-        const txt = await r.text();
-        if (!r.ok) {
-          lastErr = `${r.status}: ${txt.slice(0, 160)}`;
-          continue;
-        }
+      const parsed = safeJsonParse(txt);
+      if (!parsed.ok) throw new Error(`JSON error: ${parsed.error}. Head: ${parsed.head}`);
 
-        const parsed = safeJsonParse(txt);
-        if (!parsed.ok) {
-          lastErr = parsed.error || "JSON parse error";
-          continue;
-        }
-
-        const j: any = parsed.json;
-
-        // Accept either {ok:true, report:{...}} or {ok:true, patterns:[...]} or direct report object
-        if (j?.ok === true) {
-          const report = j.report ?? j.patternReport ?? j.data ?? j;
-          setPatternReport(report);
-          setPatternLoading(false);
-          return;
-        }
-
-        // Some endpoints may return the report directly (no ok flag)
-        if (j && (j.patterns || j.coachingFocus || j.riskTriggers || j.summary)) {
-          setPatternReport(j);
-          setPatternLoading(false);
-          return;
-        }
-
-        lastErr = j?.error || "No report in response";
+      const rows = parsed.json as any[];
+      const row = Array.isArray(rows) && rows.length ? rows[0] : null;
+      if (!row?.reportJson) {
+        setPatternReport(null);
+        setPatternErr("No pattern report found yet.");
+        return;
       }
 
-      setPatternErr(lastErr || "Pattern report not available on this endpoint.");
+      const reportParsed = safeJsonParse(row.reportJson);
+      if (!reportParsed.ok) throw new Error(`Report JSON error: ${reportParsed.error}`);
+
+      setPatternReport({
+        id: row.id,
+        createdAt: row.createdAt,
+        windowSize: row.windowSize,
+        ...reportParsed.json,
+      });
     } catch (e: any) {
       setPatternErr(e?.message || "Failed to load pattern report");
+      setPatternReport(null);
     } finally {
       setPatternLoading(false);
     }
   }
+
 
 
   async function generateScore() {
@@ -256,8 +245,9 @@ export default function AgentPage() {
       const j = parsed.json;
       if (!j.ok) throw new Error(j.error || "Patterns returned ok:false");
 
-      setActionOk("Patterns generated.");
+            setActionOk("Patterns generated.");
       await load();
+      await fetchLatestPatternReport();
     } catch (e: any) {
       setActionErr(e?.message || "Failed to generate patterns");
     } finally {
@@ -265,9 +255,14 @@ export default function AgentPage() {
     }
   }
 
-  // Auto-load once we have an id (kept explicit to avoid useEffect loops in turbopack)
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  if (!data && !loading && !msgErr && agentId) load();
+  useEffect(() => {
+    if (!agentId) return;
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    load();
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    fetchLatestPatternReport();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agentId]);
 
   const overallKind = classifyOverall(last?.overallScore);
   const riskKind = classifyRisk(last?.riskScore);
@@ -306,7 +301,7 @@ export default function AgentPage() {
             <div className="ts-card-title">Overall</div>
             <div className="ts-metric">{fmt(last?.overallScore)}</div>
             <div style={{ marginTop: 10 }}>
-              <span className={scoreChipClass(overallKind)}>{overallKind === "muted" ? "No data" : "Status"}</span>
+              <span className={scoreChipClass(overallKind)} style={chipStyle(overallKind)}>{overallKind === "muted" ? "No data" : "Status"}</span>
             </div>
           </div>
         </div>
@@ -316,7 +311,7 @@ export default function AgentPage() {
             <div className="ts-card-title">Risk</div>
             <div className="ts-metric">{fmt(last?.riskScore)}</div>
             <div style={{ marginTop: 10 }}>
-              <span className={scoreChipClass(riskKind)}>
+              <span className={scoreChipClass(riskKind)} style={chipStyle(riskKind)}>
                 {riskKind === "danger" ? "High" : riskKind === "warn" ? "Medium" : riskKind === "success" ? "Low" : "No data"}
               </span>
             </div>
@@ -328,7 +323,7 @@ export default function AgentPage() {
             <div className="ts-card-title">Coaching priority</div>
             <div className="ts-metric">{fmt(last?.coachingPriority)}</div>
             <div style={{ marginTop: 10 }}>
-              <span className={scoreChipClass(priorityKind)}>
+              <span className={scoreChipClass(priorityKind)} style={chipStyle(priorityKind)}>
                 {priorityKind === "danger" ? "Urgent" : priorityKind === "warn" ? "Focus" : priorityKind === "success" ? "Monitor" : "No data"}
               </span>
             </div>
