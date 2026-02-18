@@ -55,6 +55,7 @@ export default function Header() {
               Refresh
             </button>
           )}
+
           <Link href="/" className="ts-btn ts-btn-primary">
             Home
           </Link>

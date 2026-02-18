@@ -323,7 +323,8 @@ export default function DashboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-    // header refresh action (from topbar)
+  
+  // header refresh action (triggered from topbar)
   useEffect(() => {
     const handler = () => {
       setErr(null);
@@ -404,47 +405,29 @@ export default function DashboardPage() {
           <div className="ts-subtitle">Coaching queue, risk signals, and performance overview.</div>
         </div>
 
-        <div className="flex gap-2">
-          <button
-            onClick={() => {
-              setErr(null);
-              setInfo(null);
-              loadAgentsAndScores();
-              loadScope();
-              if (jobId) refreshJobStatus(jobId);
-            }}
-            className="rounded-xl border px-4 py-2"
-            disabled={loadingMeta || loadingScope}
-          >
-            Refresh
-          </button>
-          <a href="/" className="ts-btn ts-btn-primary">
-            Home
-          </a>
+      </div>
+
+      {/* KPI cards */}
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="ts-card ts-card-pad">
+          <div className="ts-card-title">Agents</div>
+          <div className="ts-metric-sm">{totals.agents || "—"}</div>
+        </div>
+        <div className="ts-card ts-card-pad">
+          <div className="ts-card-title">Conversations</div>
+          <div className="ts-metric-sm">{totals.conversations || "—"}</div>
+        </div>
+        <div className="ts-card ts-card-pad">
+          <div className="ts-card-title">Score snapshots</div>
+          <div className="ts-metric-sm">{totals.scoreSnapshots || "—"}</div>
+        </div>
+        <div className="ts-card ts-card-pad">
+          <div className="ts-card-title">Agents scored</div>
+          <div className="ts-metric-sm">{totals.agentsScored || "—"}</div>
         </div>
       </div>
 
-      {/* KPI chips */}
-      <div className="mt-6 flex flex-wrap gap-3">
-        <div className="ts-chip ts-chip-muted">
-          <strong>{totals.agents || "—"}</strong> Agents
-        </div>
-        <div className="ts-chip ts-chip-muted">
-          <strong>{totals.conversations || "—"}</strong> Conversations
-        </div>
-        <div className="ts-chip ts-chip-muted">
-          <strong>{totals.scoreSnapshots || "—"}</strong> Score snapshots
-        </div>
-        <div className="ts-chip ts-chip-muted">
-          <strong>{rowsWithScore.length || 0}</strong> Agents scored
-        </div>
-      </div>
-
-      {/* messages */}
-      {err ? <div className="mt-6 rounded-2xl border border-red-300 bg-red-50 px-5 py-4 text-red-700">{err}</div> : null}
-      {info ? <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-emerald-800">{info}</div> : null}
-
-      {/* Scope */}
+{/* Scope */}
       <div className="mt-8 rounded-3xl border p-6">
         <div className="ts-pagehead">
           <div>
