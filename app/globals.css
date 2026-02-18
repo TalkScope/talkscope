@@ -1,132 +1,169 @@
 @import "tailwindcss";
 
 /* ==========================================================================
-   TalkScope UI (Tailwind v4) — globals.css
-   - Soft canvas + white cards (Invoca/CallRail-like)
-   - Design tokens + lightweight utility classes used across /app
+   TalkScope UI — "Rich" system (Invoca/CallRail-inspired)
+   Goal: premium typography, readable tables, clean cards, tasteful accents.
+   Tailwind v4 compatible (no @tailwind directives, no @apply).
    ========================================================================== */
 
 /* -----------------------------
    Design tokens
 ------------------------------ */
 :root {
-  /* App surfaces */
-  --background: #f7f9fc;
+  /* Surfaces */
+  --background: #f6f8fc;
   --foreground: #0b1220;
 
-  /* TalkScope tokens */
   --ts-ink: #0b1220;
-  --ts-muted: rgba(11, 18, 32, 0.65);
-  --ts-border: #e5e7eb;
-  --ts-border-soft: #f0f0f0;
+  --ts-muted: rgba(11, 18, 32, 0.66);
+
+  --ts-border: #e6e8ee;
+  --ts-border-soft: #eff2f7;
+
   --ts-accent: #406184;
-  --ts-bg-soft: #f7f9fc;
+
+  --ts-bg-soft: #f6f8fc;
   --ts-surface: #ffffff;
 
   /* Semantic */
-  --ts-success: #2e7d32;
-  --ts-warn: #c77700;
-  --ts-danger: #c62828;
+  --ts-success: #1f7a3a;
+  --ts-warn: #b86a00;
+  --ts-danger: #b42318;
 
-  /* Radii + shadows */
-  --ts-radius-lg: 16px;
-  --ts-radius-md: 12px;
+  /* Radii */
+  --ts-radius-lg: 18px;
+  --ts-radius-md: 14px;
+  --ts-radius-sm: 12px;
 
-  /* Shadows (subtle, “product” feel) */
-  --ts-shadow-sm: 0 1px 2px rgba(11, 18, 32, 0.06);
-  --ts-shadow-md: 0 8px 24px rgba(11, 18, 32, 0.08);
+  /* Shadows (premium, subtle) */
+  --ts-shadow-sm: 0 1px 2px rgba(11, 18, 32, 0.05);
+  --ts-shadow-md: 0 12px 32px rgba(11, 18, 32, 0.08);
+
+  /* Typography scale */
+  --ts-font-base: 15px;
+  --ts-font-sm: 13px;
+  --ts-font-xs: 12px;
+
+  --ts-title: 34px;
+  --ts-h2: 20px;
+  --ts-h3: 16px;
+
+  --ts-metric: 28px;
+  --ts-metric-sm: 22px;
 }
 
-/* Dark mode base (kept calm) */
+/* Dark mode base (calm) */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0b1220;
     --foreground: #f7f9fc;
 
     --ts-ink: #f7f9fc;
-    --ts-muted: rgba(247, 249, 252, 0.7);
-    --ts-border: rgba(255, 255, 255, 0.12);
-    --ts-border-soft: rgba(255, 255, 255, 0.08);
+    --ts-muted: rgba(247, 249, 252, 0.72);
+
+    --ts-border: rgba(255, 255, 255, 0.14);
+    --ts-border-soft: rgba(255, 255, 255, 0.10);
+
     --ts-bg-soft: #0b1220;
     --ts-surface: rgba(255, 255, 255, 0.06);
 
-    --ts-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
-    --ts-shadow-md: 0 10px 30px rgba(0, 0, 0, 0.35);
+    --ts-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.28);
+    --ts-shadow-md: 0 18px 40px rgba(0, 0, 0, 0.42);
   }
 }
 
 /* -----------------------------
-   Base layout + typography
+   Base
 ------------------------------ */
-html,
-body {
-  height: 100%;
-}
+html, body { height: 100%; }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
-    Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-  letter-spacing: -0.01em;
-}
 
-/* Better text rendering */
-body {
+  /* Geist first (Next), then premium fallbacks */
+  font-family:
+    var(--font-geist-sans),
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    "Apple Color Emoji",
+    "Segoe UI Emoji";
+
+  font-size: var(--ts-font-base);
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-* {
-  box-sizing: border-box;
-}
+a { color: inherit; text-decoration: none; }
+* { box-sizing: border-box; }
 
 /* -----------------------------
-   TalkScope “design system” helpers
-   (Plain CSS classes — no Tailwind @apply, so Turbopack stays happy)
+   Layout helpers
 ------------------------------ */
-
-/* Page container */
 .ts-container {
-  max-width: 1200px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 20px 20px 40px;
+  padding: 22px 18px 52px;
 }
 
 @media (min-width: 1024px) {
-  .ts-container {
-    padding: 28px 28px 56px;
-  }
+  .ts-container { padding: 28px 28px 64px; }
 }
 
 /* Page header */
 .ts-pagehead {
   display: flex;
-  gap: 16px;
+  gap: 18px;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .ts-title {
-  font-size: 28px;
-  line-height: 1.15;
-  font-weight: 650;
-  letter-spacing: -0.02em;
+  font-size: var(--ts-title);
+  line-height: 1.12;
+  font-weight: 720;
+  letter-spacing: -0.03em;
 }
 
 .ts-subtitle {
-  margin-top: 6px;
-  font-size: 14px;
+  margin-top: 8px;
+  font-size: var(--ts-font-sm);
   color: var(--ts-muted);
 }
 
-/* Cards */
+/* Section head (optional) */
+.ts-sectionhead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 6px 0 10px;
+}
+
+.ts-h2 {
+  font-size: var(--ts-h2);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.ts-hint {
+  font-size: var(--ts-font-xs);
+  color: var(--ts-muted);
+}
+
+/* -----------------------------
+   Cards
+------------------------------ */
 .ts-card {
   background: var(--ts-surface);
   border: 1px solid var(--ts-border);
@@ -134,66 +171,83 @@ a {
   box-shadow: var(--ts-shadow-sm);
 }
 
-.ts-card-pad {
-  padding: 16px;
-}
+.ts-card-pad { padding: 18px; }
 
 @media (min-width: 1024px) {
-  .ts-card-pad {
-    padding: 18px;
-  }
+  .ts-card-pad { padding: 20px; }
 }
 
 .ts-card-title {
-  font-size: 13px;
-  font-weight: 650;
-  color: var(--ts-muted);
+  font-size: var(--ts-font-xs);
+  font-weight: 800;
+  color: rgba(11, 18, 32, 0.64);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.10em;
+}
+
+@media (prefers-color-scheme: dark) {
+  .ts-card-title { color: rgba(247, 249, 252, 0.62); }
 }
 
 .ts-metric {
+  margin-top: 10px;
+  font-size: var(--ts-metric);
+  font-weight: 760;
+  letter-spacing: -0.03em;
+}
+
+.ts-metric-sm {
   margin-top: 8px;
-  font-size: 26px;
-  font-weight: 700;
+  font-size: var(--ts-metric-sm);
+  font-weight: 740;
   letter-spacing: -0.02em;
 }
 
-.ts-divider {
-  height: 1px;
-  background: var(--ts-border-soft);
-  margin: 14px 0;
+.ts-divider { height: 1px; background: var(--ts-border-soft); margin: 16px 0; }
+
+/* Soft panel inside card */
+.ts-panel {
+  background: rgba(246, 248, 252, 0.85);
+  border: 1px solid var(--ts-border-soft);
+  border-radius: var(--ts-radius-md);
 }
 
-/* Buttons */
+@media (prefers-color-scheme: dark) {
+  .ts-panel { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.10); }
+}
+
+/* -----------------------------
+   Buttons
+------------------------------ */
 .ts-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 36px;
-  padding: 0 12px;
-  border-radius: 10px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 12px;
+
   border: 1px solid var(--ts-border);
   background: var(--ts-surface);
   color: var(--ts-ink);
-  font-size: 13px;
-  font-weight: 600;
+
+  font-size: var(--ts-font-sm);
+  font-weight: 700;
+
   box-shadow: 0 1px 0 rgba(11, 18, 32, 0.02);
   cursor: pointer;
   user-select: none;
-  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease, background 120ms ease;
 }
 
 .ts-btn:hover {
-  border-color: rgba(64, 97, 132, 0.35);
-  box-shadow: 0 6px 18px rgba(11, 18, 32, 0.08);
+  border-color: rgba(64, 97, 132, 0.38);
+  box-shadow: 0 12px 28px rgba(11, 18, 32, 0.10);
   transform: translateY(-1px);
 }
 
-.ts-btn:active {
-  transform: translateY(0px);
-  box-shadow: var(--ts-shadow-sm);
-}
+.ts-btn:active { transform: translateY(0px); box-shadow: var(--ts-shadow-sm); }
 
 .ts-btn:disabled {
   opacity: 0.55;
@@ -202,79 +256,80 @@ a {
   box-shadow: none;
 }
 
-.ts-btn-primary {
+.ts-btn-primary,
+.ts-btn-primary:link,
+.ts-btn-primary:visited {
   background: var(--ts-accent);
-  border-color: rgba(64, 97, 132, 0.6);
-  color: #fff;
+  border-color: rgba(64, 97, 132, 0.65);
+  color: #fff !important;
 }
 
-.ts-btn-primary:hover {
-  border-color: rgba(64, 97, 132, 0.9);
-}
+.ts-btn-primary:hover { border-color: rgba(64, 97, 132, 0.95); }
 
 /* Inputs / selects */
-.ts-input,
-.ts-select {
-  height: 36px;
-  padding: 0 10px;
-  border-radius: 10px;
+.ts-input, .ts-select {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 12px;
   border: 1px solid var(--ts-border);
   background: var(--ts-surface);
   color: var(--ts-ink);
-  font-size: 13px;
+  font-size: var(--ts-font-sm);
+  font-weight: 600;
   outline: none;
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
-.ts-input:focus,
-.ts-select:focus {
-  border-color: rgba(64, 97, 132, 0.55);
-  box-shadow: 0 0 0 3px rgba(64, 97, 132, 0.12);
+.ts-input:focus, .ts-select:focus {
+  border-color: rgba(64, 97, 132, 0.60);
+  box-shadow: 0 0 0 4px rgba(64, 97, 132, 0.12);
 }
 
-/* Chips / badges */
+/* -----------------------------
+   Chips / badges
+------------------------------ */
 .ts-chip {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 10px;
+  padding: 7px 12px;
   border-radius: 999px;
   border: 1px solid var(--ts-border);
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.72);
   color: var(--ts-ink);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: var(--ts-font-sm);
+  font-weight: 700;
 }
 
-.ts-chip-muted {
-  color: var(--ts-muted);
-}
+.ts-chip-muted { color: var(--ts-muted); }
 
 .ts-chip-accent {
-  border-color: rgba(64, 97, 132, 0.35);
-  background: rgba(64, 97, 132, 0.08);
+  border-color: rgba(64, 97, 132, 0.30);
+  background: rgba(64, 97, 132, 0.10);
   color: var(--ts-accent);
 }
 
 .ts-chip-danger {
-  border-color: rgba(198, 40, 40, 0.35);
-  background: rgba(198, 40, 40, 0.08);
+  border-color: rgba(180, 35, 24, 0.30);
+  background: rgba(180, 35, 24, 0.10);
   color: var(--ts-danger);
 }
 
 .ts-chip-warn {
-  border-color: rgba(199, 119, 0, 0.35);
-  background: rgba(199, 119, 0, 0.09);
+  border-color: rgba(184, 106, 0, 0.30);
+  background: rgba(184, 106, 0, 0.10);
   color: var(--ts-warn);
 }
 
 .ts-chip-success {
-  border-color: rgba(46, 125, 50, 0.35);
-  background: rgba(46, 125, 50, 0.08);
+  border-color: rgba(31, 122, 58, 0.30);
+  background: rgba(31, 122, 58, 0.10);
   color: var(--ts-success);
 }
 
-/* Tables */
+/* -----------------------------
+   Tables
+------------------------------ */
 .ts-table {
   width: 100%;
   border-collapse: separate;
@@ -285,108 +340,95 @@ a {
   background: var(--ts-surface);
 }
 
-.ts-table th,
-.ts-table td {
+.ts-table th, .ts-table td {
   text-align: left;
-  padding: 10px 12px;
-  font-size: 13px;
+  padding: 12px 14px;
+  font-size: 14px;         /* bigger and readable */
+  font-weight: 600;
   border-bottom: 1px solid var(--ts-border-soft);
   vertical-align: middle;
 }
 
 .ts-table th {
   font-size: 12px;
-  color: var(--ts-muted);
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  font-weight: 800;
+  color: rgba(11, 18, 32, 0.64);
+  letter-spacing: 0.10em;
   text-transform: uppercase;
-  background: rgba(247, 249, 252, 0.6);
+  background: rgba(246, 248, 252, 0.80);
 }
 
-.ts-table tr:last-child td {
-  border-bottom: none;
+@media (prefers-color-scheme: dark) {
+  .ts-table th { color: rgba(247, 249, 252, 0.62); background: rgba(255, 255, 255, 0.05); }
 }
 
-.ts-row-hover:hover td {
-  background: rgba(64, 97, 132, 0.04);
-}
+.ts-table tr:last-child td { border-bottom: none; }
 
-/* Alerts */
-.ts-alert {
-  border: 1px solid var(--ts-border);
-  background: rgba(255, 255, 255, 0.7);
-  border-radius: var(--ts-radius-md);
-  padding: 10px 12px;
-  font-size: 13px;
-  color: var(--ts-ink);
-}
+.ts-row-hover:hover td { background: rgba(64, 97, 132, 0.05); }
 
-.ts-alert-error {
-  border-color: rgba(198, 40, 40, 0.25);
-  background: rgba(198, 40, 40, 0.06);
-  color: var(--ts-danger);
-}
-
-.ts-alert-ok {
-  border-color: rgba(46, 125, 50, 0.25);
-  background: rgba(46, 125, 50, 0.06);
-  color: var(--ts-success);
-}
-
-/* Small helpers */
-.ts-muted {
-  color: var(--ts-muted);
-}
-
-.ts-link {
-  color: var(--ts-accent);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  text-decoration-thickness: 1px;
-}
-
-.ts-link:hover {
-  text-decoration-thickness: 2px;
-}
-
-
-.ts-ink {
-  color: var(--ts-ink);
-}
-
-.ts-btn-primary,
-.ts-btn-primary:link,
-.ts-btn-primary:visited {
-  color: #fff !important;
-}
-
+/* Links in tables (Agent names) */
 .ts-table a {
   color: var(--ts-accent);
   text-decoration: underline;
   text-underline-offset: 3px;
   text-decoration-thickness: 1px;
+  font-weight: 750; /* slightly stronger for “clickability” */
 }
+.ts-table a:hover { text-decoration-thickness: 2px; }
 
-.ts-table a:hover {
-  text-decoration-thickness: 2px;
-}
+/* -----------------------------
+   Lists (Strengths / Weaknesses)
+------------------------------ */
+.ts-list { list-style: none; padding: 0; margin: 0; }
 
-.ts-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--ts-border);
-  background: rgba(255, 255, 255, 0.6);
-  font-size: 12px;
+.ts-list li {
+  position: relative;
+  padding-left: 18px;
+  margin-bottom: 10px;
+  line-height: 1.5;
+  font-size: 14px;
   font-weight: 600;
   color: var(--ts-ink);
 }
 
-/* Force white surfaces for cards in light mode */
-@media (prefers-color-scheme: light) {
-  .ts-card {
-    background: #ffffff !important;
-  }
+.ts-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ts-accent);
+  opacity: 0.75;
 }
+
+/* -----------------------------
+   Alerts
+------------------------------ */
+.ts-alert {
+  border: 1px solid var(--ts-border);
+  background: rgba(255, 255, 255, 0.80);
+  border-radius: var(--ts-radius-md);
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--ts-ink);
+}
+
+.ts-alert-error {
+  border-color: rgba(180, 35, 24, 0.25);
+  background: rgba(180, 35, 24, 0.07);
+  color: var(--ts-danger);
+}
+
+.ts-alert-ok {
+  border-color: rgba(31, 122, 58, 0.25);
+  background: rgba(31, 122, 58, 0.07);
+  color: var(--ts-success);
+}
+
+/* Utilities */
+.ts-muted { color: var(--ts-muted); }
+.ts-link { color: var(--ts-accent); text-decoration: underline; text-underline-offset: 3px; }
+.ts-link:hover { text-decoration-thickness: 2px; }
