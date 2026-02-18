@@ -432,3 +432,142 @@ a { color: inherit; text-decoration: none; }
 .ts-muted { color: var(--ts-muted); }
 .ts-link { color: var(--ts-accent); text-decoration: underline; text-underline-offset: 3px; }
 .ts-link:hover { text-decoration-thickness: 2px; }
+
+
+
+/* ===============================
+   Header / Footer (UI Level 3)
+================================ */
+.ts-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(246, 248, 252, 0.72);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--ts-border-soft);
+}
+
+@media (prefers-color-scheme: dark) {
+  .ts-topbar { background: rgba(11, 18, 32, 0.70); }
+}
+
+.ts-topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+.ts-topbar-left { display: flex; align-items: center; gap: 10px; }
+
+.ts-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ts-brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(64,97,132,0.15), rgba(64,97,132,0.45));
+  border: 1px solid rgba(64,97,132,0.25);
+  box-shadow: var(--ts-shadow-sm);
+}
+
+.ts-brand-text { display: grid; line-height: 1.05; }
+.ts-brand-name { font-weight: 820; letter-spacing: -0.02em; }
+.ts-brand-tag { font-size: 12px; color: var(--ts-muted); margin-top: 2px; }
+
+.ts-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid var(--ts-border-soft);
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 999px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .ts-nav { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
+}
+
+.ts-navlink {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 750;
+  color: rgba(11,18,32,0.78);
+  text-decoration: none;
+  transition: background 120ms ease, color 120ms ease, transform 120ms ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .ts-navlink { color: rgba(247,249,252,0.78); }
+}
+
+.ts-navlink:hover {
+  background: rgba(64,97,132,0.08);
+  color: var(--ts-accent);
+  transform: translateY(-1px);
+}
+
+.ts-navlink-active {
+  background: rgba(64,97,132,0.12);
+  color: var(--ts-accent);
+  border: 1px solid rgba(64,97,132,0.18);
+}
+
+.ts-app-main {
+  min-height: calc(100vh - 140px);
+}
+
+.ts-footer {
+  border-top: 1px solid var(--ts-border-soft);
+  background: rgba(255, 255, 255, 0.60);
+}
+
+@media (prefers-color-scheme: dark) {
+  .ts-footer { background: rgba(255,255,255,0.04); border-top-color: rgba(255,255,255,0.10); }
+}
+
+.ts-footer-inner {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  padding-top: 22px;
+  padding-bottom: 22px;
+}
+
+@media (min-width: 900px) {
+  .ts-footer-inner { grid-template-columns: 1.2fr 1fr 0.8fr; align-items: center; }
+}
+
+.ts-footer-brand { font-weight: 840; letter-spacing: -0.02em; }
+.ts-footer-muted { color: var(--ts-muted); font-size: 13px; }
+
+.ts-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.ts-footer-link {
+  color: var(--ts-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  font-weight: 720;
+}
+
+.ts-footer-link:hover { text-decoration-thickness: 2px; }
+
+.ts-footer-right { justify-self: start; }
+@media (min-width: 900px) { .ts-footer-right { justify-self: end; } }
+
