@@ -340,73 +340,26 @@ a {
 
 .ts-link {
   color: var(--ts-accent);
-  text-decoration: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
 }
 
 .ts-link:hover {
-  text-decoration: underline;
+  text-decoration-thickness: 2px;
 }
 
-/* ===============================
-   TalkScope Lists (UL / LI)
-================================ */
 
-.ts-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.ts-list li {
-  position: relative;
-  padding-left: 18px;
-  margin-bottom: 8px;
-  line-height: 1.45;
-  font-size: 14px;
+.ts-ink {
   color: var(--ts-ink);
 }
 
-
-.ts-list li::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.55em;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--ts-accent);
-  opacity: 0.7;
-}
-
-
-.ts-card .ts-list li {
-  margin-bottom: 10px;
-}
-
-
-/* Force white surfaces for cards in light mode */
-@media (prefers-color-scheme: light) {
-  .ts-card {
-    background: #ffffff !important;
-  }
-}
-
-
-.ts-card-pad {
-  background: transparent;
-}
-
-
-/* Primary button text visibility (for <a> and <button>) */
 .ts-btn-primary,
 .ts-btn-primary:link,
 .ts-btn-primary:visited {
   color: #fff !important;
 }
 
-
-/* Agent links (tables) */
 .ts-table a {
   color: var(--ts-accent);
   text-decoration: underline;
@@ -416,4 +369,24 @@ a {
 
 .ts-table a:hover {
   text-decoration-thickness: 2px;
+}
+
+.ts-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--ts-border);
+  background: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ts-ink);
+}
+
+/* Force white surfaces for cards in light mode */
+@media (prefers-color-scheme: light) {
+  .ts-card {
+    background: #ffffff !important;
+  }
 }

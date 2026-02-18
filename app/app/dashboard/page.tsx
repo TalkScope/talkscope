@@ -369,7 +369,7 @@ export default function DashboardPage() {
     const a = agentById.get(id);
     const name = a?.name || id;
     return (
-      <a href={`/app/agents/${encodeURIComponent(id)}`} className="hover:underline">
+      <a href={`/app/agents/${encodeURIComponent(id)}`} className="ts-link">
         <div className="agent-name">{name}</div>
       </a>
     );
@@ -404,7 +404,7 @@ export default function DashboardPage() {
           >
             Refresh
           </button>
-          <a href="/" className="rounded-xl border bg-black px-4 py-2 text-white">
+          <a href="/" className="ts-btn ts-btn-primary">
             Home
           </a>
         </div>
@@ -412,16 +412,16 @@ export default function DashboardPage() {
 
       {/* KPI chips */}
       <div className="mt-6 flex flex-wrap gap-3">
-        <div className="ts-badge">
+        <div className="ts-chip ts-chip-muted">
           <strong>{totals.agents || "—"}</strong> Agents
         </div>
-        <div className="ts-badge">
+        <div className="ts-chip ts-chip-muted">
           <strong>{totals.conversations || "—"}</strong> Conversations
         </div>
-        <div className="ts-badge">
+        <div className="ts-chip ts-chip-muted">
           <strong>{totals.scoreSnapshots || "—"}</strong> Score snapshots
         </div>
-        <div className="ts-badge">
+        <div className="ts-chip ts-chip-muted">
           <strong>{rowsWithScore.length || 0}</strong> Agents scored
         </div>
       </div>
@@ -438,7 +438,7 @@ export default function DashboardPage() {
             <div className="mt-1 ts-muted">Select organization and team. Used by Batch Scoring below.</div>
           </div>
 
-          <button onClick={loadScope} className="rounded-xl border px-4 py-2" disabled={loadingScope}>
+          <button onClick={loadScope} className="ts-btn" disabled={loadingScope}>
             {loadingScope ? "Loading…" : "Reload orgs/teams"}
           </button>
         </div>
@@ -446,7 +446,7 @@ export default function DashboardPage() {
         <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="rounded-2xl border p-4">
             <div className="mb-2 text-sm ts-muted">Organization</div>
-            <select className="w-full rounded-xl border px-3 py-3" value={selectedOrgId} onChange={(e) => setSelectedOrgId(e.target.value)}>
+            <select className="w-full ts-select" value={selectedOrgId} onChange={(e) => setSelectedOrgId(e.target.value)}>
               <option value="">Select org</option>
               {orgs.map((o) => (
                 <option key={o.id} value={o.id}>
@@ -459,7 +459,7 @@ export default function DashboardPage() {
           <div className="rounded-2xl border p-4">
             <div className="mb-2 text-sm ts-muted">Team</div>
             <select
-              className="w-full rounded-xl border px-3 py-3"
+              className="w-full ts-select"
               value={selectedTeamId}
               onChange={(e) => setSelectedTeamId(e.target.value)}
               disabled={!selectedOrgId}
@@ -488,12 +488,12 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex flex-wrap items-center justify-end gap-2">
-            <select className="rounded-xl border px-3 py-2" value={scopeType} onChange={(e) => setScopeType(e.target.value as any)}>
+            <select className="ts-select" value={scopeType} onChange={(e) => setScopeType(e.target.value as any)}>
               <option value="team">team</option>
               <option value="org">org</option>
             </select>
 
-            <select className="rounded-xl border px-3 py-2" value={windowSize} onChange={(e) => setWindowSize(Number(e.target.value))}>
+            <select className="ts-select" value={windowSize} onChange={(e) => setWindowSize(Number(e.target.value))}>
               {[20, 30, 50].map((w) => (
                 <option key={w} value={w}>
                   window {w}
@@ -504,7 +504,7 @@ export default function DashboardPage() {
             <button
               onClick={createJob}
               disabled={creatingJob || !activeRefId}
-              className={cx("rounded-xl px-4 py-2", !activeRefId ? "bg-gray-300 text-gray-600" : "bg-black text-white")}
+              className={cx("ts-btn", !activeRefId ? "" : "ts-btn-primary")}
               title={!activeRefId ? "Select org/team first" : "Create job"}
             >
               {creatingJob ? "Creating…" : "Create Job"}
@@ -514,7 +514,7 @@ export default function DashboardPage() {
             <button
               onClick={runToCompletion}
               disabled={!jobId || runningJob}
-              className={cx("rounded-xl px-4 py-2", !jobId ? "bg-gray-300 text-gray-600" : "bg-black text-white")}
+              className={cx("ts-btn", !jobId ? "" : "ts-btn-primary")}
               title={!jobId ? "Create job first" : "Run worker until done"}
             >
               {runningJob ? "Running…" : isComplete ? "Done ✓" : "Run to 100%"}
@@ -580,7 +580,7 @@ export default function DashboardPage() {
                 <div className="ts-muted text-sm">No failures.</div>
               ) : (
                 (jobStatus?.lastFailed ?? []).slice(0, 5).map((f, idx) => (
-                  <div key={idx} className="rounded-xl border px-3 py-2">
+                  <div key={idx} className="ts-select">
                     <div className="font-semibold ts-ink">{f.agentName || f.agentId}</div>
                     <div className="mt-1 text-sm ts-muted">{f.error ? clip(f.error, 150) : "Failed"}</div>
                   </div>
@@ -594,14 +594,14 @@ export default function DashboardPage() {
       {/* Tables */}
       <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Coaching Queue */}
-        <div className="rounded-3xl border p-6">
+        <div className="ts-card ts-card-pad">
           <div className="flex items-baseline justify-between">
             <div className="text-2xl font-semibold ts-ink">Coaching Queue</div>
             <div className="text-sm ts-muted">Highest priority first</div>
           </div>
 
           <div className="mt-4 overflow-hidden rounded-2xl border">
-            <table className="w-full text-left table-hover">
+            <table className="ts-table">
               <thead className="border-b">
                 <tr className="ts-muted">
                   <th className="px-4 py-3">Agent</th>
@@ -619,7 +619,7 @@ export default function DashboardPage() {
                   </tr>
                 ) : (
                   coachingQueue.map((x) => (
-                    <tr key={x.agent.id} className="border-b last:border-0">
+                    <tr key={x.agent.id} className="ts-row-hover">
                       <td className="px-4 py-3">
                         <AgentCell id={x.agent.id} />
                       </td>
@@ -635,14 +635,14 @@ export default function DashboardPage() {
         </div>
 
         {/* High Risk */}
-        <div className="rounded-3xl border p-6">
+        <div className="ts-card ts-card-pad">
           <div className="flex items-baseline justify-between">
             <div className="text-2xl font-semibold ts-ink">High Risk</div>
             <div className="text-sm ts-muted">Risk ≥ 70</div>
           </div>
 
           <div className="mt-4 overflow-hidden rounded-2xl border">
-            <table className="w-full text-left table-hover">
+            <table className="ts-table">
               <thead className="border-b">
                 <tr className="ts-muted">
                   <th className="px-4 py-3">Agent</th>
@@ -660,7 +660,7 @@ export default function DashboardPage() {
                   </tr>
                 ) : (
                   highRisk.map((x) => (
-                    <tr key={x.agent.id} className="border-b last:border-0">
+                    <tr key={x.agent.id} className="ts-row-hover">
                       <td className="px-4 py-3">
                         <AgentCell id={x.agent.id} />
                       </td>
@@ -676,14 +676,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Top Performers */}
-        <div className="rounded-3xl border p-6">
+        <div className="ts-card ts-card-pad">
           <div className="flex items-baseline justify-between">
             <div className="text-2xl font-semibold ts-ink">Top Performers</div>
             <div className="text-sm ts-muted">Highest overall first</div>
           </div>
 
           <div className="mt-4 overflow-hidden rounded-2xl border">
-            <table className="w-full text-left table-hover">
+            <table className="ts-table">
               <thead className="border-b">
                 <tr className="ts-muted">
                   <th className="px-4 py-3">Agent</th>
@@ -702,7 +702,7 @@ export default function DashboardPage() {
                   </tr>
                 ) : (
                   topPerformers.map((x) => (
-                    <tr key={x.agent.id} className="border-b last:border-0">
+                    <tr key={x.agent.id} className="ts-row-hover">
                       <td className="px-4 py-3">
                         <AgentCell id={x.agent.id} />
                       </td>
@@ -719,14 +719,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Low Performers */}
-        <div className="rounded-3xl border p-6">
+        <div className="ts-card ts-card-pad">
           <div className="flex items-baseline justify-between">
             <div className="text-2xl font-semibold ts-ink">Low Performers</div>
             <div className="text-sm ts-muted">Lowest overall first</div>
           </div>
 
           <div className="mt-4 overflow-hidden rounded-2xl border">
-            <table className="w-full text-left table-hover">
+            <table className="ts-table">
               <thead className="border-b">
                 <tr className="ts-muted">
                   <th className="px-4 py-3">Agent</th>
@@ -744,7 +744,7 @@ export default function DashboardPage() {
                   </tr>
                 ) : (
                   lowPerformers.map((x) => (
-                    <tr key={x.agent.id} className="border-b last:border-0">
+                    <tr key={x.agent.id} className="ts-row-hover">
                       <td className="px-4 py-3">
                         <AgentCell id={x.agent.id} />
                       </td>
