@@ -43,7 +43,7 @@ function safeJsonParse(txt: string) {
 }
 
 function pill(label: string) {
-  return <span className="rounded-full border px-3 py-1 text-xs text-neutral-600">{label}</span>;
+  return <span className="ts-chip">{label}</span>;
 }
 
 function clipTranscript(text: string, max = 420) {
@@ -185,51 +185,41 @@ export default function AgentPage() {
   }, [agentId]);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+    <div className="ts-container">
+      <div className="ts-pagehead">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Agent Intelligence</h1>
-          <div className="mt-2">
-            <div className="text-lg font-medium">{agentName}</div>
-            <div className="text-sm text-neutral-500">
-              {teamName && orgName ? `${teamName} — ${orgName}` : teamName || orgName || "—"}
-            </div>
+          <div className="ts-breadcrumbs">
+            <a href="/app/dashboard">Dashboard</a> <span>·</span> <span className="ts-accent">Agent</span>
+          </div>
+          <h1 className="ts-title">Agent Intelligence</h1>
+          <div className="ts-subtitle">
+            <span className="agent-name">{agentName}</span>
+            <span className="mx-2">·</span>
+            <span>{teamName && orgName ? `${teamName} — ${orgName}` : teamName || orgName || "—"}</span>
           </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <a href="/app/dashboard" className="rounded-lg border px-4 py-2 text-sm font-medium">
+          <a href="/app/dashboard" className="ts-btn">
             Dashboard
           </a>
           <a
             href={`/app/patterns?level=agent&refId=${encodeURIComponent(agentId)}&windowSize=${encodeURIComponent(
               String(windowSize)
             )}`}
-            className="rounded-lg border px-4 py-2 text-sm font-medium"
+            className="ts-btn"
           >
             Pattern Intelligence
           </a>
-          <button
-            onClick={load}
-            disabled={loading}
-            className="rounded-lg border px-4 py-2 text-sm font-medium disabled:opacity-50"
-          >
+          <button onClick={load} disabled={loading} className="ts-btn">
             {loading ? "Refreshing..." : "Refresh"}
           </button>
         </div>
       </div>
 
-      {(msgErr || actionErr) && (
-        <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          {msgErr || actionErr}
-        </div>
-      )}
+      {(msgErr || actionErr) && <div className="mt-6 ts-alert ts-alert-error">{msgErr || actionErr}</div>}
 
-      {actionOk && (
-        <div className="mt-6 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">
-          {actionOk}
-        </div>
-      )}
+      {actionOk && <div className="mt-6 ts-alert ts-alert-ok">{actionOk}</div>}
 
       <div className="mt-6 flex flex-wrap gap-2">
         {pill(`Window: ${windowSize}`)}
@@ -237,28 +227,24 @@ export default function AgentPage() {
         {pill(`Risk: ${last?.riskScore !== undefined ? fmt(last.riskScore) : "—"}`)}
         {pill(`Priority: ${last?.coachingPriority !== undefined ? fmt(last.coachingPriority) : "—"}`)}
         {pill(data?.lastPattern ? `Patterns: yes` : "No patterns yet")}
-        <button
-          onClick={() => navigator.clipboard.writeText(agentId)}
-          className="rounded-full border px-3 py-1 text-xs text-neutral-700 hover:bg-neutral-50"
-          title="Copy agent id"
-        >
+        <button onClick={() => navigator.clipboard.writeText(agentId)} className="ts-btn" title="Copy agent id">
           Copy Agent ID
         </button>
       </div>
 
       {/* Actions */}
-      <div className="mt-6 rounded-2xl border p-5">
+      <div className="mt-6 ts-card ts-card-pad">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-lg font-semibold">Actions</h2>
-            <p className="text-sm text-neutral-500">
+            <h2 className="ts-card-title">Actions</h2>
+            <p className="ts-card-meta">
               Generate fresh score snapshot or patterns without re-entering IDs.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <select
-              className="rounded-lg border px-3 py-2 text-sm"
+              className="ts-select"
               value={windowSize}
               onChange={(e) => setWindowSize(Number(e.target.value))}
             >
@@ -272,7 +258,7 @@ export default function AgentPage() {
             <button
               onClick={generateScore}
               disabled={actionLoading || !agentId}
-              className="rounded-lg border px-4 py-2 text-sm font-medium disabled:opacity-50"
+              className="ts-btn"
             >
               {actionLoading ? "Working..." : "Generate Score"}
             </button>
@@ -280,7 +266,7 @@ export default function AgentPage() {
             <button
               onClick={generatePatternsAgent}
               disabled={actionLoading || !agentId}
-              className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+              className="ts-btn ts-btn-primary"
             >
               {actionLoading ? "Working..." : "Generate Patterns (Agent)"}
             </button>
@@ -288,12 +274,40 @@ export default function AgentPage() {
         </div>
       </div>
 
+      {/* KPI row */}
+      <div className="mt-6 grid gap-4 md:grid-cols-3">
+        <div className="ts-card ts-card-pad">
+          <div className="ts-kpi">
+            <div className="k">Overall score</div>
+            <div className="v metric-number">{data?.lastScore?.overallScore !== undefined ? fmt(data?.lastScore?.overallScore) : "—"}</div>
+            <div className="hint">Latest snapshot</div>
+          </div>
+        </div>
+        <div className="ts-card ts-card-pad">
+          <div className="ts-kpi">
+            <div className="k">Risk</div>
+            <div className={`v metric-number ${data?.lastScore?.riskScore !== undefined ? (Number(data?.lastScore?.riskScore) >= 70 ? "risk-high" : Number(data?.lastScore?.riskScore) >= 50 ? "risk-mid" : "risk-low") : ""}`}
+            >
+              {data?.lastScore?.riskScore !== undefined ? fmt(data?.lastScore?.riskScore) : "—"}
+            </div>
+            <div className="hint">Revenue / compliance risk</div>
+          </div>
+        </div>
+        <div className="ts-card ts-card-pad">
+          <div className="ts-kpi">
+            <div className="k">Coaching priority</div>
+            <div className="v metric-number">{data?.lastScore?.coachingPriority !== undefined ? fmt(data?.lastScore?.coachingPriority) : "—"}</div>
+            <div className="hint">Higher = coach sooner</div>
+          </div>
+        </div>
+      </div>
+
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <section className="rounded-2xl border p-5">
-          <h2 className="text-lg font-semibold">Latest Score Snapshot</h2>
+        <section className="ts-card ts-card-pad">
+          <h2 className="ts-card-title">Latest Score Snapshot</h2>
 
           {!data?.lastScore ? (
-            <p className="mt-2 text-sm text-neutral-600">No scores yet. Click Generate Score.</p>
+            <p className="mt-2 text-sm ts-muted">No scores yet. Click Generate Score.</p>
           ) : (
             <div className="mt-4 space-y-3 text-sm">
               <div className="flex flex-wrap gap-2">
@@ -304,18 +318,18 @@ export default function AgentPage() {
                 {pill(`Priority: ${fmt(data.lastScore.coachingPriority)}`)}
               </div>
 
-              <div className="rounded-xl border p-4">
-                <div className="text-xs text-neutral-500">Strengths</div>
-                <ul className="mt-2 list-disc pl-5">
+              <div className="rounded-xl border border-[var(--ts-border-soft)] bg-[var(--ts-bg-soft)] p-4">
+                <div className="text-xs ts-muted">Strengths</div>
+                <ul className="mt-2 list-disc pl-5 text-[13px]">
                   {(data.lastScore.strengths || []).slice(0, 6).map((x: string, i: number) => (
                     <li key={i}>{x}</li>
                   ))}
                 </ul>
               </div>
 
-              <div className="rounded-xl border p-4">
-                <div className="text-xs text-neutral-500">Weaknesses</div>
-                <ul className="mt-2 list-disc pl-5">
+              <div className="rounded-xl border border-[var(--ts-border-soft)] bg-[var(--ts-bg-soft)] p-4">
+                <div className="text-xs ts-muted">Weaknesses</div>
+                <ul className="mt-2 list-disc pl-5 text-[13px]">
                   {(data.lastScore.weaknesses || []).slice(0, 6).map((x: string, i: number) => (
                     <li key={i}>{x}</li>
                   ))}
@@ -325,21 +339,23 @@ export default function AgentPage() {
           )}
         </section>
 
-        <section className="rounded-2xl border p-5">
+        <section className="ts-card ts-card-pad">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Recent Conversations</h2>
-            <span className="text-xs text-neutral-500">Last {data?.conversations?.length ?? 0} transcripts (excerpt)</span>
+            <h2 className="ts-card-title">Recent Conversations</h2>
+            <span className="text-xs ts-muted">Last {data?.conversations?.length ?? 0} transcripts (excerpt)</span>
           </div>
 
           <div className="mt-4 space-y-3">
             {(data?.conversations ?? []).length === 0 ? (
-              <div className="rounded-xl border p-4 text-sm text-neutral-600">No conversations yet.</div>
+              <div className="rounded-xl border border-[var(--ts-border-soft)] bg-[var(--ts-bg-soft)] p-4 text-sm ts-muted">
+                No conversations yet.
+              </div>
             ) : (
               (data?.conversations ?? []).slice(0, 15).map((c) => (
-                <div key={c.id} className="rounded-2xl border p-4">
+                <div key={c.id} className="rounded-2xl border border-[var(--ts-border)] bg-[var(--ts-surface)] p-4">
                   {/* УБРАЛИ c.id сверху, чтобы не портил вид */}
                   <div className="flex items-center justify-between">
-                    <div className="text-xs text-neutral-500">
+                    <div className="text-xs ts-muted">
                       {new Date(c.createdAt).toISOString().slice(0, 19).replace("T", " ")}
                     </div>
                     {c.score !== null && c.score !== undefined ? (
@@ -347,10 +363,10 @@ export default function AgentPage() {
                     ) : null}
                   </div>
 
-                  <div className="mt-3 text-sm font-medium">Chat transcript (simulation):</div>
+                  <div className="mt-3 text-sm font-semibold">Chat transcript (simulation):</div>
 
                   <div
-                    className="mt-2 whitespace-pre-wrap break-words rounded-xl bg-neutral-50 p-3 text-sm text-neutral-800"
+                    className="mt-2 whitespace-pre-wrap break-words rounded-xl bg-[var(--ts-bg-soft)] p-3 text-sm text-neutral-800"
                     style={{ overflowWrap: "anywhere" }}
                   >
                     {clipTranscript(c.transcript || c.excerpt || "", 900)}
@@ -362,8 +378,8 @@ export default function AgentPage() {
         </section>
       </div>
 
-      <div className="mt-8 rounded-2xl border p-5">
-        <div className="text-xs text-neutral-500">Agent id</div>
+      <div className="mt-8 ts-card ts-card-pad">
+        <div className="text-xs ts-muted">Agent id</div>
         <div className="mt-1 font-mono text-xs text-neutral-700">{agentId || "—"}</div>
       </div>
     </div>

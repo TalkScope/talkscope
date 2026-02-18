@@ -1,8 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* App surfaces (Invoca/CallRail-like: soft canvas + white cards) */
+  --background: #f7f9fc;
+  --foreground: #0b1220;
+
+  /* TalkScope tokens */
+  --ts-ink: #0b1220;
+  --ts-muted: rgba(11,18,32,.65);
+  --ts-border: #e5e7eb;
+  --ts-border-soft: #f0f0f0;
+  --ts-accent: #406184;
+  --ts-bg-soft: #f7f9fc;
+  --ts-surface: #ffffff;
+
+  /* Semantic */
+  --ts-success: #2e7d32;
+  --ts-warn: #c77700;
+  --ts-danger: #c62828;
 }
 
 @theme inline {
@@ -14,15 +29,166 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0a0f1a;
+    --foreground: #e9edf5;
+    --ts-ink: #e9edf5;
+    --ts-muted: rgba(233,237,245,.65);
+    --ts-border: rgba(255,255,255,.10);
+    --ts-border-soft: rgba(255,255,255,.06);
+    --ts-bg-soft: rgba(255,255,255,.04);
+    --ts-surface: rgba(255,255,255,.03);
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Links */
+a { color: inherit; text-decoration: none; }
+a:hover { text-decoration: none; }
+
+/* Page container */
+.ts-container{
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 16px;
+}
+
+/* Page header */
+.ts-pagehead{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.ts-title{
+  font-size: 28px;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.ts-subtitle{
+  margin-top: 6px;
+  color: var(--ts-muted);
+  font-size: 14px;
+}
+.ts-breadcrumbs{
+  color: var(--ts-muted);
+  font-size: 12px;
+}
+.ts-breadcrumbs a{ color: var(--ts-muted); }
+.ts-breadcrumbs a:hover{ color: var(--ts-accent); }
+
+/* Cards */
+.ts-card{
+  background: var(--ts-surface);
+  border: 1px solid var(--ts-border);
+  border-radius: 18px;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
+}
+.ts-card-pad{ padding: 18px; }
+.ts-card-title{
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ts-ink);
+}
+.ts-card-meta{
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--ts-muted);
+}
+
+/* KPI */
+.ts-kpi{
+  display: grid;
+  gap: 10px;
+}
+.ts-kpi .k{
+  font-size: 12px;
+  color: var(--ts-muted);
+}
+.ts-kpi .v{
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ts-ink);
+}
+.ts-kpi .hint{
+  font-size: 12px;
+  color: var(--ts-muted);
+}
+
+/* Buttons */
+.ts-btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid var(--ts-border);
+  background: var(--ts-surface);
+  color: var(--ts-ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+.ts-btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(15,23,42,0.06);
+}
+.ts-btn:disabled{ opacity: .55; transform: none; box-shadow: none; cursor: not-allowed; }
+
+.ts-btn-primary{
+  background: var(--ts-ink);
+  color: #fff;
+  border-color: rgba(0,0,0,.10);
+}
+.ts-btn-primary:hover{ box-shadow: 0 10px 22px rgba(0,0,0,0.10); }
+
+.ts-btn-accent{
+  background: var(--ts-accent);
+  color: #fff;
+  border-color: rgba(0,0,0,.08);
+}
+
+/* Inputs */
+.ts-select{
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid var(--ts-border);
+  background: var(--ts-surface);
+  padding: 0 12px;
+  font-size: 13px;
+  color: var(--ts-ink);
+}
+
+/* Badges (chips) */
+.ts-chip{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--ts-border);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--ts-muted);
+  background: var(--ts-surface);
+}
+.ts-chip strong{ color: var(--ts-ink); font-weight: 700; }
+
+/* Alerts */
+.ts-alert{
+  border-radius: 16px;
+  border: 1px solid var(--ts-border);
+  padding: 12px 14px;
+  font-size: 13px;
+}
+.ts-alert-error{ border-color: rgba(198,40,40,.25); background: rgba(198,40,40,.06); color: var(--ts-danger); }
+.ts-alert-ok{ border-color: rgba(46,125,50,.25); background: rgba(46,125,50,.06); color: var(--ts-success); }
 }
 
 
@@ -87,9 +253,9 @@ body {
 
 /* ===== Progress colors ===== */
 
-.risk-low { color: #2e7d32; }
-.risk-mid { color: #c77700; }
-.risk-high { color: #c62828; }
+.risk-low { color: var(--ts-success); }
+.risk-mid { color: var(--ts-warn); }
+.risk-high { color: var(--ts-danger); }
 
 /* ===== Smooth UI ===== */
 
@@ -100,17 +266,8 @@ button {
 
 /* ===============================
    TalkScope UI Level 2
+   (kept for backward compatibility)
 ================================ */
-
-/* Tokens */
-:root{
-  --ts-ink: #0b1220;
-  --ts-muted: rgba(11,18,32,.65);
-  --ts-border: #e5e7eb;
-  --ts-border-soft: #f0f0f0;
-  --ts-accent: #406184;
-  --ts-bg-soft: #f7f9fc;
-}
 
 /* Accent text */
 .ts-accent { color: var(--ts-accent); }
