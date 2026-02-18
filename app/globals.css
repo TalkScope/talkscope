@@ -1,15 +1,22 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
+/* ==========================================================================
+   TalkScope UI (Tailwind v4) — globals.css
+   - Soft canvas + white cards (Invoca/CallRail-like)
+   - Design tokens + lightweight utility classes used across /app
+   ========================================================================== */
+
+/* -----------------------------
+   Design tokens
+------------------------------ */
 :root {
-  /* App surfaces (Invoca/CallRail-like: soft canvas + white cards) */
+  /* App surfaces */
   --background: #f7f9fc;
   --foreground: #0b1220;
 
   /* TalkScope tokens */
   --ts-ink: #0b1220;
-  --ts-muted: rgba(11,18,32,.65);
+  --ts-muted: rgba(11, 18, 32, 0.65);
   --ts-border: #e5e7eb;
   --ts-border-soft: #f0f0f0;
   --ts-accent: #406184;
@@ -20,322 +27,322 @@
   --ts-success: #2e7d32;
   --ts-warn: #c77700;
   --ts-danger: #c62828;
+
+  /* Radii + shadows */
+  --ts-radius-lg: 16px;
+  --ts-radius-md: 12px;
+
+  /* Shadows (subtle, “product” feel) */
+  --ts-shadow-sm: 0 1px 2px rgba(11, 18, 32, 0.06);
+  --ts-shadow-md: 0 8px 24px rgba(11, 18, 32, 0.08);
 }
 
-
+/* Dark mode base (kept calm) */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0f1a;
-    --foreground: #e9edf5;
-    --ts-ink: #e9edf5;
-    --ts-muted: rgba(233,237,245,.65);
-    --ts-border: rgba(255,255,255,.10);
-    --ts-border-soft: rgba(255,255,255,.06);
-    --ts-bg-soft: rgba(255,255,255,.04);
-    --ts-surface: rgba(255,255,255,.03);
+    --background: #0b1220;
+    --foreground: #f7f9fc;
+
+    --ts-ink: #f7f9fc;
+    --ts-muted: rgba(247, 249, 252, 0.7);
+    --ts-border: rgba(255, 255, 255, 0.12);
+    --ts-border-soft: rgba(255, 255, 255, 0.08);
+    --ts-bg-soft: #0b1220;
+    --ts-surface: rgba(255, 255, 255, 0.06);
+
+    --ts-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+    --ts-shadow-md: 0 10px 30px rgba(0, 0, 0, 0.35);
   }
+}
+
+/* -----------------------------
+   Base layout + typography
+------------------------------ */
+html,
+body {
+  height: 100%;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
+    Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  letter-spacing: -0.01em;
 }
 
-/* Links */
-a { color: inherit; text-decoration: none; }
-a:hover { text-decoration: none; }
+/* Better text rendering */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* -----------------------------
+   TalkScope “design system” helpers
+   (Plain CSS classes — no Tailwind @apply, so Turbopack stays happy)
+------------------------------ */
 
 /* Page container */
-.ts-container{
-  max-width: 1100px;
+.ts-container {
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 28px 16px;
+  padding: 20px 20px 40px;
+}
+
+@media (min-width: 1024px) {
+  .ts-container {
+    padding: 28px 28px 56px;
+  }
 }
 
 /* Page header */
-.ts-pagehead{
+.ts-pagehead {
   display: flex;
+  gap: 16px;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  margin-bottom: 16px;
 }
-.ts-title{
+
+.ts-title {
   font-size: 28px;
   line-height: 1.15;
-  font-weight: 700;
+  font-weight: 650;
   letter-spacing: -0.02em;
 }
-.ts-subtitle{
+
+.ts-subtitle {
   margin-top: 6px;
-  color: var(--ts-muted);
   font-size: 14px;
-}
-.ts-breadcrumbs{
   color: var(--ts-muted);
-  font-size: 12px;
 }
-.ts-breadcrumbs a{ color: var(--ts-muted); }
-.ts-breadcrumbs a:hover{ color: var(--ts-accent); }
 
 /* Cards */
-.ts-card{
+.ts-card {
   background: var(--ts-surface);
   border: 1px solid var(--ts-border);
-  border-radius: 18px;
-  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
-}
-.ts-card-pad{ padding: 18px; }
-.ts-card-title{
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--ts-ink);
-}
-.ts-card-meta{
-  margin-top: 4px;
-  font-size: 12px;
-  color: var(--ts-muted);
+  border-radius: var(--ts-radius-lg);
+  box-shadow: var(--ts-shadow-sm);
 }
 
-/* KPI */
-.ts-kpi{
-  display: grid;
-  gap: 10px;
+.ts-card-pad {
+  padding: 16px;
 }
-.ts-kpi .k{
-  font-size: 12px;
+
+@media (min-width: 1024px) {
+  .ts-card-pad {
+    padding: 18px;
+  }
+}
+
+.ts-card-title {
+  font-size: 13px;
+  font-weight: 650;
   color: var(--ts-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
-.ts-kpi .v{
-  font-size: 28px;
-  font-weight: 800;
+
+.ts-metric {
+  margin-top: 8px;
+  font-size: 26px;
+  font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--ts-ink);
 }
-.ts-kpi .hint{
-  font-size: 12px;
-  color: var(--ts-muted);
+
+.ts-divider {
+  height: 1px;
+  background: var(--ts-border-soft);
+  margin: 14px 0;
 }
 
 /* Buttons */
-.ts-btn{
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  height: 38px;
-  padding: 0 14px;
-  border-radius: 12px;
-  border: 1px solid var(--ts-border);
-  background: var(--ts-surface);
-  color: var(--ts-ink);
-  font-size: 13px;
-  font-weight: 600;
-}
-.ts-btn:hover{
-  transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(15,23,42,0.06);
-}
-.ts-btn:disabled{ opacity: .55; transform: none; box-shadow: none; cursor: not-allowed; }
-
-.ts-btn-primary{
-  background: var(--ts-ink);
-  color: #fff;
-  border-color: rgba(0,0,0,.10);
-}
-.ts-btn-primary:hover{ box-shadow: 0 10px 22px rgba(0,0,0,0.10); }
-
-.ts-btn-accent{
-  background: var(--ts-accent);
-  color: #fff;
-  border-color: rgba(0,0,0,.08);
-}
-
-/* Inputs */
-.ts-select{
-  height: 38px;
-  border-radius: 12px;
-  border: 1px solid var(--ts-border);
-  background: var(--ts-surface);
-  padding: 0 12px;
-  font-size: 13px;
-  color: var(--ts-ink);
-}
-
-/* Badges (chips) */
-.ts-chip{
+.ts-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
   border: 1px solid var(--ts-border);
-  border-radius: 999px;
-  padding: 6px 10px;
-  font-size: 12px;
-  color: var(--ts-muted);
   background: var(--ts-surface);
-}
-.ts-chip strong{ color: var(--ts-ink); font-weight: 700; }
-
-/* Alerts */
-.ts-alert{
-  border-radius: 16px;
-  border: 1px solid var(--ts-border);
-  padding: 12px 14px;
+  color: var(--ts-ink);
   font-size: 13px;
-}
-.ts-alert-error{ border-color: rgba(198,40,40,.25); background: rgba(198,40,40,.06); color: var(--ts-danger); }
-.ts-alert-ok{ border-color: rgba(46,125,50,.25); background: rgba(46,125,50,.06); color: var(--ts-success); }
-
-
-
-/* ===============================
-   TalkScope Design System
-   Clean / Enterprise / BI style
-================================ */
-
-/* ===== Typography ===== */
-
-.agent-name {
-  color: #406184;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  box-shadow: 0 1px 0 rgba(11, 18, 32, 0.02);
+  cursor: pointer;
+  user-select: none;
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
 }
 
-.metric-number {
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-
-/* ===== Tables ===== */
-
-.table-hover tbody tr:hover {
-  background: #f6f8fa;
-  transition: background 0.15s ease;
-}
-
-.table-divider tr {
-  border-bottom: 1px solid #f0f0f0;
-}
-
-/* ===== Sections spacing ===== */
-
-.section-divider {
-  border-top: 1px solid #e5e7eb;
-  margin-top: 2.5rem;
-  padding-top: 2rem;
-}
-
-/* ===== Cards ===== */
-
-.card {
-  border: 1px solid #e5e7eb;
-  border-radius: 18px;
-  background: #ffffff;
-}
-
-.card-soft {
-  border: 1px solid #f0f0f0;
-  border-radius: 18px;
-  background: #ffffff;
-}
-
-/* ===== Hover elevation ===== */
-
-.hover-lift:hover {
+.ts-btn:hover {
+  border-color: rgba(64, 97, 132, 0.35);
+  box-shadow: 0 6px 18px rgba(11, 18, 32, 0.08);
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(0,0,0,0.04);
-  transition: all 0.15s ease;
 }
 
-/* ===== Progress colors ===== */
-
-.risk-low { color: var(--ts-success); }
-.risk-mid { color: var(--ts-warn); }
-.risk-high { color: var(--ts-danger); }
-
-/* ===== Smooth UI ===== */
-
-button {
-  transition: all 0.15s ease;
+.ts-btn:active {
+  transform: translateY(0px);
+  box-shadow: var(--ts-shadow-sm);
 }
 
-
-/* ===============================
-   TalkScope UI Level 2
-   (kept for backward compatibility)
-================================ */
-
-/* Accent text */
-.ts-accent { color: var(--ts-accent); }
-.ts-ink { color: var(--ts-ink); }
-.ts-muted { color: var(--ts-muted); }
-
-/* Better table hover */
-.table-hover tbody tr:hover {
-  background: var(--ts-bg-soft);
+.ts-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
-/* Thin divider */
-.ts-divider {
-  border-top: 1px solid var(--ts-border-soft);
+.ts-btn-primary {
+  background: var(--ts-accent);
+  border-color: rgba(64, 97, 132, 0.6);
+  color: #fff;
 }
 
-/* Badge */
-.ts-badge {
+.ts-btn-primary:hover {
+  border-color: rgba(64, 97, 132, 0.9);
+}
+
+/* Inputs / selects */
+.ts-input,
+.ts-select {
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid var(--ts-border);
+  background: var(--ts-surface);
+  color: var(--ts-ink);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.ts-input:focus,
+.ts-select:focus {
+  border-color: rgba(64, 97, 132, 0.55);
+  box-shadow: 0 0 0 3px rgba(64, 97, 132, 0.12);
+}
+
+/* Chips / badges */
+.ts-chip {
   display: inline-flex;
   align-items: center;
-  gap: .5rem;
-  border: 1px solid var(--ts-border);
+  gap: 8px;
+  padding: 6px 10px;
   border-radius: 999px;
-  padding: .45rem .85rem;
-  font-size: 13px;
-  color: var(--ts-muted);
-  background: #fff;
-}
-.ts-badge strong { color: var(--ts-ink); font-weight: 600; }
-
-/* Progress bar */
-.ts-progress {
-  width: 100%;
-  height: 10px;
-  background: #f1f3f5;
-  border-radius: 999px;
-  overflow: hidden;
-  border: 1px solid var(--ts-border-soft);
-}
-.ts-progress > div {
-  height: 100%;
-  background: var(--ts-accent);
-  width: 0%;
-  transition: width .25s ease;
-}
-
-/* Accordion */
-.ts-accordion {
   border: 1px solid var(--ts-border);
-  border-radius: 18px;
-  overflow: hidden;
-  background: #fff;
-}
-.ts-accordion details {
-  border-top: 1px solid var(--ts-border-soft);
-  padding: 14px 16px;
-}
-.ts-accordion details:first-child { border-top: 0; }
-.ts-accordion summary {
-  cursor: pointer;
-  list-style: none;
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--ts-ink);
+  font-size: 12px;
   font-weight: 600;
+}
+
+.ts-chip-muted {
+  color: var(--ts-muted);
+}
+
+.ts-chip-accent {
+  border-color: rgba(64, 97, 132, 0.35);
+  background: rgba(64, 97, 132, 0.08);
+  color: var(--ts-accent);
+}
+
+.ts-chip-danger {
+  border-color: rgba(198, 40, 40, 0.35);
+  background: rgba(198, 40, 40, 0.08);
+  color: var(--ts-danger);
+}
+
+.ts-chip-warn {
+  border-color: rgba(199, 119, 0, 0.35);
+  background: rgba(199, 119, 0, 0.09);
+  color: var(--ts-warn);
+}
+
+.ts-chip-success {
+  border-color: rgba(46, 125, 50, 0.35);
+  background: rgba(46, 125, 50, 0.08);
+  color: var(--ts-success);
+}
+
+/* Tables */
+.ts-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border: 1px solid var(--ts-border);
+  border-radius: var(--ts-radius-md);
+  background: var(--ts-surface);
+}
+
+.ts-table th,
+.ts-table td {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--ts-border-soft);
+  vertical-align: middle;
+}
+
+.ts-table th {
+  font-size: 12px;
+  color: var(--ts-muted);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(247, 249, 252, 0.6);
+}
+
+.ts-table tr:last-child td {
+  border-bottom: none;
+}
+
+.ts-row-hover:hover td {
+  background: rgba(64, 97, 132, 0.04);
+}
+
+/* Alerts */
+.ts-alert {
+  border: 1px solid var(--ts-border);
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: var(--ts-radius-md);
+  padding: 10px 12px;
+  font-size: 13px;
   color: var(--ts-ink);
 }
-.ts-accordion summary::-webkit-details-marker { display: none; }
-.ts-accordion .ts-acc-body {
-  margin-top: 10px;
-  color: var(--ts-muted);
-  line-height: 1.55;
-  font-size: 14px;
+
+.ts-alert-error {
+  border-color: rgba(198, 40, 40, 0.25);
+  background: rgba(198, 40, 40, 0.06);
+  color: var(--ts-danger);
 }
 
-/* Make numbers pop a bit more */
-.metric-number { font-weight: 700; }
-.agent-name { font-weight: 700; }
+.ts-alert-ok {
+  border-color: rgba(46, 125, 50, 0.25);
+  background: rgba(46, 125, 50, 0.06);
+  color: var(--ts-success);
+}
+
+/* Small helpers */
+.ts-muted {
+  color: var(--ts-muted);
+}
+
+.ts-link {
+  color: var(--ts-accent);
+  text-decoration: none;
+}
+
+.ts-link:hover {
+  text-decoration: underline;
+}
