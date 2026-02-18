@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useMemo, useState } from "react";
+import { useParams } from "next/navigation";
 
 type AgentResponse = {
   ok: boolean;
@@ -42,28 +42,44 @@ function safeJsonParse(txt: string) {
   }
 }
 
-function pill(label: string) {
-  return <span className="ts-chip">{label}</span>;
-}
-
-function clipTranscript(text: string, max = 420) {
+function clipTranscript(text: string, max = 520) {
   const t = (text || "").trim();
   if (t.length <= max) return t;
   return t.slice(0, max).trimEnd() + "…";
 }
 
+function scoreChipClass(kind: "accent" | "success" | "warn" | "danger" | "muted") {
+  if (kind === "success") return "ts-chip ts-chip-success";
+  if (kind === "warn") return "ts-chip ts-chip-warn";
+  if (kind === "danger") return "ts-chip ts-chip-danger";
+  if (kind === "accent") return "ts-chip ts-chip-accent";
+  return "ts-chip ts-chip-muted";
+}
+
+function classifyRisk(risk: number | null | undefined) {
+  if (risk === null || risk === undefined || Number.isNaN(Number(risk))) return "muted" as const;
+  if (risk >= 70) return "danger" as const;
+  if (risk >= 45) return "warn" as const;
+  return "success" as const;
+}
+
+function classifyOverall(overall: number | null | undefined) {
+  if (overall === null || overall === undefined || Number.isNaN(Number(overall))) return "muted" as const;
+  if (overall >= 80) return "success" as const;
+  if (overall >= 60) return "accent" as const;
+  if (overall >= 40) return "warn" as const;
+  return "danger" as const;
+}
+
 export default function AgentPage() {
   const params = useParams<{ id: string }>();
-  const search = useSearchParams();
 
-  // route id = настоящий Agent.id (например agent_1)
   const agentId = useMemo(() => {
     const raw = params?.id ? String(params.id) : "";
     return decodeURIComponent(raw);
   }, [params]);
 
   const [windowSize, setWindowSize] = useState<number>(30);
-
   const [data, setData] = useState<AgentResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [msgErr, setMsgErr] = useState<string | null>(null);
@@ -75,33 +91,31 @@ export default function AgentPage() {
   const agentName = data?.agent?.name || "Agent";
   const teamName = data?.agent?.team?.name || "";
   const orgName = data?.agent?.team?.organization?.name || "";
-
   const last = data?.lastScore || null;
 
   async function load() {
     setLoading(true);
     setMsgErr(null);
-   try {
-  if (!agentId) throw new Error("Missing route param: agent id");
+    try {
+      if (!agentId) throw new Error("Missing route param: agent id");
 
-  const r = await fetch(`/api/meta/agent?id=${encodeURIComponent(agentId)}`, { cache: "no-store" });
-  const txt = await r.text();
-  if (!r.ok) throw new Error(`HTTP ${r.status}: ${txt.slice(0, 220)}`);
+      const r = await fetch(`/api/meta/agent?id=${encodeURIComponent(agentId)}`, { cache: "no-store" });
+      const txt = await r.text();
+      if (!r.ok) throw new Error(`HTTP ${r.status}: ${txt.slice(0, 220)}`);
 
-  const parsed = safeJsonParse(txt);
-  if (!parsed.ok) throw new Error(`JSON error: ${parsed.error}. Head: ${parsed.head}`);
+      const parsed = safeJsonParse(txt);
+      if (!parsed.ok) throw new Error(`JSON error: ${parsed.error}. Head: ${parsed.head}`);
 
-  const j = parsed.json as AgentResponse;
-  if (!j.ok) throw new Error((j as any)?.error || "Agent API returned ok:false");
+      const j = parsed.json as AgentResponse;
+      if (!j.ok) throw new Error((j as any)?.error || "Agent API returned ok:false");
 
-  setData(j);
-} catch (e: any) {
-  setMsgErr(e?.message || "Failed to load agent");
-  setData(null);
-} finally {
-  setLoading(false);
-}
-
+      setData(j);
+    } catch (e: any) {
+      setMsgErr(e?.message || "Failed to load agent");
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function generateScore() {
@@ -158,10 +172,7 @@ export default function AgentPage() {
       if (!j.ok) throw new Error(j.error || "Patterns returned ok:false");
 
       setActionOk("Patterns generated.");
-      // переходим в Pattern Intelligence с автоподстановкой
-      window.location.href = `/app/patterns?level=agent&refId=${encodeURIComponent(agentId)}&windowSize=${encodeURIComponent(
-        String(windowSize)
-      )}`;
+      await load();
     } catch (e: any) {
       setActionErr(e?.message || "Failed to generate patterns");
     } finally {
@@ -169,218 +180,244 @@ export default function AgentPage() {
     }
   }
 
-  useEffect(() => {
-    // allow preselect from query ?window=50
-    const w = search?.get("window");
-    if (w) {
-      const n = Number(w);
-      if (!Number.isNaN(n) && n > 0) setWindowSize(n);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Auto-load once we have an id (kept explicit to avoid useEffect loops in turbopack)
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  if (!data && !loading && !msgErr && agentId) load();
 
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agentId]);
+  const overallKind = classifyOverall(last?.overallScore);
+  const riskKind = classifyRisk(last?.riskScore);
+  const priorityKind =
+    last?.coachingPriority === null || last?.coachingPriority === undefined
+      ? ("muted" as const)
+      : last.coachingPriority >= 70
+      ? ("danger" as const)
+      : last.coachingPriority >= 45
+      ? ("warn" as const)
+      : ("success" as const);
 
   return (
     <div className="ts-container">
       <div className="ts-pagehead">
         <div>
-          <div className="ts-breadcrumbs">
-            <a href="/app/dashboard">Dashboard</a> <span>·</span> <span className="ts-accent">Agent</span>
+          <div className="ts-chip ts-chip-muted" style={{ marginBottom: 10 }}>
+            <span>Agent</span>
+            <span className="ts-muted">/</span>
+            <span>{agentName}</span>
           </div>
-          <h1 className="ts-title">Agent Intelligence</h1>
+
+          <div className="ts-title">Agent Intelligence</div>
           <div className="ts-subtitle">
-            <span className="agent-name">{agentName}</span>
-            <span className="mx-2">·</span>
-            <span>{teamName && orgName ? `${teamName} — ${orgName}` : teamName || orgName || "—"}</span>
+            {teamName && orgName ? `${teamName} - ${orgName}` : teamName || orgName || "-"}
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <a href="/app/dashboard" className="ts-btn">
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
+          <a className="ts-btn" href="/app/dashboard">
             Dashboard
           </a>
           <a
+            className="ts-btn"
             href={`/app/patterns?level=agent&refId=${encodeURIComponent(agentId)}&windowSize=${encodeURIComponent(
               String(windowSize)
             )}`}
-            className="ts-btn"
           >
             Pattern Intelligence
           </a>
-          <button onClick={load} disabled={loading} className="ts-btn">
+          <button className="ts-btn" onClick={load} disabled={loading}>
             {loading ? "Refreshing..." : "Refresh"}
           </button>
         </div>
       </div>
 
-      {(msgErr || actionErr) && <div className="mt-6 ts-alert ts-alert-error">{msgErr || actionErr}</div>}
+      {(msgErr || actionErr) && <div className="ts-alert ts-alert-error">{msgErr || actionErr}</div>}
+      {actionOk && <div className="ts-alert ts-alert-ok">{actionOk}</div>}
 
-      {actionOk && <div className="mt-6 ts-alert ts-alert-ok">{actionOk}</div>}
-
-      <div className="mt-6 flex flex-wrap gap-2">
-        {pill(`Window: ${windowSize}`)}
-        {pill(`Last overall: ${last?.overallScore !== undefined ? fmt(last.overallScore) : "—"}`)}
-        {pill(`Risk: ${last?.riskScore !== undefined ? fmt(last.riskScore) : "—"}`)}
-        {pill(`Priority: ${last?.coachingPriority !== undefined ? fmt(last.coachingPriority) : "—"}`)}
-        {pill(data?.lastPattern ? `Patterns: yes` : "No patterns yet")}
-        <button onClick={() => navigator.clipboard.writeText(agentId)} className="ts-btn" title="Copy agent id">
-          Copy Agent ID
-        </button>
-      </div>
-
-      {/* Actions */}
-      <div className="mt-6 ts-card ts-card-pad">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="ts-card-title">Actions</h2>
-            <p className="ts-card-meta">
-              Generate fresh score snapshot or patterns without re-entering IDs.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <select
-              className="ts-select"
-              value={windowSize}
-              onChange={(e) => setWindowSize(Number(e.target.value))}
-            >
-              {[20, 30, 50].map((n) => (
-                <option key={n} value={n}>
-                  last {n}
-                </option>
-              ))}
-            </select>
-
-            <button
-              onClick={generateScore}
-              disabled={actionLoading || !agentId}
-              className="ts-btn"
-            >
-              {actionLoading ? "Working..." : "Generate Score"}
-            </button>
-
-            <button
-              onClick={generatePatternsAgent}
-              disabled={actionLoading || !agentId}
-              className="ts-btn ts-btn-primary"
-            >
-              {actionLoading ? "Working..." : "Generate Patterns (Agent)"}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* KPI row */}
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
-        <div className="ts-card ts-card-pad">
-          <div className="ts-kpi">
-            <div className="k">Overall score</div>
-            <div className="v metric-number">{data?.lastScore?.overallScore !== undefined ? fmt(data?.lastScore?.overallScore) : "—"}</div>
-            <div className="hint">Latest snapshot</div>
-          </div>
-        </div>
-        <div className="ts-card ts-card-pad">
-          <div className="ts-kpi">
-            <div className="k">Risk</div>
-            <div className={`v metric-number ${data?.lastScore?.riskScore !== undefined ? (Number(data?.lastScore?.riskScore) >= 70 ? "risk-high" : Number(data?.lastScore?.riskScore) >= 50 ? "risk-mid" : "risk-low") : ""}`}
-            >
-              {data?.lastScore?.riskScore !== undefined ? fmt(data?.lastScore?.riskScore) : "—"}
+      <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(12, minmax(0, 1fr))", marginTop: 14 }}>
+        <div className="ts-card" style={{ gridColumn: "span 4" }}>
+          <div className="ts-card-pad">
+            <div className="ts-card-title">Overall</div>
+            <div className="ts-metric">{fmt(last?.overallScore)}</div>
+            <div style={{ marginTop: 10 }}>
+              <span className={scoreChipClass(overallKind)}>{overallKind === "muted" ? "No data" : "Status"}</span>
             </div>
-            <div className="hint">Revenue / compliance risk</div>
           </div>
         </div>
-        <div className="ts-card ts-card-pad">
-          <div className="ts-kpi">
-            <div className="k">Coaching priority</div>
-            <div className="v metric-number">{data?.lastScore?.coachingPriority !== undefined ? fmt(data?.lastScore?.coachingPriority) : "—"}</div>
-            <div className="hint">Higher = coach sooner</div>
+
+        <div className="ts-card" style={{ gridColumn: "span 4" }}>
+          <div className="ts-card-pad">
+            <div className="ts-card-title">Risk</div>
+            <div className="ts-metric">{fmt(last?.riskScore)}</div>
+            <div style={{ marginTop: 10 }}>
+              <span className={scoreChipClass(riskKind)}>
+                {riskKind === "danger" ? "High" : riskKind === "warn" ? "Medium" : riskKind === "success" ? "Low" : "No data"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="ts-card" style={{ gridColumn: "span 4" }}>
+          <div className="ts-card-pad">
+            <div className="ts-card-title">Coaching priority</div>
+            <div className="ts-metric">{fmt(last?.coachingPriority)}</div>
+            <div style={{ marginTop: 10 }}>
+              <span className={scoreChipClass(priorityKind)}>
+                {priorityKind === "danger" ? "Urgent" : priorityKind === "warn" ? "Focus" : priorityKind === "success" ? "Monitor" : "No data"}
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <section className="ts-card ts-card-pad">
-          <h2 className="ts-card-title">Latest Score Snapshot</h2>
-
-          {!data?.lastScore ? (
-            <p className="mt-2 text-sm ts-muted">No scores yet. Click Generate Score.</p>
-          ) : (
-            <div className="mt-4 space-y-3 text-sm">
-              <div className="flex flex-wrap gap-2">
-                {pill(`Overall: ${fmt(data.lastScore.overallScore)}`)}
-                {pill(`Comm: ${fmt(data.lastScore.communicationScore)}`)}
-                {pill(`Conv: ${fmt(data.lastScore.conversionScore)}`)}
-                {pill(`Risk: ${fmt(data.lastScore.riskScore)}`)}
-                {pill(`Priority: ${fmt(data.lastScore.coachingPriority)}`)}
-              </div>
-
-              <div className="rounded-xl border border-[var(--ts-border-soft)] bg-[var(--ts-bg-soft)] p-4">
-                <div className="text-xs ts-muted">Strengths</div>
-                <ul className="mt-2 list-disc pl-5 text-[13px]">
-                  {(data.lastScore.strengths || []).slice(0, 6).map((x: string, i: number) => (
-                    <li key={i}>{x}</li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="rounded-xl border border-[var(--ts-border-soft)] bg-[var(--ts-bg-soft)] p-4">
-                <div className="text-xs ts-muted">Weaknesses</div>
-                <ul className="mt-2 list-disc pl-5 text-[13px]">
-                  {(data.lastScore.weaknesses || []).slice(0, 6).map((x: string, i: number) => (
-                    <li key={i}>{x}</li>
-                  ))}
-                </ul>
+      <div className="ts-card" style={{ marginTop: 14 }}>
+        <div className="ts-card-pad">
+          <div style={{ display: "flex", gap: 10, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
+            <div>
+              <div className="ts-card-title">Actions</div>
+              <div className="ts-subtitle" style={{ marginTop: 6 }}>
+                Generate a new score snapshot or pattern report for this agent.
               </div>
             </div>
-          )}
-        </section>
 
-        <section className="ts-card ts-card-pad">
-          <div className="flex items-center justify-between">
-            <h2 className="ts-card-title">Recent Conversations</h2>
-            <span className="text-xs ts-muted">Last {data?.conversations?.length ?? 0} transcripts (excerpt)</span>
+            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+              <select className="ts-select" value={windowSize} onChange={(e) => setWindowSize(Number(e.target.value))}>
+                {[20, 30, 50].map((n) => (
+                  <option key={n} value={n}>
+                    last {n}
+                  </option>
+                ))}
+              </select>
+
+              <button className="ts-btn" onClick={generateScore} disabled={actionLoading || !agentId}>
+                {actionLoading ? "Working..." : "Generate Score"}
+              </button>
+
+              <button className="ts-btn ts-btn-primary" onClick={generatePatternsAgent} disabled={actionLoading || !agentId}>
+                {actionLoading ? "Working..." : "Generate Patterns"}
+              </button>
+
+              <button
+                className="ts-btn"
+                onClick={() => navigator.clipboard.writeText(agentId)}
+                title="Copy agent id"
+                disabled={!agentId}
+              >
+                Copy ID
+              </button>
+            </div>
           </div>
 
-          <div className="mt-4 space-y-3">
-            {(data?.conversations ?? []).length === 0 ? (
-              <div className="rounded-xl border border-[var(--ts-border-soft)] bg-[var(--ts-bg-soft)] p-4 text-sm ts-muted">
-                No conversations yet.
+          <div className="ts-divider" />
+
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <span className="ts-chip ts-chip-muted">Window: {windowSize}</span>
+            <span className="ts-chip ts-chip-muted">Patterns: {data?.lastPattern ? "yes" : "no"}</span>
+            <span className={scoreChipClass(overallKind)}>Last overall: {fmt(last?.overallScore)}</span>
+            <span className={scoreChipClass(riskKind)}>Risk: {fmt(last?.riskScore)}</span>
+            <span className={scoreChipClass(priorityKind)}>Priority: {fmt(last?.coachingPriority)}</span>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gap: 14, gridTemplateColumns: "repeat(12, minmax(0, 1fr))", marginTop: 14 }}>
+        <section className="ts-card" style={{ gridColumn: "span 6" }}>
+          <div className="ts-card-pad">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div className="ts-card-title">Latest score snapshot</div>
+              <span className="ts-chip ts-chip-muted">{last?.createdAt ? new Date(last.createdAt).toISOString().slice(0, 10) : "-"}</span>
+            </div>
+
+            {!data?.lastScore ? (
+              <div className="ts-muted" style={{ marginTop: 10 }}>
+                No scores yet. Click Generate Score.
               </div>
             ) : (
-              (data?.conversations ?? []).slice(0, 15).map((c) => (
-                <div key={c.id} className="rounded-2xl border border-[var(--ts-border)] bg-[var(--ts-surface)] p-4">
-                  {/* УБРАЛИ c.id сверху, чтобы не портил вид */}
-                  <div className="flex items-center justify-between">
-                    <div className="text-xs ts-muted">
-                      {new Date(c.createdAt).toISOString().slice(0, 19).replace("T", " ")}
+              <div style={{ marginTop: 12 }}>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  <span className={scoreChipClass(classifyOverall(data.lastScore.overallScore))}>Overall: {fmt(data.lastScore.overallScore)}</span>
+                  <span className="ts-chip ts-chip-muted">Comm: {fmt(data.lastScore.communicationScore)}</span>
+                  <span className="ts-chip ts-chip-muted">Conv: {fmt(data.lastScore.conversionScore)}</span>
+                  <span className={scoreChipClass(classifyRisk(data.lastScore.riskScore))}>Risk: {fmt(data.lastScore.riskScore)}</span>
+                  <span className={scoreChipClass(priorityKind)}>Priority: {fmt(data.lastScore.coachingPriority)}</span>
+                </div>
+
+                <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(12, minmax(0, 1fr))", marginTop: 14 }}>
+                  <div className="ts-card" style={{ gridColumn: "span 6" }}>
+                    <div className="ts-card-pad">
+                      <div className="ts-card-title">Strengths</div>
+                      <ul style={{ marginTop: 10, paddingLeft: 18 }}>
+                        {(data.lastScore.strengths || []).slice(0, 6).map((x: string, i: number) => (
+                          <li key={i} style={{ marginBottom: 6 }}>
+                            {x}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    {c.score !== null && c.score !== undefined ? (
-                      <div className="text-xs font-semibold">score: {fmt(c.score)}</div>
-                    ) : null}
                   </div>
 
-                  <div className="mt-3 text-sm font-semibold">Chat transcript (simulation):</div>
-
-                  <div
-                    className="mt-2 whitespace-pre-wrap break-words rounded-xl bg-[var(--ts-bg-soft)] p-3 text-sm text-neutral-800"
-                    style={{ overflowWrap: "anywhere" }}
-                  >
-                    {clipTranscript(c.transcript || c.excerpt || "", 900)}
+                  <div className="ts-card" style={{ gridColumn: "span 6" }}>
+                    <div className="ts-card-pad">
+                      <div className="ts-card-title">Weaknesses</div>
+                      <ul style={{ marginTop: 10, paddingLeft: 18 }}>
+                        {(data.lastScore.weaknesses || []).slice(0, 6).map((x: string, i: number) => (
+                          <li key={i} style={{ marginBottom: 6 }}>
+                            {x}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
                 </div>
-              ))
+              </div>
             )}
           </div>
         </section>
+
+        <section className="ts-card" style={{ gridColumn: "span 6" }}>
+          <div className="ts-card-pad">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              <div className="ts-card-title">Recent conversations</div>
+              <span className="ts-chip ts-chip-muted">Last {data?.conversations?.length ?? 0}</span>
+            </div>
+
+            <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+              {(data?.conversations ?? []).length === 0 ? (
+                <div className="ts-alert">No conversations yet.</div>
+              ) : (
+                (data?.conversations ?? []).slice(0, 12).map((c) => (
+                  <div key={c.id} className="ts-card">
+                    <div className="ts-card-pad">
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                        <span className="ts-chip ts-chip-muted">
+                          {new Date(c.createdAt).toISOString().slice(0, 19).replace("T", " ")}
+                        </span>
+                        {c.score !== null && c.score !== undefined ? (
+                          <span className={scoreChipClass(classifyOverall(c.score))}>Score: {fmt(c.score)}</span>
+                        ) : (
+                          <span className="ts-chip ts-chip-muted">Score: -</span>
+                        )}
+                      </div>
+
+                      <div className="ts-divider" />
+
+                      <div style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", fontSize: 13, lineHeight: 1.5 }}>
+                        {clipTranscript(c.transcript || c.excerpt || "", 900)}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </section>
       </div>
 
-      <div className="mt-8 ts-card ts-card-pad">
-        <div className="text-xs ts-muted">Agent id</div>
-        <div className="mt-1 font-mono text-xs text-neutral-700">{agentId || "—"}</div>
+      <div className="ts-card" style={{ marginTop: 14 }}>
+        <div className="ts-card-pad">
+          <div className="ts-card-title">Agent id</div>
+          <div style={{ marginTop: 8, fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace", fontSize: 12 }}>
+            {agentId || "-"}
+          </div>
+        </div>
       </div>
     </div>
   );
