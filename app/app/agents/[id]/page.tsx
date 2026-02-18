@@ -34,6 +34,27 @@ function fmt(n: number | null | undefined) {
   return Number(n).toFixed(1);
 }
 
+
+
+function normalizeList(val: any, limit = 6): string[] {
+  if (!val) return [];
+  if (Array.isArray(val)) {
+    return val
+      .map((x) => (typeof x === "string" ? x : String(x)))
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .slice(0, limit);
+  }
+  if (typeof val === "string") {
+    return val
+      .split(/\r?\n|•|\u2022|\-\s+/g)
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .slice(0, limit);
+  }
+  return [String(val)].map((s) => s.trim()).filter(Boolean).slice(0, limit);
+}
+
 function safeJsonParse(txt: string) {
   try {
     return { ok: true as const, json: JSON.parse(txt) };
@@ -344,10 +365,9 @@ export default function AgentPage() {
                   <div className="ts-card" style={{ gridColumn: "span 6" }}>
                     <div className="ts-card-pad">
                       <div className="ts-card-title">Strengths</div>
-                      <ul style={{ marginTop: 10, paddingLeft: 18 }}>
-                        {(data.lastScore.strengths || []).slice(0, 6).map((x: string, i: number) => (
-                          <li key={i} style={{ marginBottom: 6 }}>
-                            {x}
+                      <ul className="ts-list" style={{ marginTop: 10 }}>
+                        {normalizeList(data.lastScore?.strengths).map((x: string, i: number) => (
+                          <li key={i}>{x}
                           </li>
                         ))}
                       </ul>
@@ -357,10 +377,9 @@ export default function AgentPage() {
                   <div className="ts-card" style={{ gridColumn: "span 6" }}>
                     <div className="ts-card-pad">
                       <div className="ts-card-title">Weaknesses</div>
-                      <ul style={{ marginTop: 10, paddingLeft: 18 }}>
-                        {(data.lastScore.weaknesses || []).slice(0, 6).map((x: string, i: number) => (
-                          <li key={i} style={{ marginBottom: 6 }}>
-                            {x}
+                      <ul className="ts-list" style={{ marginTop: 10 }}>
+                        {normalizeList(data.lastScore?.weaknesses).map((x: string, i: number) => (
+                          <li key={i}>{x}
                           </li>
                         ))}
                       </ul>

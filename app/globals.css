@@ -346,3 +346,40 @@ a {
 .ts-link:hover {
   text-decoration: underline;
 }
+
+/* ===============================
+   TalkScope Lists (UL / LI)
+================================ */
+
+.ts-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ts-list li {
+  position: relative;
+  padding-left: 18px;
+  margin-bottom: 8px;
+  line-height: 1.45;
+  font-size: 14px;
+  color: var(--ts-ink);
+}
+
+
+.ts-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ts-accent);
+  opacity: 0.7;
+}
+
+
+.ts-card .ts-list li {
+  margin-bottom: 10px;
+}
