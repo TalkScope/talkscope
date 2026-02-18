@@ -421,11 +421,7 @@ export default function DashboardPage() {
           <div className="ts-card-title">Score snapshots</div>
           <div className="ts-metric-sm">{totals.scoreSnapshots || "—"}</div>
         </div>
-        <div className="ts-card ts-card-pad">
-          <div className="ts-card-title">Agents scored</div>
-          <div className="ts-metric-sm">{totals.agentsScored || "—"}</div>
-        </div>
-      </div>
+</div>
 
 {/* Scope */}
       <div className="mt-8 rounded-3xl border p-6">
