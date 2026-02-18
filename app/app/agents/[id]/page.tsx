@@ -69,12 +69,17 @@ function clipTranscript(text: string, max = 520) {
   return t.slice(0, max).trimEnd() + "…";
 }
 
+function chipStyle(kind: "accent" | "success" | "warn" | "danger" | "muted") {
+  if (kind === "danger") return { color: "var(--ts-danger)", borderColor: "rgba(180,35,24,.35)", background: "transparent" } as const;
+  if (kind === "warn") return { color: "var(--ts-warn)", borderColor: "rgba(184,106,0,.35)", background: "transparent" } as const;
+  if (kind === "success") return { color: "var(--ts-success)", borderColor: "rgba(31,122,58,.35)", background: "transparent" } as const;
+  if (kind === "accent") return { color: "var(--ts-accent)", borderColor: "rgba(64,97,132,.35)", background: "transparent" } as const;
+  return { color: "var(--ts-muted)", borderColor: "var(--ts-border)", background: "transparent" } as const;
+}
+
 function scoreChipClass(kind: "accent" | "success" | "warn" | "danger" | "muted") {
-  if (kind === "success") return "ts-chip ts-chip-success";
-  if (kind === "warn") return "ts-chip ts-chip-warn";
-  if (kind === "danger") return "ts-chip ts-chip-danger";
-  if (kind === "accent") return "ts-chip ts-chip-accent";
-  return "ts-chip ts-chip-muted";
+  // keep class simple, style carries the semantic color without loud fills
+  return "ts-chip";
 }
 
 function classifyRisk(risk: number | null | undefined) {
@@ -231,23 +236,6 @@ export default function AgentPage() {
             {teamName && orgName ? `${teamName} - ${orgName}` : teamName || orgName || "-"}
           </div>
         </div>
-
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
-          <a className="ts-btn" href="/app/dashboard">
-            Dashboard
-          </a>
-          <a
-            className="ts-btn"
-            href={`/app/patterns?level=agent&refId=${encodeURIComponent(agentId)}&windowSize=${encodeURIComponent(
-              String(windowSize)
-            )}`}
-          >
-            Pattern Intelligence
-          </a>
-          <button className="ts-btn" onClick={load} disabled={loading}>
-            {loading ? "Refreshing..." : "Refresh"}
-          </button>
-        </div>
       </div>
 
       {(msgErr || actionErr) && <div className="ts-alert ts-alert-error">{msgErr || actionErr}</div>}
@@ -332,9 +320,9 @@ export default function AgentPage() {
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             <span className="ts-chip ts-chip-muted">Window: {windowSize}</span>
             <span className="ts-chip ts-chip-muted">Patterns: {data?.lastPattern ? "yes" : "no"}</span>
-            <span className={scoreChipClass(overallKind)}>Last overall: {fmt(last?.overallScore)}</span>
-            <span className={scoreChipClass(riskKind)}>Risk: {fmt(last?.riskScore)}</span>
-            <span className={scoreChipClass(priorityKind)}>Priority: {fmt(last?.coachingPriority)}</span>
+            <span className={scoreChipClass(overallKind)} style={chipStyle(overallKind)}>Last overall: {fmt(last?.overallScore)}</span>
+            <span className={scoreChipClass(riskKind)} style={chipStyle(riskKind)}>Risk: {fmt(last?.riskScore)}</span>
+            <span className={scoreChipClass(priorityKind)} style={chipStyle(priorityKind)}>Priority: {fmt(last?.coachingPriority)}</span>
           </div>
         </div>
       </div>
@@ -342,90 +330,45 @@ export default function AgentPage() {
       <div style={{ display: "grid", gap: 14, gridTemplateColumns: "repeat(12, minmax(0, 1fr))", marginTop: 14 }}>
         <section className="ts-card" style={{ gridColumn: "span 6" }}>
           <div className="ts-card-pad">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div className="ts-card-title">Latest score snapshot</div>
-              <span className="ts-chip ts-chip-muted">{last?.createdAt ? new Date(last.createdAt).toISOString().slice(0, 10) : "-"}</span>
+            <div className="ts-sectionhead">
+              <div>
+                <div className="ts-h2">Pattern Intelligence</div>
+                <div className="ts-hint">Repeating signals and coaching focus for this agent.</div>
+              </div>
+              <a
+                className="ts-btn"
+                href={`/app/patterns?level=agent&refId=${encodeURIComponent(agentId)}&windowSize=${encodeURIComponent(String(windowSize))}`}
+              >
+                Open Patterns
+              </a>
             </div>
 
-            {!data?.lastScore ? (
-              <div className="ts-muted" style={{ marginTop: 10 }}>
-                No scores yet. Click Generate Score.
+            <div className="ts-divider" />
+
+            {!data?.lastPattern ? (
+              <div className="ts-panel" style={{ padding: 16 }}>
+                <div style={{ fontWeight: 750 }}>No pattern report yet.</div>
+                <div className="ts-muted" style={{ marginTop: 6 }}>
+                  Click <b>Generate Patterns</b> above to create the first report.
+                </div>
               </div>
             ) : (
-              <div style={{ marginTop: 12 }}>
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  <span className={scoreChipClass(classifyOverall(data.lastScore.overallScore))}>Overall: {fmt(data.lastScore.overallScore)}</span>
-                  <span className="ts-chip ts-chip-muted">Comm: {fmt(data.lastScore.communicationScore)}</span>
-                  <span className="ts-chip ts-chip-muted">Conv: {fmt(data.lastScore.conversionScore)}</span>
-                  <span className={scoreChipClass(classifyRisk(data.lastScore.riskScore))}>Risk: {fmt(data.lastScore.riskScore)}</span>
-                  <span className={scoreChipClass(priorityKind)}>Priority: {fmt(data.lastScore.coachingPriority)}</span>
+              <div className="ts-panel" style={{ padding: 16 }}>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                  <span className="ts-chip ts-chip-muted">Last generated</span>
+                  <span className="ts-chip" style={chipStyle("accent")}>
+                    window {data.lastPattern.windowSize}
+                  </span>
+                  <span className="ts-muted">
+                    {new Date(data.lastPattern.createdAt).toLocaleString()}
+                  </span>
                 </div>
 
-                <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(12, minmax(0, 1fr))", marginTop: 14 }}>
-                  <div className="ts-card" style={{ gridColumn: "span 6" }}>
-                    <div className="ts-card-pad">
-                      <div className="ts-card-title">Strengths</div>
-                      <ul className="ts-list" style={{ marginTop: 10 }}>
-                        {normalizeList(data.lastScore?.strengths).map((x: string, i: number) => (
-                          <li key={i}>{x}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-
-                  <div className="ts-card" style={{ gridColumn: "span 6" }}>
-                    <div className="ts-card-pad">
-                      <div className="ts-card-title">Weaknesses</div>
-                      <ul className="ts-list" style={{ marginTop: 10 }}>
-                        {normalizeList(data.lastScore?.weaknesses).map((x: string, i: number) => (
-                          <li key={i}>{x}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
+                <div className="ts-muted" style={{ marginTop: 10 }}>
+                  Open Pattern Intelligence to review clusters, risk triggers, and coaching recommendations.
                 </div>
               </div>
             )}
-          </div>
-        </section>
-
-        <section className="ts-card" style={{ gridColumn: "span 6" }}>
-          <div className="ts-card-pad">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              <div className="ts-card-title">Recent conversations</div>
-              <span className="ts-chip ts-chip-muted">Last {data?.conversations?.length ?? 0}</span>
-            </div>
-
-            <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-              {(data?.conversations ?? []).length === 0 ? (
-                <div className="ts-alert">No conversations yet.</div>
-              ) : (
-                (data?.conversations ?? []).slice(0, 12).map((c) => (
-                  <div key={c.id} className="ts-card">
-                    <div className="ts-card-pad">
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                        <span className="ts-chip ts-chip-muted">
-                          {new Date(c.createdAt).toISOString().slice(0, 19).replace("T", " ")}
-                        </span>
-                        {c.score !== null && c.score !== undefined ? (
-                          <span className={scoreChipClass(classifyOverall(c.score))}>Score: {fmt(c.score)}</span>
-                        ) : (
-                          <span className="ts-chip ts-chip-muted">Score: -</span>
-                        )}
-                      </div>
-
-                      <div className="ts-divider" />
-
-                      <div style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", fontSize: 13, lineHeight: 1.5 }}>
-                        {clipTranscript(c.transcript || c.excerpt || "", 900)}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
           </div>
         </section>
       </div>
