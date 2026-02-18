@@ -1,4 +1,3 @@
-import "./globals.css";
 import Header from "./_components/Header";
 import Footer from "./_components/Footer";
 
@@ -9,12 +8,10 @@ export const metadata = {
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>
-        <Header />
-        <main className="ts-app-main">{children}</main>
-        <Footer />
-      </body>
-    </html>
+    <>
+      <Header />
+      <main className="ts-app-main">{children}</main>
+      <Footer />
+    </>
   );
 }
