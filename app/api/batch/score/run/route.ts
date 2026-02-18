@@ -216,7 +216,7 @@ export async function POST(req: Request) {
             strengths: JSON.stringify(parsed.strengths ?? []),
             weaknesses: JSON.stringify(parsed.weaknesses ?? []),
             keyPatterns: JSON.stringify(parsed.key_patterns ?? []),
-          } as any,
+          },
         });
 
         await prisma.agentScoreHistory.create({

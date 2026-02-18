@@ -102,7 +102,7 @@ export default function AgentPage() {
   const params = useParams<{ id: string }>();
 
   const agentId = useMemo(() => {
-    const raw = params?.id ? String(params.id) : "";
+    const raw = Array.isArray(params?.id) ? params.id[0] : (params?.id ?? "");
     return decodeURIComponent(raw);
   }, [params]);
 

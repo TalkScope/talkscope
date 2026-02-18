@@ -151,7 +151,14 @@ export async function POST(req: Request) {
       text: { format: { type: "json_schema", ...schema } },
     });
 
-    const parsed = JSON.parse(resp.output_text);
+    const outText = (resp as any)?.output_text;
+    if (!outText || typeof outText !== "string") {
+      // rollback quota
+      state.globalCount = Math.max(0, state.globalCount - 1);
+      state.byIp[ip] = Math.max(0, state.byIp[ip] - 1);
+      return new NextResponse("OpenAI returned empty output. Try again.", { status: 500 });
+    }
+    const parsed = JSON.parse(outText);
 
     const transcriptHash = crypto.createHash("sha256").update(transcript).digest("hex");
 

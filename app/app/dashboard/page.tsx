@@ -96,7 +96,7 @@ export default function DashboardPage() {
 
   // data
   const [agents, setAgents] = useState<AgentRow[]>([]);
-  const [agentScores, setAgentScores] = useState<Record<string, Score | null>>({});
+  const [agentScores, setAgentScores] = useState<Record<string, Score | null | undefined>>({});
 
   // batch controls
   const [scopeType, setScopeType] = useState<"team" | "org">("team");

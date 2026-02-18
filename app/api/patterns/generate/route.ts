@@ -196,17 +196,16 @@ export async function POST(req: Request) {
     }
 
     // Save PatternReport
-    const data: any = {
-      level,
-      refId,
-      windowSize,
-      reportJson: JSON.stringify(parsed),
-    };
-
-    if (level === "org") data.organizationId = refId;
-    if (level === "team") data.teamId = refId;
-
-    await prisma.patternReport.create({ data });
+    await prisma.patternReport.create({
+      data: {
+        level,
+        refId,
+        windowSize,
+        reportJson: JSON.stringify(parsed),
+        ...(level === "org" ? { organizationId: refId } : {}),
+        ...(level === "team" ? { teamId: refId } : {}),
+      },
+    });
 	
 	let meta: any = null;
 
@@ -230,8 +229,6 @@ if (level === "agent") {
 }
 
 return NextResponse.json({ ok: true, meta, report: parsed });
-
-    return NextResponse.json(parsed);
   } catch (e: any) {
     console.error("patterns_generate_error:", e);
 
