@@ -44,7 +44,7 @@ export default function Header() {
     <header className="ts-topbar">
       <div className="ts-container ts-topbar-inner">
         <div className="ts-topbar-left">
-          <Link href={BRAND.href} className="ts-brand" aria-label={BRAND.name}>
+          <Link href="/" className="ts-brand" aria-label={BRAND.name}>
             <span className="ts-brand-mark" />
             <span className="ts-brand-text">
               <span className="ts-brand-name">{BRAND.name}</span>
@@ -94,9 +94,6 @@ export default function Header() {
             {theme === "dark" ? "☀️" : "🌙"}
           </button>
 
-          <Link href="/" className="ts-btn ts-btn-primary">
-            Home
-          </Link>
         </div>
       </div>
     </header>
