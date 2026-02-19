@@ -6,8 +6,10 @@ export type NavItem = {
 
 export const HEADER_NAV: NavItem[] = [
   { label: "Dashboard", href: "/app/dashboard" },
-  { label: "Agents", href: "/app/agents/agent_2" }, // change to /app/agents when you add an index page
+  { label: "Agents", href: "/app/agents" },
+  { label: "Conversations", href: "/app/conversations" },
   { label: "Patterns", href: "/app/patterns" },
+  { label: "Upload", href: "/app/upload" },
 ];
 
 export const FOOTER_NAV: NavItem[] = [

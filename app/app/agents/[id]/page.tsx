@@ -324,6 +324,29 @@ export default function AgentPage() {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  async function downloadPdf() {
+    try {
+      const r = await fetch("/api/pdf/agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          agent: { id: agentId, name: agentName, teamName, orgName },
+          score: last,
+          trend: data?.trend ?? [],
+        }),
+      });
+      if (!r.ok) throw new Error("PDF generation failed");
+      const html = await r.text();
+      const win = window.open("", "_blank");
+      if (!win) return;
+      win.document.write(html);
+      win.document.close();
+      setTimeout(() => { win.print(); }, 600);
+    } catch (e: any) {
+      setActionErr(e?.message || "PDF failed");
+    }
+  }
+
   useEffect(() => {
     if (!agentId) return;
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -566,6 +589,9 @@ export default function AgentPage() {
             </button>
             <button className="ts-btn" onClick={copyId} disabled={!agentId}>
               {copied ? "✓ Copied" : "Copy ID"}
+            </button>
+            <button className="ts-btn" onClick={downloadPdf} disabled={!last}>
+              ↓ PDF Report
             </button>
           </div>
         </div>
