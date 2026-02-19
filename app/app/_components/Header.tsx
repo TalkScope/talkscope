@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { BRAND, HEADER_NAV } from "../nav";
 
 function isActive(pathname: string, href: string) {
@@ -10,9 +11,34 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(href + "/");
 }
 
+function useTheme() {
+  const [theme, setTheme] = useState<"light" | "dark" | null>(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("ts-theme") as "light" | "dark" | null;
+    if (stored) {
+      setTheme(stored);
+      document.documentElement.setAttribute("data-theme", stored);
+    } else {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      setTheme(prefersDark ? "dark" : "light");
+    }
+  }, []);
+
+  function toggle() {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    localStorage.setItem("ts-theme", next);
+    document.documentElement.setAttribute("data-theme", next);
+  }
+
+  return { theme, toggle };
+}
+
 export default function Header() {
   const pathname = usePathname() || "/";
   const onDashboard = pathname === "/app/dashboard" || pathname.startsWith("/app/dashboard/");
+  const { theme, toggle } = useTheme();
 
   return (
     <header className="ts-topbar">
@@ -55,6 +81,18 @@ export default function Header() {
               Refresh
             </button>
           )}
+
+          {/* Theme toggle */}
+          <button
+            type="button"
+            className="ts-btn"
+            onClick={toggle}
+            aria-label="Toggle theme"
+            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            style={{ fontSize: 16, padding: "0 10px", minWidth: 38 }}
+          >
+            {theme === "dark" ? "☀️" : "🌙"}
+          </button>
 
           <Link href="/" className="ts-btn ts-btn-primary">
             Home
