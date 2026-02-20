@@ -252,7 +252,7 @@ export default function GuidePage() {
               <Badge text="3 minutes" color="#22c55e" />
             </div>
             <p>From zero to your first AI insights in under 3 minutes. No technical setup required.</p>
-            <Step num="1" title="Create your account" desc="Go to talkscope.vercel.app → Sign Up → enter your email and password. The onboarding wizard launches automatically." />
+            <Step num="1" title="Create your account" desc="Go to talk-scope.com → Sign Up → enter your email and password. The onboarding wizard launches automatically." />
             <Step num="2" title="Set up your workspace" desc="Create an organization (company name), add a team (e.g. 'Sales Team A'), and add your first agent with name and email." />
             <Step num="3" title="Upload conversations" desc="Go to Upload → Upload Conversations → select an agent → upload .txt transcript files → click ⚡ Upload + Score Now." color="#f59e0b" />
             <Step num="4" title="Get AI insights" desc="TalkScope instantly analyzes conversations and returns: Overall Score, Communication Score, Conversion Score, Risk Signal, Coaching Priority, strengths and weaknesses." color="#22c55e" />

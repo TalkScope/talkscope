@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "TalkScope — Conversation Intelligence OS",
     description: "AI that analyzes every conversation, scores agents, and tells you exactly why deals are won or lost.",
-    url: "https://talkscope.vercel.app",
+    url: "https://talk-scope.com",
     siteName: "TalkScope",
     images: [{ url: "/logo-512.png", width: 512, height: 512, alt: "TalkScope Logo" }],
     type: "website",

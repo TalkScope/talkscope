@@ -32,7 +32,7 @@ export default function TermsPage() {
           {[
             { icon: "📅", text: `Effective: ${updated}` },
             { icon: "🌍", text: "Governing law: International" },
-            { icon: "📧", text: "Questions: legal@talkscope.io" },
+            { icon: "📧", text: "Questions: legal@talk-scope.com" },
           ].map(b => (
             <span key={b.text} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.75)" }}>
               {b.icon} {b.text}
@@ -63,7 +63,7 @@ export default function TermsPage() {
 
           <h2 className="t-h2" style={{ borderTop: "none", marginTop: 0 }}>1. Acceptance of Terms</h2>
           <p className="t-p">
-            By accessing or using TalkScope ("Service", "Platform"), operated at talkscope.vercel.app, you ("User", "Customer", "you") agree to be bound by these Terms of Service ("Terms"). If you are using TalkScope on behalf of an organization, you represent that you have authority to bind that organization to these Terms.
+            By accessing or using TalkScope ("Service", "Platform"), operated at talk-scope.com, you ("User", "Customer", "you") agree to be bound by these Terms of Service ("Terms"). If you are using TalkScope on behalf of an organization, you represent that you have authority to bind that organization to these Terms.
           </p>
           <p className="t-p">
             If you do not agree to these Terms, do not use TalkScope. Your continued use of the Service constitutes ongoing acceptance of any updates to these Terms.
@@ -90,7 +90,7 @@ export default function TermsPage() {
           </p>
           <h3 className="t-h3">Account Security</h3>
           <p className="t-p">
-            You must notify us immediately at <strong>security@talkscope.io</strong> if you suspect unauthorized access to your account. TalkScope is not liable for losses resulting from unauthorized use of your account where you failed to notify us promptly.
+            You must notify us immediately at <strong>security@talk-scope.com</strong> if you suspect unauthorized access to your account. TalkScope is not liable for losses resulting from unauthorized use of your account where you failed to notify us promptly.
           </p>
           <h3 className="t-h3">Demo Account</h3>
           <p className="t-p">
@@ -112,7 +112,7 @@ export default function TermsPage() {
           </p>
           <h3 className="t-h3">Refund Policy</h3>
           <p className="t-p">
-            If you are not satisfied with TalkScope within the first 14 days of your first paid subscription, contact us at <strong>billing@talkscope.io</strong> for a full refund. After 14 days, fees are non-refundable. Annual subscriptions cancelled mid-term are not eligible for prorated refunds.
+            If you are not satisfied with TalkScope within the first 14 days of your first paid subscription, contact us at <strong>billing@talk-scope.com</strong> for a full refund. After 14 days, fees are non-refundable. Annual subscriptions cancelled mid-term are not eligible for prorated refunds.
           </p>
           <h3 className="t-h3">Price Changes</h3>
           <p className="t-p">
@@ -211,7 +211,7 @@ export default function TermsPage() {
             These Terms are governed by and construed in accordance with applicable international commercial law principles. For disputes under $10,000 USD, you agree to attempt resolution through binding arbitration before initiating any legal proceedings. Either party may seek injunctive relief in any court of competent jurisdiction to prevent irreparable harm.
           </p>
           <p className="t-p">
-            Before initiating any dispute resolution process, you agree to contact us at <strong>legal@talkscope.io</strong> and attempt to resolve the matter informally for at least 30 days.
+            Before initiating any dispute resolution process, you agree to contact us at <strong>legal@talk-scope.com</strong> and attempt to resolve the matter informally for at least 30 days.
           </p>
 
           <h2 className="t-h2">14. Changes to Terms</h2>
@@ -236,9 +236,9 @@ export default function TermsPage() {
           <h2 className="t-h2">16. Contact</h2>
           <div style={{ padding: "16px 20px", borderRadius: 12, background: soft, border: `1px solid ${border}`, fontSize: 13, color: ink, lineHeight: 2 }}>
             <strong>TalkScope Legal</strong><br />
-            Email: legal@talkscope.io<br />
-            Billing questions: billing@talkscope.io<br />
-            Security issues: security@talkscope.io<br />
+            Email: legal@talk-scope.com<br />
+            Billing questions: billing@talk-scope.com<br />
+            Security issues: security@talk-scope.com<br />
             Response time: within 5 business days
           </div>
         </div>

@@ -180,8 +180,8 @@ export default function SecurityPage() {
           <p style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", marginBottom: 18, maxWidth: 420, margin: "0 auto 18px" }}>
             We take security reports seriously and respond within 48 hours. Please disclose responsibly.
           </p>
-          <a href="mailto:security@talkscope.io" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 22px", borderRadius: 10, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>
-            📧 security@talkscope.io
+          <a href="mailto:security@talk-scope.com" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 22px", borderRadius: 10, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>
+            📧 security@talk-scope.com
           </a>
         </div>
 

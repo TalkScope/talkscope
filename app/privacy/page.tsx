@@ -63,12 +63,12 @@ export default function PrivacyPage() {
 
           <h2 className="pp-h2" style={{ borderTop: "none", marginTop: 0 }}>1. Who We Are</h2>
           <p className="pp-p">
-            TalkScope ("we", "our", "us") is a conversation intelligence platform operated at talkscope.vercel.app.
+            TalkScope ("we", "our", "us") is a conversation intelligence platform operated at talk-scope.com.
             We provide AI-powered analysis of business conversations to help organizations improve agent performance,
             coaching effectiveness, and revenue outcomes.
           </p>
           <p className="pp-p">
-            For privacy-related questions, contact us at: <strong>privacy@talkscope.io</strong>
+            For privacy-related questions, contact us at: <strong>privacy@talk-scope.com</strong>
           </p>
 
           <h2 className="pp-h2">2. What Data We Collect</h2>
@@ -190,7 +190,7 @@ export default function PrivacyPage() {
             "Withdraw consent — at any time, without affecting prior processing",
           ].map((i, k) => <div key={k} className="pp-li">{i}</div>)}
           <p className="pp-p" style={{ marginTop: 12 }}>
-            To exercise any of these rights, email <strong>privacy@talkscope.io</strong>. We will respond within 30 days.
+            To exercise any of these rights, email <strong>privacy@talk-scope.com</strong>. We will respond within 30 days.
           </p>
 
           <h2 className="pp-h2">9. Cookies</h2>
@@ -252,7 +252,7 @@ export default function PrivacyPage() {
           <p className="pp-p">For any privacy-related questions or requests:</p>
           <div style={{ padding: "16px 20px", borderRadius: 12, background: soft, border: `1px solid ${border}`, fontSize: 13, color: ink, lineHeight: 2 }}>
             <strong>TalkScope Privacy Team</strong><br />
-            Email: privacy@talkscope.io<br />
+            Email: privacy@talk-scope.com<br />
             Response time: within 30 days<br />
             For urgent data deletion requests: within 72 hours
           </div>
