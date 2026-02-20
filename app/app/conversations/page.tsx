@@ -62,13 +62,16 @@ export default function ConversationsPage() {
     setDeletingId(id);
     try {
       const r = await fetch(`/api/conversations/delete?id=${encodeURIComponent(id)}`, { method: "DELETE" });
-      if (!r.ok) throw new Error("Failed");
+      const txt = await r.text();
+      console.log("DELETE status:", r.status, "response:", txt);
+      if (!r.ok) throw new Error(txt);
       setConvs(prev => prev.filter(c => c.id !== id));
       if (expanded === id) setExpanded(null);
-    } catch {
-      // silently fail, could add toast later
+    } catch (e: any) {
+      console.error("DELETE error:", e?.message);
     } finally {
       setDeletingId(null);
+      setConfirmDeleteId(null);
     }
   }
 
@@ -372,29 +375,24 @@ export default function ConversationsPage() {
                     <div className="ts-conv-toggle">{isOpen ? "▲ Hide" : "▼ View"}</div>
 
                     {/* Delete */}
-                    <button
+                    <span
                       onClick={(e) => {
                         e.stopPropagation();
                         if (confirmDeleteId === c.id) {
-                          setConfirmDeleteId(null);
                           deleteConversation(c.id);
                         } else {
                           setConfirmDeleteId(c.id);
                           setTimeout(() => setConfirmDeleteId(id => id === c.id ? null : id), 3000);
                         }
                       }}
-                      disabled={deletingId === c.id}
                       style={{
-                        padding: "4px 8px", borderRadius: 8, cursor: "pointer", fontSize: 11, fontWeight: 700,
-                        flexShrink: 0, transition: "all 0.15s", whiteSpace: "nowrap",
-                        border: confirmDeleteId === c.id ? "none" : "1px solid rgba(180,35,24,0.25)",
-                        background: confirmDeleteId === c.id ? "var(--ts-danger)" : "transparent",
-                        color: confirmDeleteId === c.id ? "#fff" : "var(--ts-danger)",
+                        fontSize: 12, fontWeight: 700, cursor: "pointer",
+                        color: confirmDeleteId === c.id ? "var(--ts-danger)" : "var(--ts-muted)",
+                        userSelect: "none", flexShrink: 0,
                       }}
-                      title="Delete conversation"
                     >
                       {deletingId === c.id ? "…" : confirmDeleteId === c.id ? "Sure?" : "Delete"}
-                    </button>
+                    </span>
                   </div>
 
                   {/* Excerpt (collapsed) */}
