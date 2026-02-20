@@ -118,6 +118,9 @@ async function fetchWindow(level: Level, refId: string, windowSize: number) {
 
 export async function POST(req: Request) {
   try {
+    const { requireAuth } = await import("@/lib/auth");
+    const { userId } = await requireAuth();
+
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) return new NextResponse("Missing OPENAI_API_KEY", { status: 500 });
     const client = new OpenAI({ apiKey });
@@ -134,6 +137,18 @@ export async function POST(req: Request) {
     if (!level) return new NextResponse("Invalid level", { status: 400 });
     if (!Number.isFinite(windowSize) || windowSize < 10 || windowSize > 100)
       return new NextResponse("Invalid windowSize (10..100)", { status: 400 });
+
+    // Verify ownership
+    if (level === "agent") {
+      const agent = await prisma.agent.findFirst({ where: { id: refId, team: { organization: { clerkUserId: userId } } } });
+      if (!agent) return new NextResponse("Access denied", { status: 403 });
+    } else if (level === "team") {
+      const team = await prisma.team.findFirst({ where: { id: refId, organization: { clerkUserId: userId } } });
+      if (!team) return new NextResponse("Access denied", { status: 403 });
+    } else {
+      const org = await prisma.organization.findFirst({ where: { id: refId, clerkUserId: userId } });
+      if (!org) return new NextResponse("Access denied", { status: 403 });
+    }
 
     const convs = await fetchWindow(level, refId, windowSize);
     if (convs.length < 5) return new NextResponse("Not enough conversations for pattern analysis", { status: 400 });
@@ -232,6 +247,7 @@ return NextResponse.json({ ok: true, meta, report: parsed });
   } catch (e: any) {
     console.error("patterns_generate_error:", e);
 
+    if (e?.isAuthError) return e;
     return NextResponse.json(
       {
         ok: false,

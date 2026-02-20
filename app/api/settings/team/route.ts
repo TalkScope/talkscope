@@ -1,34 +1,45 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// POST — create or rename team
 export async function POST(req: Request) {
   try {
+    const { userId } = await requireAuth();
     const { id, name, organizationId } = await req.json() as { id?: string; name: string; organizationId?: string };
     if (!name?.trim()) return NextResponse.json({ ok: false, error: "Name required" }, { status: 400 });
 
     if (id) {
+      // Rename — verify ownership via org
+      const existing = await prisma.team.findFirst({ where: { id, organization: { clerkUserId: userId } } });
+      if (!existing) return NextResponse.json({ ok: false, error: "Not found" }, { status: 404 });
       const team = await prisma.team.update({ where: { id }, data: { name: name.trim() } });
       return NextResponse.json({ ok: true, team });
     } else {
       if (!organizationId) return NextResponse.json({ ok: false, error: "organizationId required" }, { status: 400 });
+      // Verify org belongs to user
+      const org = await prisma.organization.findFirst({ where: { id: organizationId, clerkUserId: userId } });
+      if (!org) return NextResponse.json({ ok: false, error: "Organization not found" }, { status: 404 });
       const team = await prisma.team.create({ data: { name: name.trim(), organizationId } });
       return NextResponse.json({ ok: true, team });
     }
   } catch (e: any) {
+    if (e?.isAuthError) return e;
     return NextResponse.json({ ok: false, error: e?.message || "Failed" }, { status: 500 });
   }
 }
 
-// DELETE — delete team + cascade
 export async function DELETE(req: Request) {
   try {
+    const { userId } = await requireAuth();
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id")?.trim();
     if (!id) return NextResponse.json({ ok: false, error: "Missing id" }, { status: 400 });
+
+    const existing = await prisma.team.findFirst({ where: { id, organization: { clerkUserId: userId } } });
+    if (!existing) return NextResponse.json({ ok: false, error: "Not found" }, { status: 404 });
 
     await prisma.$transaction(async (tx) => {
       const agents = await tx.agent.findMany({ where: { teamId: id }, select: { id: true } });
@@ -43,6 +54,7 @@ export async function DELETE(req: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (e: any) {
+    if (e?.isAuthError) return e;
     return NextResponse.json({ ok: false, error: e?.message || "Failed" }, { status: 500 });
   }
 }

@@ -29,12 +29,15 @@ model Report {
 }
 
 model Organization {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
+  id           String   @id @default(cuid())
+  name         String
+  createdAt    DateTime @default(now())
+  clerkUserId  String   @default("")
 
   teams     Team[]
   patterns  PatternReport[]
+
+  @@index([clerkUserId])
 }
 
 model Team {
