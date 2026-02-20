@@ -12,6 +12,7 @@ const SECTIONS = [
   { id: "patterns", icon: "🔍", label: "Patterns" },
   { id: "upload", icon: "📂", label: "Upload" },
   { id: "scoring", icon: "🎯", label: "AI Scoring" },
+  { id: "security", icon: "🔒", label: "Security & Privacy" },
   { id: "faq", icon: "❓", label: "FAQ" },
 ];
 
@@ -464,6 +465,50 @@ export default function GuidePage() {
             ))}
           </section>
 
+          {/* Security */}
+          <section id="security" style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: 28, marginTop: 24 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+              <span style={{ fontSize: 24 }}>🔒</span>
+              <h2 style={{ margin: 0 }}>Security & Privacy</h2>
+              <Badge text="Important" color="#22c55e" />
+            </div>
+            <p>TalkScope is built with a security-first architecture. Your conversations contain sensitive business data — we treat them that way.</p>
+
+            <h3>PII Auto-Redaction</h3>
+            <p>Every transcript is automatically scanned and sanitized <strong>before being saved to the database</strong>. Sensitive data is replaced with safe placeholders:</p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, margin: "12px 0 16px" }}>
+              {[
+                ["💳", "Credit card numbers", "[CARD-REDACTED]"],
+                ["📞", "Phone numbers", "[PHONE-REDACTED]"],
+                ["📧", "Email addresses", "[EMAIL-REDACTED]"],
+                ["🪪", "Social Security Numbers", "[SSN-REDACTED]"],
+                ["🏦", "Bank account numbers", "[ACCOUNT-REDACTED]"],
+                ["🔑", "Passwords & PINs", "[CREDENTIAL-REDACTED]"],
+              ].map(([icon, label, token]) => (
+                <div key={label} style={{ padding: "8px 12px", borderRadius: 10, background: soft, border: `1px solid ${border}`, fontSize: 12 }}>
+                  <span style={{ marginRight: 6 }}>{icon}</span>
+                  <strong>{label}</strong>
+                  <div style={{ fontFamily: "monospace", color: "#22c55e", marginTop: 2, fontSize: 11 }}>{token}</div>
+                </div>
+              ))}
+            </div>
+
+            <h3>Audio Files</h3>
+            <p>Audio uploaded for transcription is sent to OpenAI Whisper and then <strong>immediately discarded</strong> — it is never stored on our servers. Only the resulting text transcript is saved, after PII redaction.</p>
+
+            <h3>Data Isolation</h3>
+            <p>Every database query is scoped to your organization. It is architecturally impossible for one customer's data to appear in another's workspace.</p>
+
+            <div style={{ display: "flex", gap: 10, marginTop: 16, flexWrap: "wrap" }}>
+              <a href="/privacy" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 10, background: `${accent}10`, border: `1px solid ${accent}25`, color: accent, textDecoration: "none", fontWeight: 700, fontSize: 13 }}>
+                🔒 Privacy Policy →
+              </a>
+              <a href="/security" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 10, background: soft, border: `1px solid ${border}`, color: ink, textDecoration: "none", fontWeight: 700, fontSize: 13 }}>
+                🛡️ Full Security Details →
+              </a>
+            </div>
+          </section>
+
           {/* FAQ */}
           <section id="faq" style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: 28, marginTop: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
@@ -497,7 +542,11 @@ export default function GuidePage() {
             </div>
           </div>
 
-          <div style={{ textAlign: "center", padding: "16px 0 32px", fontSize: 12, color: muted }}>
+          <div style={{ textAlign: "center", padding: "16px 0 8px", display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap" }}>
+            <Link href="/privacy" style={{ fontSize: 12, color: muted, textDecoration: "none" }}>🔒 Privacy Policy</Link>
+            <Link href="/security" style={{ fontSize: 12, color: muted, textDecoration: "none" }}>🛡️ Security</Link>
+          </div>
+          <div style={{ textAlign: "center", padding: "8px 0 32px", fontSize: 12, color: muted }}>
             © 2026 TalkScope · Conversation Intelligence OS
           </div>
         </div>

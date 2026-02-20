@@ -586,7 +586,12 @@ export default function HomePage() {
               <div style={{ width: 26, height: 26, borderRadius: 8, background: "linear-gradient(135deg,rgba(64,97,132,0.25),rgba(64,97,132,0.7))", border: "1px solid rgba(64,97,132,0.4)" }} />
               <span style={{ fontWeight: 800, fontSize: 14, color: accent }}>TalkScope</span>
             </div>
-            <span style={{ fontSize: 13, color: muted }}>© 2026 TalkScope · Conversation Intelligence OS</span>
+            <div style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
+              <Link href="/guide" style={{ fontSize: 13, color: muted, textDecoration: "none" }}>📖 Docs</Link>
+              <Link href="/privacy" style={{ fontSize: 13, color: muted, textDecoration: "none" }}>🔒 Privacy</Link>
+              <Link href="/security" style={{ fontSize: 13, color: muted, textDecoration: "none" }}>🛡️ Security</Link>
+              <span style={{ fontSize: 13, color: muted }}>© 2026 TalkScope</span>
+            </div>
             <Link href="/app/dashboard" style={{ fontSize: 13, color: accent, textDecoration: "none", fontWeight: 600 }}>Open App →</Link>
           </div>
         </footer>
