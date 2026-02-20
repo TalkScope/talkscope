@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 
 type UploadTab = "agents" | "conversations" | "audio" | "rules";
 
