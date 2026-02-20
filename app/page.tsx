@@ -701,30 +701,85 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* FINAL CTA — gradient */}
-        <section style={{ padding: "100px 32px", background: isDark ? `linear-gradient(135deg, #0f1a2e 0%, #1a2d45 50%, #0f1a2e 100%)` : `linear-gradient(135deg, #1e3a5f 0%, #406184 50%, #2d4f6e 100%)`, position: "relative", overflow: "hidden", textAlign: "center" }}>
+        {/* FINAL CTA — split layout with photo */}
+        <section style={{ background: isDark ? "#080f1c" : "#0b1220", position: "relative", overflow: "hidden" }}>
+          {/* Mesh glows */}
           <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-            <div style={{ position: "absolute", top: "20%", left: "10%", width: "40%", height: "60%", borderRadius: "50%", background: "radial-gradient(circle, rgba(126,181,232,0.15) 0%, transparent 70%)", filter: "blur(60px)" }} />
-            <div style={{ position: "absolute", bottom: "10%", right: "10%", width: "35%", height: "50%", borderRadius: "50%", background: "radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)", filter: "blur(50px)" }} />
+            <div style={{ position: "absolute", top: "-10%", left: "-5%", width: "50%", height: "120%", borderRadius: "50%", background: "radial-gradient(circle, rgba(64,97,132,0.4) 0%, transparent 65%)", filter: "blur(80px)" }} />
+            <div style={{ position: "absolute", bottom: "-20%", right: "30%", width: "40%", height: "80%", borderRadius: "50%", background: "radial-gradient(circle, rgba(126,181,232,0.12) 0%, transparent 70%)", filter: "blur(60px)" }} />
           </div>
-          <div style={{ position: "relative", zIndex: 1, maxWidth: 600, margin: "0 auto" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.8)", marginBottom: 24 }}>
-              ✨ Free 14-day trial — no card required
+
+          <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "stretch", minHeight: 520, position: "relative", zIndex: 1 }}>
+
+            {/* LEFT — text */}
+            <div style={{ flex: "0 0 52%", padding: "80px 56px 80px 32px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.75)", marginBottom: 28, width: "fit-content" }}>
+                ✨ Free 14-day trial — no card required
+              </div>
+              <h2 style={{ fontSize: "clamp(28px,3.5vw,46px)", fontWeight: 900, letterSpacing: "-0.03em", marginBottom: 20, color: "#ffffff", lineHeight: 1.1 }}>
+                Ready to know what's<br />really happening in<br />your conversations?
+              </h2>
+              <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 16, marginBottom: 40, lineHeight: 1.75, maxWidth: 440 }}>
+                Import your team. Upload conversations. Get AI-powered scores, coaching priorities, and revenue intelligence — in minutes.
+              </p>
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <Link href="/sign-up" style={{ padding: "14px 32px", borderRadius: 12, background: "#ffffff", color: accent, textDecoration: "none", fontWeight: 900, fontSize: 15, boxShadow: "0 8px 32px rgba(0,0,0,0.3)", whiteSpace: "nowrap" }}>
+                  Create free account →
+                </Link>
+                <Link href="/demo" style={{ padding: "14px 28px", borderRadius: 12, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 15, whiteSpace: "nowrap" }}>
+                  Try live demo
+                </Link>
+              </div>
+              <p style={{ marginTop: 18, fontSize: 12, color: "rgba(255,255,255,0.35)" }}>
+                No credit card required · Cancel anytime · 14-day free trial
+              </p>
             </div>
-            <h2 style={{ fontSize: "clamp(28px,4.5vw,48px)", fontWeight: 900, letterSpacing: "-0.03em", marginBottom: 20, color: "#ffffff", lineHeight: 1.1 }}>
-              Ready to see what your<br />conversations really do?
-            </h2>
-            <p style={{ color: "rgba(255,255,255,0.65)", fontSize: 17, marginBottom: 40, lineHeight: 1.7 }}>
-              Import your agents and transcripts. Get first insights in minutes. No engineering required.
-            </p>
-            <div className="lp-cta-btns">
-              <Link href="/sign-up" style={{ padding: "15px 36px", borderRadius: 14, background: "#ffffff", color: accent, textDecoration: "none", fontWeight: 900, fontSize: 16, boxShadow: "0 8px 32px rgba(0,0,0,0.25)" }}>
-                Start free trial →
-              </Link>
-              <Link href="/demo" style={{ padding: "15px 36px", borderRadius: 14, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 16 }}>
-                Try live demo
-              </Link>
+
+            {/* RIGHT — photo with floating elements */}
+            <div style={{ flex: "0 0 48%", position: "relative", display: "flex", alignItems: "flex-end", justifyContent: "center", overflow: "hidden" }}>
+              {/* Soft top fade */}
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "30%", background: "linear-gradient(to bottom, #0b1220, transparent)", zIndex: 2, pointerEvents: "none" }} />
+              {/* Left fade */}
+              <div style={{ position: "absolute", top: 0, left: 0, bottom: 0, width: "20%", background: "linear-gradient(to right, #0b1220, transparent)", zIndex: 2, pointerEvents: "none" }} />
+
+              {/* Photo */}
+              <img
+                src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=600&h=620&fit=crop&crop=top"
+                alt="Contact center agent"
+                style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", display: "block", minHeight: 480, filter: "brightness(0.85) saturate(0.9)" }}
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = "https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=600&h=620&fit=crop&crop=top";
+                }}
+              />
+
+              {/* Floating insight cards */}
+              <div style={{ position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none" }}>
+                {[
+                  { top: "14%", left: "8%",  icon: "📈", text: "Score improved +12 pts", color: "#22c55e", delay: "0s" },
+                  { top: "30%", left: "52%", icon: "⚠️", text: "Risk detected: call #203", color: "#ef4444", delay: "1.3s" },
+                  { top: "50%", left: "6%",  icon: "🎯", text: "Coaching priority: High", color: "#f59e0b", delay: "2.2s" },
+                  { top: "66%", left: "48%", icon: "💡", text: "Pattern: objection at min 3", color: "#7eb5e8", delay: "0.8s" },
+                  { top: "80%", left: "10%", icon: "✅", text: "QA Score: 94 — Excellent", color: "#22c55e", delay: "1.8s" },
+                ].map((el, i) => (
+                  <div key={i} style={{
+                    position: "absolute", top: el.top, left: el.left,
+                    display: "flex", alignItems: "center", gap: 7,
+                    padding: "7px 14px", borderRadius: 22,
+                    background: "rgba(11,18,32,0.82)",
+                    border: `1px solid ${el.color}35`,
+                    backdropFilter: "blur(12px)",
+                    boxShadow: `0 4px 20px rgba(0,0,0,0.3), 0 0 0 1px ${el.color}15`,
+                    fontSize: 12, fontWeight: 700, color: "#f7f9fc",
+                    animation: "floatCard 4s ease-in-out infinite",
+                    animationDelay: el.delay, whiteSpace: "nowrap",
+                  }}>
+                    <span style={{ fontSize: 14 }}>{el.icon}</span>
+                    <span style={{ color: el.color }}>{el.text}</span>
+                  </div>
+                ))}
+              </div>
             </div>
+
           </div>
         </section>
 
