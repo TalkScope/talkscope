@@ -56,6 +56,7 @@ export default function ConversationsPage() {
   const [expanded, setExpanded]   = useState<string | null>(null);
   const [page, setPage]           = useState(1);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   async function deleteConversation(id: string) {
     setDeletingId(id);
@@ -371,14 +372,30 @@ export default function ConversationsPage() {
                     <div className="ts-conv-toggle">{isOpen ? "▲ Hide" : "▼ View"}</div>
 
                     {/* Delete */}
-                    <button
-                      onClick={(e) => { e.stopPropagation(); if (window.confirm("Delete this conversation?")) deleteConversation(c.id); }}
-                      disabled={deletingId === c.id}
-                      style={{ padding: "4px 8px", borderRadius: 8, border: "1px solid rgba(180,35,24,0.2)", background: "transparent", color: "var(--ts-danger)", cursor: "pointer", fontSize: 13, flexShrink: 0, opacity: deletingId === c.id ? 0.5 : 1 }}
-                      title="Delete conversation"
-                    >
-                      {deletingId === c.id ? "…" : "🗑"}
-                    </button>
+                    {confirmDeleteId === c.id ? (
+                      <div style={{ display: "flex", gap: 6, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+                        <button
+                          onClick={() => { setConfirmDeleteId(null); deleteConversation(c.id); }}
+                          style={{ padding: "4px 10px", borderRadius: 8, border: "none", background: "var(--ts-danger)", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700 }}
+                        >
+                          {deletingId === c.id ? "…" : "Delete"}
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteId(null)}
+                          style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--ts-border)", background: "transparent", color: "var(--ts-muted)", cursor: "pointer", fontSize: 12 }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(c.id); }}
+                        style={{ padding: "4px 8px", borderRadius: 8, border: "1px solid rgba(180,35,24,0.2)", background: "transparent", color: "var(--ts-danger)", cursor: "pointer", fontSize: 13, flexShrink: 0 }}
+                        title="Delete conversation"
+                      >
+                        🗑
+                      </button>
+                    )}
                   </div>
 
                   {/* Excerpt (collapsed) */}
