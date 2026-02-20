@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
+import { redactPII, redactionSummary } from "@/lib/pii";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,9 +35,16 @@ export async function POST(req: Request) {
     if (items.length > MAX_ITEMS) return new NextResponse(`Max ${MAX_ITEMS} items`, { status: 400 });
 
     const data = items.map((it, idx) => {
-      const transcript = String(it?.transcript ?? "").trim();
-      if (transcript.length < 50) throw new Error(`Item ${idx}: transcript too short`);
-      if (transcript.length > MAX_TRANSCRIPT_CHARS) throw new Error(`Item ${idx}: transcript too long`);
+      const rawTranscript = String(it?.transcript ?? "").trim();
+      if (rawTranscript.length < 50) throw new Error(`Item ${idx}: transcript too short`);
+      if (rawTranscript.length > MAX_TRANSCRIPT_CHARS) throw new Error(`Item ${idx}: transcript too long`);
+
+      // PII Redaction — strip sensitive data before storage
+      const { redacted: transcript, hits } = redactPII(rawTranscript);
+      if (Object.keys(hits).length > 0) {
+        console.log(`[PII] Item ${idx}: ${redactionSummary(hits)}`);
+      }
+
       const createdAt = it?.createdAt ? new Date(it.createdAt) : undefined;
       return {
         agentId,

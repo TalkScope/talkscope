@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import crypto from "node:crypto";
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
+import { redactPII, redactionSummary } from "@/lib/pii";
 
 // ====== SAFETY LIMITS (MVP defaults) ======
 const MAX_TRANSCRIPT_CHARS = 10_000;
@@ -74,19 +75,24 @@ export async function POST(req: Request) {
   const client = new OpenAI({ apiKey });
 
   const body = await req.json();
-  const transcript = String(body?.transcript ?? "").trim();
+  const rawTranscript = String(body?.transcript ?? "").trim();
   const modeRaw = String(body?.mode ?? "coaching").toLowerCase();
   const mode = (MODES.includes(modeRaw as Mode) ? (modeRaw as Mode) : "coaching") as Mode;
 
-  if (transcript.length < 200) {
+  if (rawTranscript.length < 200) {
     return new NextResponse("Transcript is too short. Please paste more text.", { status: 400 });
   }
-  if (transcript.length > MAX_TRANSCRIPT_CHARS) {
+  if (rawTranscript.length > MAX_TRANSCRIPT_CHARS) {
     return new NextResponse(`Transcript too long. Max ${MAX_TRANSCRIPT_CHARS} characters.`, {
       status: 400,
     });
   }
 
+  // PII Redaction — strip sensitive data before analysis and storage
+  const { redacted: transcript, hits } = redactPII(rawTranscript);
+  if (Object.keys(hits).length > 0) {
+    console.log(`[PII] analyze route: ${redactionSummary(hits)}`);
+  }
   // --- quotas ---
   const state = g.__talkscope;
   const day = todayKeyUTC();

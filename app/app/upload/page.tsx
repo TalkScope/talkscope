@@ -114,6 +114,10 @@ export default function UploadPage() {
           <div>
             <div className="ts-title">Import & Upload</div>
             <div className="ts-subtitle">Bring your data into TalkScope — agents, conversations, company rules</div>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 8, padding: "4px 12px", borderRadius: 20, background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)" }}>
+              <span style={{ fontSize: 12 }}>🔒</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "#16a34a" }}>PII Protected — credit cards, phones, emails auto-redacted before storage</span>
+            </div>
           </div>
         </div>
 
