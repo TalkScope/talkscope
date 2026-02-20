@@ -321,6 +321,10 @@ export default function HomePage() {
                     Try live demo
                   </Link>
                 )}
+                <Link href="/guide" style={{ padding: "13px 26px", borderRadius: 12, background: "transparent", border: `1px solid ${border}`, color: muted, textDecoration: "none", fontWeight: 600, fontSize: 15, display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 16 }}>📖</span>
+                  Documentation
+                </Link>
               </div>
 
               {/* Stats */}
