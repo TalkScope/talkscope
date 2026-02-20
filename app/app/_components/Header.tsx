@@ -160,7 +160,10 @@ export default function Header() {
       {/* Mobile Drawer */}
       <div className={`ts-mobile-drawer ${mobileOpen ? "open" : ""}`}>
         <div className="ts-mobile-drawer-head">
-          <span className="ts-mobile-drawer-brand">TalkScope</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <img src="/logo-512.png" alt="TalkScope" style={{ width: 28, height: 28, borderRadius: 8 }} />
+            <span className="ts-mobile-drawer-brand">TalkScope</span>
+          </div>
           <button className="ts-mobile-close" onClick={() => setMobileOpen(false)}>✕</button>
         </div>
 
@@ -218,7 +221,7 @@ export default function Header() {
         <div className="ts-container ts-topbar-inner">
           <div className="ts-topbar-left">
             <Link href="/" className="ts-brand" aria-label={BRAND.name}>
-              <span className="ts-brand-mark" />
+              <img src="/logo-512.png" alt="TalkScope" style={{ width: 34, height: 34, borderRadius: 10, flexShrink: 0 }} />
               <span className="ts-brand-text">
                 <span className="ts-brand-name">{BRAND.name}</span>
                 <span className="ts-brand-tag">{BRAND.tagline}</span>

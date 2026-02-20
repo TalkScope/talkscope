@@ -175,7 +175,7 @@ export default function GuidePage() {
       {/* Header */}
       <div style={{ background: accent, padding: "40px 24px 32px", textAlign: "center" }}>
         <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 20, textDecoration: "none" }}>
-          <div style={{ width: 28, height: 28, borderRadius: 8, background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.3)" }} />
+          <img src="/logo-512.png" alt="TalkScope" style={{ width: 28, height: 28, borderRadius: 7 }} />
           <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: 600 }}>← Back to TalkScope</span>
         </Link>
         <h1 style={{ color: "#fff", fontSize: 36, fontWeight: 900, letterSpacing: "-0.03em", marginBottom: 10 }}>Documentation</h1>

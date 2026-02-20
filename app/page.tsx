@@ -243,7 +243,10 @@ export default function HomePage() {
       <div className={`lp-mob-overlay ${mobileMenuOpen ? "open" : ""}`} onClick={() => setMobileMenuOpen(false)} />
       <div className={`lp-mob-drawer ${mobileMenuOpen ? "open" : ""}`}>
         <div className="lp-mob-head">
-          <span style={{ fontWeight: 800, fontSize: 15, color: ink }}>TalkScope</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <img src="/logo-512.png" alt="TalkScope" style={{ width: 28, height: 28, borderRadius: 7 }} />
+            <span style={{ fontWeight: 800, fontSize: 15, color: ink }}>TalkScope</span>
+          </div>
           <button onClick={() => setMobileMenuOpen(false)} style={{ width: 36, height: 36, borderRadius: 10, border: `1px solid ${border}`, background: "transparent", cursor: "pointer", fontSize: 18, color: ink }}>✕</button>
         </div>
         <nav className="lp-mob-nav">
@@ -265,7 +268,7 @@ export default function HomePage() {
         <header style={{ position: "sticky", top: 0, zIndex: 40, background: navBg, backdropFilter: "blur(16px)", borderBottom: `1px solid ${border}` }}>
           <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 10, background: "linear-gradient(135deg,rgba(64,97,132,0.25),rgba(64,97,132,0.7))", border: "1px solid rgba(64,97,132,0.4)", flexShrink: 0 }} />
+              <img src="/logo-512.png" alt="TalkScope" style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0 }} />
               <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: "-0.3px", color: ink }}>TalkScope</span>
             </div>
             <nav className="lp-nav-links" style={{ display: "flex", gap: 2 }}>
@@ -757,7 +760,7 @@ export default function HomePage() {
         <footer style={{ borderTop: `1px solid ${border}`, padding: "24px 24px" }}>
           <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 26, height: 26, borderRadius: 8, background: "linear-gradient(135deg,rgba(64,97,132,0.25),rgba(64,97,132,0.7))", border: "1px solid rgba(64,97,132,0.4)" }} />
+              <img src="/logo-512.png" alt="TalkScope" style={{ width: 26, height: 26, borderRadius: 7 }} />
               <span style={{ fontWeight: 800, fontSize: 14, color: accent }}>TalkScope</span>
             </div>
             <div style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
