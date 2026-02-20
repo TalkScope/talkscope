@@ -351,6 +351,8 @@ function ConversationsTab() {
         body: JSON.stringify({ agentId, windowSize: 30 }),
       });
       const scoreTxt = await scoreR.text();
+      console.log("SCORE STATUS:", scoreR.status);
+      console.log("SCORE RESPONSE:", scoreTxt.slice(0, 500));
       if (!scoreR.ok) throw new Error(`Scoring failed: ${scoreTxt.slice(0, 200)}`);
       const scoreP = safeJson(scoreTxt);
       if (!scoreP.ok || !scoreP.json?.ok) throw new Error(scoreP.json?.error || "Score generation failed");
