@@ -42,11 +42,11 @@ function AnimatedNumber({ target, duration = 1500 }: { target: number; duration?
 }
 
 const FLOATING_INSIGHTS = [
-  { icon: "⚠️", text: "Risk detected in call #847", color: "#ef4444", side: "left", delay: 0 },
-  { icon: "✓", text: "Strong opener — +12% conversion", color: "#22c55e", side: "right", delay: 1.2 },
-  { icon: "💡", text: "Coaching tip: slow down on pricing", color: "#f59e0b", side: "left", delay: 2.4 },
-  { icon: "📈", text: "Score improved +8 pts this week", color: "#406184", side: "right", delay: 3.6 },
-  { icon: "🎯", text: "Pattern: objection at minute 4", color: "#8b5cf6", side: "left", delay: 4.8 },
+  { text: "Risk detected in call #847",       color: "#ef4444", side: "left",  delay: 0 },
+  { text: "Strong opener — +12% conversion",  color: "#22c55e", side: "right", delay: 1.2 },
+  { text: "Coaching tip: slow down on pricing",color: "#f59e0b", side: "left",  delay: 2.4 },
+  { text: "Score improved +8 pts this week",   color: "#406184", side: "right", delay: 3.6 },
+  { text: "Pattern: objection at minute 4",    color: "#8b5cf6", side: "left",  delay: 4.8 },
 ];
 
 const MOCK_AGENTS = [
@@ -56,13 +56,20 @@ const MOCK_AGENTS = [
   { name: "Marcus Webb",     score: 88, priority: "Monitor", initials: "MW", sc: "#22c55e", pc: "#22c55e", pbg: "rgba(34,197,94,0.12)", trend: "+6" },
 ];
 
+const ICON_SCORING = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>;
+const ICON_PATTERN = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="5" cy="6" r="2"/><circle cx="12" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="12" cy="18" r="2"/><circle cx="19" cy="18" r="2"/></svg>;
+const ICON_REVENUE = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>;
+const ICON_GROWTH = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>;
+const ICON_RULES = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>;
+const ICON_REALTIME = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>;
+
 const FEATURES = [
-  { icon: "🧠", title: "AI Conversation Scoring", desc: "Every conversation scored on communication, conversion, risk, and coaching priority in seconds." },
-  { icon: "📊", title: "Pattern Intelligence", desc: "Detect repeating behavioral patterns, risk triggers, and conversion drivers across thousands of calls." },
-  { icon: "🎯", title: "Revenue Leakage Detection", desc: "Find exactly where deals are lost, which phrases kill conversions, and how much it costs you." },
-  { icon: "📈", title: "Agent Growth Engine", desc: "Track score history, identify improvement areas, and prioritize coaching by revenue impact." },
-  { icon: "📋", title: "Company Rules Engine", desc: "AI scores against your scripts and standards, not generic ones. Train it on your playbook." },
-  { icon: "⚡", title: "Real-Time Intelligence", desc: "Score conversations instantly on upload. No waiting, no batch delays — insights in seconds." },
+  { icon: ICON_SCORING,  title: "AI Conversation Scoring",    desc: "Every conversation scored on communication, conversion, risk, and coaching priority in seconds." },
+  { icon: ICON_PATTERN,  title: "Pattern Intelligence",       desc: "Detect repeating behavioral patterns, risk triggers, and conversion drivers across thousands of calls." },
+  { icon: ICON_REVENUE,  title: "Revenue Leakage Detection",  desc: "Find exactly where deals are lost, which phrases kill conversions, and how much it costs you." },
+  { icon: ICON_GROWTH,   title: "Agent Growth Engine",        desc: "Track score history, identify improvement areas, and prioritize coaching by revenue impact." },
+  { icon: ICON_RULES,    title: "Company Rules Engine",       desc: "AI scores against your scripts and standards, not generic ones. Train it on your playbook." },
+  { icon: ICON_REALTIME, title: "Real-Time Intelligence",     desc: "Score conversations instantly on upload. No waiting, no batch delays — insights in seconds." },
 ];
 
 const TESTIMONIALS = [
@@ -85,6 +92,92 @@ const TESTIMONIALS = [
     photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=80&h=80&fit=crop&crop=face",
   },
 ];
+
+function WhoTabs({ tabs, isDark, ink, muted, border }: any) {
+  const [active, setActive] = useState(0);
+  const t = tabs[active];
+  const bgCard = isDark ? "rgba(255,255,255,0.03)" : "#ffffff";
+  const shadow = isDark ? "none" : "0 2px 24px rgba(0,0,0,0.07)";
+
+  return (
+    <div>
+      {/* Tab bar */}
+      <div style={{ display: "flex", gap: 4, marginBottom: 28, background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)", borderRadius: 14, padding: 4 }}>
+        {tabs.map((tab: any, i: number) => (
+          <button key={tab.id} onClick={() => setActive(i)} style={{
+            flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            padding: "10px 16px", borderRadius: 10, border: "none", cursor: "pointer",
+            background: active === i ? (isDark ? "#1a2d45" : "#ffffff") : "transparent",
+            color: active === i ? tab.labelColor : muted,
+            fontWeight: active === i ? 800 : 600, fontSize: 14,
+            boxShadow: active === i ? (isDark ? "none" : "0 1px 8px rgba(0,0,0,0.1)") : "none",
+            transition: "all 0.2s",
+            fontFamily: "inherit",
+          }}>
+            <span style={{ color: active === i ? tab.labelColor : muted, opacity: active === i ? 1 : 0.5 }}>{tab.icon}</span>
+            <span style={{ display: "block" }}>{tab.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Content panel */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0, borderRadius: 24, overflow: "hidden", border: `1px solid ${border}`, background: bgCard, boxShadow: shadow, minHeight: 360 }}>
+
+        {/* Left — text */}
+        <div style={{ padding: "48px 52px", borderRight: `1px solid ${border}`, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 10, background: t.tagBg, border: `1px solid ${t.tagBorder}`, marginBottom: 20, width: "fit-content" }}>
+            <span style={{ color: t.labelColor }}>{t.icon}</span>
+            <span style={{ fontSize: 11, fontWeight: 800, color: t.labelColor, textTransform: "uppercase", letterSpacing: "0.07em" }}>{t.label}</span>
+          </div>
+          <h3 style={{ fontSize: "clamp(20px,2vw,26px)", fontWeight: 900, color: ink, marginBottom: 14, letterSpacing: "-0.02em", lineHeight: 1.25 }}>{t.title}</h3>
+          <p style={{ fontSize: 14, color: muted, lineHeight: 1.8, marginBottom: 28 }}>{t.desc}</p>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 32 }}>
+            {t.tags.map((tag: string) => (
+              <span key={tag} style={{ padding: "4px 10px", borderRadius: 8, background: t.tagBg, border: `1px solid ${t.tagBorder}`, fontSize: 12, fontWeight: 600, color: t.tagColor }}>{tag}</span>
+            ))}
+          </div>
+          {/* Stats row */}
+          <div style={{ display: "flex", gap: 24, paddingTop: 24, borderTop: `1px solid ${border}` }}>
+            {t.stats.map((s: any) => (
+              <div key={s.label}>
+                <div style={{ fontSize: 24, fontWeight: 900, color: t.labelColor, letterSpacing: "-0.03em" }}>{s.val}</div>
+                <div style={{ fontSize: 11, color: muted, marginTop: 2, fontWeight: 600 }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right — visual with floating cards */}
+        <div style={{ position: "relative", background: isDark ? "rgba(255,255,255,0.02)" : t.tagBg, overflow: "hidden", minHeight: 320 }}>
+          {/* bg glow */}
+          <div style={{ position: "absolute", top: "20%", left: "20%", width: "60%", height: "60%", borderRadius: "50%", background: `radial-gradient(circle, ${t.tagBorder.replace("0.2", "0.6")} 0%, transparent 70%)`, filter: "blur(40px)", pointerEvents: "none" }} />
+          {/* Floating insight cards */}
+          {t.floats.map((el: any, i: number) => (
+            <div key={i} style={{
+              position: "absolute", top: el.top, right: el.right,
+              display: "flex", alignItems: "center", gap: 8,
+              padding: "8px 16px", borderRadius: 12,
+              background: isDark ? "rgba(15,26,46,0.9)" : "rgba(255,255,255,0.95)",
+              border: `1px solid ${el.dot}25`,
+              boxShadow: `0 4px 20px rgba(0,0,0,0.12), 0 0 0 1px ${el.dot}15`,
+              backdropFilter: "blur(8px)",
+              fontSize: 13, fontWeight: 700, color: ink,
+              animation: "floatCard 4s ease-in-out infinite",
+              animationDelay: el.delay, whiteSpace: "nowrap",
+            }}>
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: el.dot, flexShrink: 0 }} />
+              <span style={{ color: el.dot }}>{el.text}</span>
+            </div>
+          ))}
+          {/* Center icon */}
+          <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 80, height: 80, borderRadius: 24, background: isDark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.8)", border: `2px solid ${t.tagBorder}`, display: "flex", alignItems: "center", justifyContent: "center", color: t.labelColor, boxShadow: `0 8px 32px ${t.tagBorder.replace("0.2", "0.3")}` }}>
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">{active === 0 ? <><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l.91-1.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></> : active === 1 ? <><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></> : <><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>}</svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function HomePage() {
   const { isDark, toggle } = useTheme();
@@ -375,8 +468,8 @@ export default function HomePage() {
                       zIndex: 10,
                     }}
                   >
-                    <span style={{ fontSize: 14 }}>{insight.icon}</span>
-                    <span style={{ color: insight.color }}>{insight.text}</span>
+                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: insight.color, flexShrink: 0 }} />
+                    <span style={{ color: insight.color, fontWeight: 700 }}>{insight.text}</span>
                   </div>
                 );
               })}
@@ -452,7 +545,7 @@ export default function HomePage() {
                 <div key={f.title} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: 28, transition: "transform 0.2s, background 0.2s", backdropFilter: "blur(8px)" }}
                   onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.07)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)"; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)"; (e.currentTarget as HTMLDivElement).style.transform = "none"; }}>
-                  <div style={{ fontSize: 28, marginBottom: 14 }}>{f.icon}</div>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(126,181,232,0.12)", border: "1px solid rgba(126,181,232,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "#7eb5e8", marginBottom: 18, flexShrink: 0 }}>{f.icon}</div>
                   <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 8, color: "#f7f9fc", letterSpacing: "-0.01em" }}>{f.title}</div>
                   <div style={{ fontSize: 14, color: "rgba(247,249,252,0.55)", lineHeight: 1.65 }}>{f.desc}</div>
                 </div>
@@ -471,13 +564,16 @@ export default function HomePage() {
             </div>
             <div className="lp-steps">
               {[
-                { n: "01", title: "Import agents", desc: "Upload a CSV with names, emails, teams. Done in 30 seconds. No engineering required.", icon: "👥" },
-                { n: "02", title: "Upload conversations", desc: "Drop transcript files, assign to agents, add your company rules and scoring standards.", icon: "💬" },
-                { n: "03", title: "Get intelligence", desc: "TalkScope scores everything instantly, detects patterns, and tells you who needs coaching and why.", icon: "🧠" },
+                { n: "01", title: "Import agents", desc: "Upload a CSV with names, emails, teams. Done in 30 seconds. No engineering required.",
+                  icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
+                { n: "02", title: "Upload conversations", desc: "Drop transcript files, assign to agents, add your company rules and scoring standards.",
+                  icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> },
+                { n: "03", title: "Get intelligence", desc: "TalkScope scores everything instantly, detects patterns, and tells you who needs coaching and why.",
+                  icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> },
               ].map((s, i) => (
                 <div key={s.n} className="lp-step" style={{ background: isDark ? "rgba(255,255,255,0.03)" : "#f8fafc", border: `1px solid ${border}` }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-                    <div style={{ width: 44, height: 44, borderRadius: 14, background: accent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>{s.icon}</div>
+                    <div style={{ width: 44, height: 44, borderRadius: 14, background: accent, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>{s.icon}</div>
                     <div style={{ fontSize: 13, fontWeight: 900, color: accent, opacity: 0.45, letterSpacing: "-0.02em", fontFamily: "DM Mono, monospace" }}>{s.n}</div>
                   </div>
                   <div style={{ fontSize: 17, fontWeight: 800, color: ink, marginBottom: 10, letterSpacing: "-0.01em" }}>{s.title}</div>
@@ -529,10 +625,10 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* WHO IT'S FOR — light */}
+        {/* WHO IT'S FOR — tabbed */}
         <section id="who" style={{ padding: "80px 32px", background: isDark ? "#0f1a2e" : "#f6f8fc", borderTop: `1px solid ${border}`, overflow: "hidden" }}>
           <div className="lp-inner">
-            <div style={{ textAlign: "center", marginBottom: 60 }}>
+            <div style={{ textAlign: "center", marginBottom: 52 }}>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20, background: `${accent}12`, border: `1px solid ${accent}25`, fontSize: 12, fontWeight: 700, color: accent, marginBottom: 16 }}>
                 BUILT FOR YOUR INDUSTRY
               </div>
@@ -544,90 +640,56 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-              {[
+            {(() => {
+              const WHO_TABS = [
                 {
-                  icon: "🏢", label: "Contact Centers", labelColor: accent, tagBg: `${accent}10`, tagBorder: `${accent}20`, tagColor: accent,
-                  title: <>Stop listening to every call.<br />Let AI do the QA.</>,
+                  id: "cc",
+                  label: "Contact Centers",
+                  icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l.91-1.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>,
+                  labelColor: accent, tagBg: `${accent}10`, tagBorder: `${accent}20`, tagColor: accent,
+                  title: "Stop listening to every call. Let AI do the QA.",
                   desc: "Automatically score 100% of conversations, surface coaching priorities, detect compliance risks, and reduce manual review by 80%.",
                   tags: ["Automated QA", "Compliance monitoring", "Coaching queue", "Risk alerts"],
+                  stats: [{ val: "80%", label: "less manual review" }, { val: "100%", label: "coverage" }, { val: "3×", label: "faster coaching" }],
                   floats: [
-                    { top: "12%", left: "62%", text: "QA Score: 91", icon: "✅", color: "#22c55e", delay: "0s" },
-                    { top: "55%", left: "68%", text: "Risk: Low ↓", icon: "🛡️", color: "#406184", delay: "1.4s" },
-                    { top: "28%", left: "82%", text: "Script compliance 97%", icon: "📋", color: "#8b5cf6", delay: "2.6s" },
-                    { top: "70%", left: "58%", text: "Coaching queue: 2 agents", icon: "🎯", color: "#f59e0b", delay: "0.8s" },
-                    { top: "42%", left: "75%", text: "Avg handle time -18%", icon: "⚡", color: "#22c55e", delay: "1.9s" },
+                    { top: "18%", right: "12%", text: "QA Score: 91", dot: "#22c55e", delay: "0s" },
+                    { top: "42%", right: "5%",  text: "Script compliance 97%", dot: "#406184", delay: "1.4s" },
+                    { top: "65%", right: "18%", text: "Coaching queue: 2 agents", dot: "#f59e0b", delay: "2.2s" },
                   ],
-                  accentBg: isDark ? "rgba(64,97,132,0.08)" : "rgba(64,97,132,0.04)",
                 },
                 {
-                  icon: "💼", label: "Sales Organizations", labelColor: "#16a34a", tagBg: "rgba(34,197,94,0.08)", tagBorder: "rgba(34,197,94,0.2)", tagColor: "#16a34a",
-                  title: <>Find out exactly why<br />deals are won or lost.</>,
+                  id: "sales",
+                  label: "Sales Teams",
+                  icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
+                  labelColor: "#16a34a", tagBg: "rgba(34,197,94,0.08)", tagBorder: "rgba(34,197,94,0.2)", tagColor: "#16a34a",
+                  title: "Find out exactly why deals are won or lost.",
                   desc: "Identify the phrases that close deals, the moments where revenue leaks, and replicate your top performers across the entire team.",
                   tags: ["Revenue leakage", "Conversion drivers", "Deal intelligence", "Rep benchmarking"],
+                  stats: [{ val: "+23%", label: "conversion lift" }, { val: "$12k", label: "monthly savings" }, { val: "67%", label: "fewer lost deals" }],
                   floats: [
-                    { top: "15%", left: "60%", text: "Deal lost: pricing objection", icon: "⚠️", color: "#ef4444", delay: "0.3s" },
-                    { top: "50%", left: "72%", text: "Conversion +23% this week", icon: "📈", color: "#22c55e", delay: "1.6s" },
-                    { top: "30%", left: "80%", text: "Top phrase: 'Let me show you'", icon: "💡", color: "#f59e0b", delay: "2.8s" },
-                    { top: "68%", left: "62%", text: "Revenue leakage: $12k/mo", icon: "🔍", color: "#8b5cf6", delay: "1s" },
-                    { top: "42%", left: "76%", text: "Best closer: Marcus W.", icon: "🏆", color: "#406184", delay: "2.2s" },
+                    { top: "18%", right: "12%", text: "Deal lost: pricing objection", dot: "#ef4444", delay: "0.3s" },
+                    { top: "42%", right: "5%",  text: "Conversion +23% this week", dot: "#22c55e", delay: "1.6s" },
+                    { top: "65%", right: "18%", text: "Revenue leakage: $12k/mo", dot: "#8b5cf6", delay: "2.8s" },
                   ],
-                  accentBg: isDark ? "rgba(34,197,94,0.06)" : "rgba(34,197,94,0.03)",
                 },
                 {
-                  icon: "💰", label: "Collections & Recovery", labelColor: "#b45309", tagBg: "rgba(245,158,11,0.08)", tagBorder: "rgba(245,158,11,0.2)", tagColor: "#b45309",
-                  title: <>Compliance by default.<br />Recovery by design.</>,
+                  id: "col",
+                  label: "Collections",
+                  icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
+                  labelColor: "#b45309", tagBg: "rgba(245,158,11,0.08)", tagBorder: "rgba(245,158,11,0.2)", tagColor: "#b45309",
+                  title: "Compliance by default. Recovery by design.",
                   desc: "Monitor every conversation for compliance violations, detect aggressive language before it becomes a liability, and coach your way to higher recovery rates.",
                   tags: ["Compliance monitoring", "Script adherence", "Risk flagging", "Recovery analytics"],
+                  stats: [{ val: "+31%", label: "recovery rate" }, { val: "0", label: "compliance gaps" }, { val: "90%", label: "risk coverage" }],
                   floats: [
-                    { top: "14%", left: "61%", text: "Compliance: ✓ Passed", icon: "🛡️", color: "#22c55e", delay: "0.5s" },
-                    { top: "48%", left: "74%", text: "Script deviation detected", icon: "⚠️", color: "#ef4444", delay: "1.8s" },
-                    { top: "27%", left: "81%", text: "Recovery rate +31%", icon: "📈", color: "#406184", delay: "3s" },
-                    { top: "66%", left: "63%", text: "Tone: empathetic ✓", icon: "💬", color: "#8b5cf6", delay: "1.1s" },
-                    { top: "40%", left: "77%", text: "Risk flag: aggressive lang.", icon: "🚨", color: "#f59e0b", delay: "2.4s" },
+                    { top: "18%", right: "12%", text: "Compliance: Passed", dot: "#22c55e", delay: "0.5s" },
+                    { top: "42%", right: "5%",  text: "Script deviation detected", dot: "#ef4444", delay: "1.8s" },
+                    { top: "65%", right: "18%", text: "Recovery rate +31%", dot: "#406184", delay: "3s" },
                   ],
-                  accentBg: isDark ? "rgba(245,158,11,0.06)" : "rgba(245,158,11,0.03)",
                 },
-              ].map((card, ci) => (
-                <div key={ci} style={{ position: "relative", borderRadius: 24, overflow: "hidden", border: `1px solid ${border}`, background: isDark ? "rgba(255,255,255,0.03)" : "#ffffff", minHeight: 220, boxShadow: isDark ? "none" : "0 2px 20px rgba(0,0,0,0.06)" }}>
-                  {/* Accent bg glow */}
-                  <div style={{ position: "absolute", inset: 0, background: card.accentBg, pointerEvents: "none" }} />
-                  {/* Floating elements */}
-                  <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
-                    {card.floats.map((el, i) => (
-                      <div key={i} style={{
-                        position: "absolute", top: el.top, left: el.left,
-                        display: "flex", alignItems: "center", gap: 6,
-                        padding: "6px 12px", borderRadius: 20,
-                        background: isDark ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.96)",
-                        border: `1px solid ${el.color}30`,
-                        boxShadow: `0 4px 16px ${el.color}20`,
-                        fontSize: 12, fontWeight: 700, color: ink,
-                        animation: "floatCard 4s ease-in-out infinite",
-                        animationDelay: el.delay, whiteSpace: "nowrap",
-                      }}>
-                        <span>{el.icon}</span>
-                        <span style={{ color: el.color }}>{el.text}</span>
-                      </div>
-                    ))}
-                    <div style={{ position: "absolute", top: 0, right: 0, bottom: 0, width: "44%", background: `linear-gradient(to left, ${isDark ? "#0f1a2e" : "#ffffff"}, transparent)` }} />
-                  </div>
-                  <div style={{ position: "relative", padding: "40px 44px", maxWidth: "57%", zIndex: 1 }}>
-                    <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 10, background: card.tagBg, border: `1px solid ${card.tagBorder}`, marginBottom: 18 }}>
-                      <span style={{ fontSize: 16 }}>{card.icon}</span>
-                      <span style={{ fontSize: 11, fontWeight: 800, color: card.labelColor, textTransform: "uppercase", letterSpacing: "0.07em" }}>{card.label}</span>
-                    </div>
-                    <h3 style={{ fontSize: "clamp(20px,2.5vw,28px)", fontWeight: 900, color: ink, marginBottom: 14, letterSpacing: "-0.02em", lineHeight: 1.2 }}>{card.title}</h3>
-                    <p style={{ fontSize: 14, color: muted, lineHeight: 1.8, marginBottom: 22 }}>{card.desc}</p>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      {card.tags.map(tag => (
-                        <span key={tag} style={{ padding: "4px 10px", borderRadius: 8, background: card.tagBg, border: `1px solid ${card.tagBorder}`, fontSize: 12, fontWeight: 600, color: card.tagColor }}>{tag}</span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+              ];
+              return <WhoTabs tabs={WHO_TABS} isDark={isDark} ink={ink} muted={muted} border={border} />;
+            })()}
           </div>
         </section>
 
@@ -755,11 +817,11 @@ export default function HomePage() {
               {/* Floating insight cards */}
               <div style={{ position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none" }}>
                 {[
-                  { top: "14%", left: "8%",  icon: "📈", text: "Score improved +12 pts", color: "#22c55e", delay: "0s" },
-                  { top: "30%", left: "52%", icon: "⚠️", text: "Risk detected: call #203", color: "#ef4444", delay: "1.3s" },
-                  { top: "50%", left: "6%",  icon: "🎯", text: "Coaching priority: High", color: "#f59e0b", delay: "2.2s" },
-                  { top: "66%", left: "48%", icon: "💡", text: "Pattern: objection at min 3", color: "#7eb5e8", delay: "0.8s" },
-                  { top: "80%", left: "10%", icon: "✅", text: "QA Score: 94 — Excellent", color: "#22c55e", delay: "1.8s" },
+                  { top: "14%", left: "8%",  text: "Score improved +12 pts",     color: "#22c55e", delay: "0s" },
+                  { top: "30%", left: "52%", text: "Risk detected: call #203",    color: "#ef4444", delay: "1.3s" },
+                  { top: "50%", left: "6%",  text: "Coaching priority: High",     color: "#f59e0b", delay: "2.2s" },
+                  { top: "66%", left: "48%", text: "Pattern: objection at min 3", color: "#7eb5e8", delay: "0.8s" },
+                  { top: "80%", left: "10%", text: "QA Score: 94 — Excellent",    color: "#22c55e", delay: "1.8s" },
                 ].map((el, i) => (
                   <div key={i} style={{
                     position: "absolute", top: el.top, left: el.left,
@@ -773,7 +835,7 @@ export default function HomePage() {
                     animation: "floatCard 4s ease-in-out infinite",
                     animationDelay: el.delay, whiteSpace: "nowrap",
                   }}>
-                    <span style={{ fontSize: 14 }}>{el.icon}</span>
+                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: el.color, flexShrink: 0 }} />
                     <span style={{ color: el.color }}>{el.text}</span>
                   </div>
                 ))}
