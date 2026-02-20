@@ -196,6 +196,13 @@ export default function HomePage() {
         }
         .lp-float-out { animation: floatOut 0.4s ease forwards; }
 
+        /* Who it's for — floating cards */
+        @keyframes floatCard {
+          0%   { transform: translateY(0px) scale(1); opacity: 0.85; }
+          50%  { transform: translateY(-8px) scale(1.02); opacity: 1; }
+          100% { transform: translateY(0px) scale(1); opacity: 0.85; }
+        }
+
         /* Score bar animation */
         .lp-score-bar { height:4px; border-radius:2px; background:rgba(64,97,132,0.15); overflow:hidden; margin-top:6px; }
         .lp-score-fill { height:100%; border-radius:2px; animation: fillBar 1.5s ease forwards; }
@@ -240,7 +247,7 @@ export default function HomePage() {
           <button onClick={() => setMobileMenuOpen(false)} style={{ width: 36, height: 36, borderRadius: 10, border: `1px solid ${border}`, background: "transparent", cursor: "pointer", fontSize: 18, color: ink }}>✕</button>
         </div>
         <nav className="lp-mob-nav">
-          {[["Features", "#features"], ["How it works", "#how"], ["Pricing", "#pricing"]].map(([l, h]) => (
+          {[["Features", "#features"], ["Who it's for", "#who"], ["How it works", "#how"], ["Pricing", "#pricing"]].map(([l, h]) => (
             <a key={l} href={h} onClick={() => setMobileMenuOpen(false)}>{l}</a>
           ))}
           <a href="/app/dashboard" style={{ marginTop: 8, background: `rgba(64,97,132,0.1)` }}>Open Dashboard</a>
@@ -262,7 +269,7 @@ export default function HomePage() {
               <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: "-0.3px", color: ink }}>TalkScope</span>
             </div>
             <nav className="lp-nav-links" style={{ display: "flex", gap: 2 }}>
-              {[["Features", "#features"], ["How it works", "#how"], ["Pricing", "#pricing"]].map(([l, h]) => (
+              {[["Features", "#features"], ["Who it's for", "#who"], ["How it works", "#how"], ["Pricing", "#pricing"]].map(([l, h]) => (
                 <a key={l} href={h}>{l}</a>
               ))}
             </nav>
@@ -488,6 +495,173 @@ export default function HomePage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* WHO IT'S FOR */}
+        <section id="who" className="lp-section" style={{ background: surfaceAlt, overflow: "hidden" }}>
+          <div className="lp-inner">
+            <div style={{ textAlign: "center", marginBottom: 60 }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20, background: `${accent}12`, border: `1px solid ${accent}25`, fontSize: 12, fontWeight: 700, color: accent, marginBottom: 16 }}>
+                BUILT FOR YOUR INDUSTRY
+              </div>
+              <h2 style={{ fontSize: "clamp(26px,4vw,42px)", fontWeight: 900, letterSpacing: "-0.03em", color: ink, marginBottom: 14 }}>
+                Who uses TalkScope
+              </h2>
+              <p style={{ color: muted, fontSize: 17, maxWidth: 480, margin: "0 auto" }}>
+                One platform, three industries. Each with its own pain — and its own ROI.
+              </p>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+
+              {/* Card 1 — Contact Centers */}
+              <div style={{ position: "relative", borderRadius: 24, overflow: "hidden", border: `1px solid ${border}`, background: surface, minHeight: 220 }}>
+                {/* Floating elements */}
+                <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
+                  {[
+                    { top: "12%", left: "62%", text: "QA Score: 91", icon: "✅", color: "#22c55e", delay: "0s", size: 13 },
+                    { top: "55%", left: "68%", text: "Risk: Low ↓", icon: "🛡️", color: "#406184", delay: "1.4s", size: 12 },
+                    { top: "28%", left: "82%", text: "Script compliance 97%", icon: "📋", color: "#8b5cf6", delay: "2.6s", size: 11 },
+                    { top: "70%", left: "58%", text: "Coaching queue: 2 agents", icon: "🎯", color: "#f59e0b", delay: "0.8s", size: 12 },
+                    { top: "42%", left: "75%", text: "Avg handle time -18%", icon: "⚡", color: "#22c55e", delay: "1.9s", size: 11 },
+                  ].map((el, i) => (
+                    <div key={i} style={{
+                      position: "absolute", top: el.top, left: el.left,
+                      display: "flex", alignItems: "center", gap: 6,
+                      padding: "6px 12px", borderRadius: 20,
+                      background: isDark ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.95)",
+                      border: `1px solid ${el.color}30`,
+                      boxShadow: `0 4px 16px ${el.color}18`,
+                      fontSize: el.size, fontWeight: 700, color: ink,
+                      animation: `floatCard 4s ease-in-out infinite`,
+                      animationDelay: el.delay,
+                      whiteSpace: "nowrap",
+                    }}>
+                      <span>{el.icon}</span>
+                      <span style={{ color: el.color }}>{el.text}</span>
+                    </div>
+                  ))}
+                  {/* Gradient fade on right */}
+                  <div style={{ position: "absolute", top: 0, right: 0, bottom: 0, width: "45%", background: `linear-gradient(to left, ${surface}, transparent)` }} />
+                </div>
+
+                <div style={{ position: "relative", padding: "36px 40px", maxWidth: "58%", zIndex: 1 }}>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "4px 12px", borderRadius: 10, background: "rgba(64,97,132,0.1)", marginBottom: 16 }}>
+                    <span style={{ fontSize: 18 }}>🏢</span>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: accent, textTransform: "uppercase", letterSpacing: "0.06em" }}>Contact Centers</span>
+                  </div>
+                  <h3 style={{ fontSize: "clamp(20px,2.5vw,28px)", fontWeight: 900, color: ink, marginBottom: 12, letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+                    Stop listening to every call.<br />Let AI do the QA.
+                  </h3>
+                  <p style={{ fontSize: 14, color: muted, lineHeight: 1.75, marginBottom: 20 }}>
+                    Automatically score 100% of conversations, surface coaching priorities, detect compliance risks, and reduce manual review by 80%.
+                  </p>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {["Automated QA", "Compliance monitoring", "Coaching queue", "Risk alerts"].map(tag => (
+                      <span key={tag} style={{ padding: "4px 10px", borderRadius: 8, background: `${accent}10`, border: `1px solid ${accent}20`, fontSize: 12, fontWeight: 600, color: accent }}>{tag}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 2 — Sales */}
+              <div style={{ position: "relative", borderRadius: 24, overflow: "hidden", border: `1px solid ${border}`, background: surface, minHeight: 220 }}>
+                <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
+                  {[
+                    { top: "15%", left: "60%", text: "Deal lost: pricing objection", icon: "⚠️", color: "#ef4444", delay: "0.3s", size: 12 },
+                    { top: "50%", left: "72%", text: "Conversion +23% this week", icon: "📈", color: "#22c55e", delay: "1.6s", size: 12 },
+                    { top: "30%", left: "80%", text: "Top phrase: 'Let me show you'", icon: "💡", color: "#f59e0b", delay: "2.8s", size: 11 },
+                    { top: "68%", left: "62%", text: "Revenue leakage: $12k/mo", icon: "🔍", color: "#8b5cf6", delay: "1s", size: 12 },
+                    { top: "42%", left: "76%", text: "Best closer: Marcus W.", icon: "🏆", color: "#406184", delay: "2.2s", size: 11 },
+                  ].map((el, i) => (
+                    <div key={i} style={{
+                      position: "absolute", top: el.top, left: el.left,
+                      display: "flex", alignItems: "center", gap: 6,
+                      padding: "6px 12px", borderRadius: 20,
+                      background: isDark ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.95)",
+                      border: `1px solid ${el.color}30`,
+                      boxShadow: `0 4px 16px ${el.color}18`,
+                      fontSize: el.size, fontWeight: 700, color: ink,
+                      animation: `floatCard 4.5s ease-in-out infinite`,
+                      animationDelay: el.delay,
+                      whiteSpace: "nowrap",
+                    }}>
+                      <span>{el.icon}</span>
+                      <span style={{ color: el.color }}>{el.text}</span>
+                    </div>
+                  ))}
+                  <div style={{ position: "absolute", top: 0, right: 0, bottom: 0, width: "45%", background: `linear-gradient(to left, ${surface}, transparent)` }} />
+                </div>
+
+                <div style={{ position: "relative", padding: "36px 40px", maxWidth: "58%", zIndex: 1 }}>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "4px 12px", borderRadius: 10, background: "rgba(34,197,94,0.1)", marginBottom: 16 }}>
+                    <span style={{ fontSize: 18 }}>💼</span>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: "#16a34a", textTransform: "uppercase", letterSpacing: "0.06em" }}>Sales Organizations</span>
+                  </div>
+                  <h3 style={{ fontSize: "clamp(20px,2.5vw,28px)", fontWeight: 900, color: ink, marginBottom: 12, letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+                    Find out exactly why<br />deals are won or lost.
+                  </h3>
+                  <p style={{ fontSize: 14, color: muted, lineHeight: 1.75, marginBottom: 20 }}>
+                    Identify the phrases that close deals, the moments where revenue leaks, and replicate your top performers across the entire team.
+                  </p>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {["Revenue leakage", "Conversion drivers", "Deal intelligence", "Rep benchmarking"].map(tag => (
+                      <span key={tag} style={{ padding: "4px 10px", borderRadius: 8, background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)", fontSize: 12, fontWeight: 600, color: "#16a34a" }}>{tag}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 3 — Collections */}
+              <div style={{ position: "relative", borderRadius: 24, overflow: "hidden", border: `1px solid ${border}`, background: surface, minHeight: 220 }}>
+                <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
+                  {[
+                    { top: "14%", left: "61%", text: "Compliance: ✓ Passed", icon: "🛡️", color: "#22c55e", delay: "0.5s", size: 12 },
+                    { top: "48%", left: "74%", text: "Script deviation detected", icon: "⚠️", color: "#ef4444", delay: "1.8s", size: 12 },
+                    { top: "27%", left: "81%", text: "Recovery rate +31%", icon: "📈", color: "#406184", delay: "3s", size: 11 },
+                    { top: "66%", left: "63%", text: "Tone: empathetic ✓", icon: "💬", color: "#8b5cf6", delay: "1.1s", size: 12 },
+                    { top: "40%", left: "77%", text: "Risk flag: aggressive lang.", icon: "🚨", color: "#f59e0b", delay: "2.4s", size: 11 },
+                  ].map((el, i) => (
+                    <div key={i} style={{
+                      position: "absolute", top: el.top, left: el.left,
+                      display: "flex", alignItems: "center", gap: 6,
+                      padding: "6px 12px", borderRadius: 20,
+                      background: isDark ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.95)",
+                      border: `1px solid ${el.color}30`,
+                      boxShadow: `0 4px 16px ${el.color}18`,
+                      fontSize: el.size, fontWeight: 700, color: ink,
+                      animation: `floatCard 5s ease-in-out infinite`,
+                      animationDelay: el.delay,
+                      whiteSpace: "nowrap",
+                    }}>
+                      <span>{el.icon}</span>
+                      <span style={{ color: el.color }}>{el.text}</span>
+                    </div>
+                  ))}
+                  <div style={{ position: "absolute", top: 0, right: 0, bottom: 0, width: "45%", background: `linear-gradient(to left, ${surface}, transparent)` }} />
+                </div>
+
+                <div style={{ position: "relative", padding: "36px 40px", maxWidth: "58%", zIndex: 1 }}>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "4px 12px", borderRadius: 10, background: "rgba(245,158,11,0.1)", marginBottom: 16 }}>
+                    <span style={{ fontSize: 18 }}>💰</span>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: "#b45309", textTransform: "uppercase", letterSpacing: "0.06em" }}>Collections & Recovery</span>
+                  </div>
+                  <h3 style={{ fontSize: "clamp(20px,2.5vw,28px)", fontWeight: 900, color: ink, marginBottom: 12, letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+                    Compliance by default.<br />Recovery by design.
+                  </h3>
+                  <p style={{ fontSize: 14, color: muted, lineHeight: 1.75, marginBottom: 20 }}>
+                    Monitor every conversation for compliance violations, detect aggressive language before it becomes a liability, and coach your way to higher recovery rates.
+                  </p>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {["Compliance monitoring", "Script adherence", "Risk flagging", "Recovery analytics"].map(tag => (
+                      <span key={tag} style={{ padding: "4px 10px", borderRadius: 8, background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)", fontSize: 12, fontWeight: 600, color: "#b45309" }}>{tag}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </section>
