@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { UserButton, SignedIn, SignedOut, useUser } from "@clerk/nextjs";
 import { BRAND, HEADER_NAV } from "../nav";
+
+const DEMO_USER_ID = "user_39vlY625s0Maj4GvJp5vPJvB7xU";
 
 function isActive(pathname: string, href: string) {
   if (!href.startsWith("/")) return false;
@@ -41,6 +43,8 @@ export default function Header() {
   const onDashboard = pathname === "/app/dashboard" || pathname.startsWith("/app/dashboard/");
   const { theme, toggle } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user } = useUser();
+  const isDemo = user?.id === DEMO_USER_ID;
 
   useEffect(() => { setMobileOpen(false); }, [pathname]);
   useEffect(() => {
@@ -189,6 +193,16 @@ export default function Header() {
           </button>
         </div>
       </div>
+
+      {/* Demo Banner */}
+      {isDemo && (
+        <div style={{ background: "linear-gradient(90deg, #406184, #5a7fa8)", color: "#fff", padding: "9px 20px", display: "flex", alignItems: "center", justifyContent: "center", gap: 16, fontSize: 13, fontWeight: 600, flexWrap: "wrap", textAlign: "center" }}>
+          <span>👀 You're exploring a live demo workspace · Data is read-only</span>
+          <Link href="/sign-up" style={{ padding: "4px 14px", borderRadius: 20, background: "#fff", color: "#406184", textDecoration: "none", fontWeight: 800, fontSize: 12, whiteSpace: "nowrap" }}>
+            Create your account →
+          </Link>
+        </div>
+      )}
 
       {/* Header */}
       <header className="ts-topbar">
