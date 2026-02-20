@@ -132,7 +132,7 @@ function PatternsInner() {
           background: rgba(184,106,0,0.1); color: var(--ts-warn);
           border: 1px solid rgba(184,106,0,0.2);
         }
-        .ts-issue-title { font-size: 15px; font-weight: 750; flex: 1; line-height: 1.4; }
+        .ts-issue-title { font-size: 15px; font-weight: 750; flex: 1; line-height: 1.4; min-width: 0; word-break: normal; overflow-wrap: break-word; }
         .ts-issue-freq {
           font-size: 12px; font-weight: 650;
           padding: 4px 10px; border-radius: 20px;
