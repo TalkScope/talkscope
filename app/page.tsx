@@ -70,16 +70,19 @@ const TESTIMONIALS = [
     quote: "We cut coaching prep time by 70%. TalkScope shows exactly which agents need attention and why — no more guessing.",
     name: "Sarah K.", role: "Head of QA, FinTech", initials: "SK",
     gradient: "linear-gradient(135deg, #667eea, #764ba2)",
+    photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face",
   },
   {
     quote: "The pattern engine found a phrase that was killing 30% of our conversions. We fixed it in a week and saw immediate results.",
     name: "Marcus T.", role: "Sales Director", initials: "MT",
     gradient: "linear-gradient(135deg, #f093fb, #f5576c)",
+    photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face",
   },
   {
     quote: "Finally a tool built for contact centers, not just sales. The risk detection alone paid for itself in the first month.",
     name: "Elena V.", role: "Operations Manager", initials: "EV",
     gradient: "linear-gradient(135deg, #4facfe, #00f2fe)",
+    photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=80&h=80&fit=crop&crop=face",
   },
 ];
 
@@ -429,30 +432,39 @@ export default function HomePage() {
         </div>
 
         {/* FEATURES */}
-        <section id="features" className="lp-section">
-          <div className="lp-inner">
+        <section id="features" style={{ borderTop: `1px solid ${border}`, padding: "80px 32px", background: isDark ? "#0d1829" : "#0b1220", position: "relative", overflow: "hidden" }}>
+          {/* Mesh background */}
+          <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+            <div style={{ position: "absolute", top: "-20%", left: "-10%", width: "60%", height: "60%", borderRadius: "50%", background: "radial-gradient(circle, rgba(64,97,132,0.35) 0%, transparent 70%)", filter: "blur(60px)" }} />
+            <div style={{ position: "absolute", bottom: "-20%", right: "-10%", width: "50%", height: "50%", borderRadius: "50%", background: "radial-gradient(circle, rgba(64,97,132,0.2) 0%, transparent 70%)", filter: "blur(80px)" }} />
+            <div style={{ position: "absolute", top: "40%", left: "50%", width: "30%", height: "30%", borderRadius: "50%", background: "radial-gradient(circle, rgba(126,181,232,0.1) 0%, transparent 70%)", filter: "blur(40px)" }} />
+          </div>
+          <div className="lp-inner" style={{ position: "relative", zIndex: 1 }}>
             <div style={{ textAlign: "center", marginBottom: 56 }}>
-              <div style={{ display: "inline-block", padding: "4px 14px", borderRadius: 20, background: "rgba(64,97,132,0.08)", border: `1px solid rgba(64,97,132,0.15)`, color: accent, fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>
+              <div style={{ display: "inline-block", padding: "4px 14px", borderRadius: 20, background: "rgba(126,181,232,0.12)", border: "1px solid rgba(126,181,232,0.2)", color: "#7eb5e8", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>
                 Platform
               </div>
-              <h2 style={{ fontSize: "clamp(26px,4vw,42px)", fontWeight: 900, letterSpacing: "-0.03em", marginBottom: 14, color: ink }}>Not call tracking. Intelligence.</h2>
-              <p style={{ color: muted, fontSize: 17, maxWidth: 480, margin: "0 auto", lineHeight: 1.65 }}>Everything you need to understand what's really happening in your conversations.</p>
+              <h2 style={{ fontSize: "clamp(26px,4vw,42px)", fontWeight: 900, letterSpacing: "-0.03em", marginBottom: 14, color: "#f7f9fc" }}>Not call tracking. Intelligence.</h2>
+              <p style={{ color: "rgba(247,249,252,0.55)", fontSize: 17, maxWidth: 480, margin: "0 auto", lineHeight: 1.65 }}>Everything you need to understand what's really happening in your conversations.</p>
             </div>
             <div className="lp-feat-grid">
               {FEATURES.map(f => (
-                <div key={f.title} className="lp-feat-card">
+                <div key={f.title} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: 28, transition: "transform 0.2s, background 0.2s", backdropFilter: "blur(8px)" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.07)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)"; (e.currentTarget as HTMLDivElement).style.transform = "none"; }}>
                   <div style={{ fontSize: 28, marginBottom: 14 }}>{f.icon}</div>
-                  <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 8, color: ink, letterSpacing: "-0.01em" }}>{f.title}</div>
-                  <div style={{ fontSize: 14, color: muted, lineHeight: 1.65 }}>{f.desc}</div>
+                  <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 8, color: "#f7f9fc", letterSpacing: "-0.01em" }}>{f.title}</div>
+                  <div style={{ fontSize: 14, color: "rgba(247,249,252,0.55)", lineHeight: 1.65 }}>{f.desc}</div>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* HOW IT WORKS */}
-        <section id="how" className="lp-section" style={{ background: surfaceAlt }}>
-          <div className="lp-inner">
+        {/* HOW IT WORKS — white with grid */}
+        <section id="how" style={{ padding: "80px 32px", background: isDark ? "#0f1a2e" : "#ffffff", borderTop: `1px solid ${border}`, position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", inset: 0, opacity: isDark ? 0.04 : 0.025, backgroundImage: "linear-gradient(#406184 1px, transparent 1px), linear-gradient(90deg, #406184 1px, transparent 1px)", backgroundSize: "48px 48px", pointerEvents: "none" }} />
+          <div className="lp-inner" style={{ position: "relative", zIndex: 1 }}>
             <div style={{ textAlign: "center", marginBottom: 56 }}>
               <h2 style={{ fontSize: "clamp(26px,4vw,42px)", fontWeight: 900, letterSpacing: "-0.03em", color: ink, marginBottom: 14 }}>Live in minutes</h2>
               <p style={{ color: muted, fontSize: 17 }}>Three steps from zero to full intelligence</p>
@@ -463,10 +475,10 @@ export default function HomePage() {
                 { n: "02", title: "Upload conversations", desc: "Drop transcript files, assign to agents, add your company rules and scoring standards.", icon: "💬" },
                 { n: "03", title: "Get intelligence", desc: "TalkScope scores everything instantly, detects patterns, and tells you who needs coaching and why.", icon: "🧠" },
               ].map((s, i) => (
-                <div key={s.n} className="lp-step">
+                <div key={s.n} className="lp-step" style={{ background: isDark ? "rgba(255,255,255,0.03)" : "#f8fafc", border: `1px solid ${border}` }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-                    <div style={{ width: 40, height: 40, borderRadius: 12, background: `rgba(64,97,132,0.1)`, border: `1px solid rgba(64,97,132,0.2)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>{s.icon}</div>
-                    <div style={{ fontSize: 13, fontWeight: 900, color: accent, opacity: 0.5, letterSpacing: "-0.02em", fontFamily: "DM Mono, monospace" }}>{s.n}</div>
+                    <div style={{ width: 44, height: 44, borderRadius: 14, background: accent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>{s.icon}</div>
+                    <div style={{ fontSize: 13, fontWeight: 900, color: accent, opacity: 0.45, letterSpacing: "-0.02em", fontFamily: "DM Mono, monospace" }}>{s.n}</div>
                   </div>
                   <div style={{ fontSize: 17, fontWeight: 800, color: ink, marginBottom: 10, letterSpacing: "-0.01em" }}>{s.title}</div>
                   <div style={{ fontSize: 14, color: muted, lineHeight: 1.7 }}>{s.desc}</div>
@@ -476,24 +488,39 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* TESTIMONIALS */}
-        <section className="lp-section">
-          <div className="lp-inner">
+        {/* TESTIMONIALS — dark mesh */}
+        <section style={{ padding: "80px 32px", background: isDark ? "#080f1c" : "#0b1220", position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+            <div style={{ position: "absolute", top: "10%", right: "5%", width: "45%", height: "70%", borderRadius: "50%", background: "radial-gradient(circle, rgba(64,97,132,0.3) 0%, transparent 70%)", filter: "blur(80px)" }} />
+            <div style={{ position: "absolute", bottom: "10%", left: "5%", width: "35%", height: "50%", borderRadius: "50%", background: "radial-gradient(circle, rgba(126,181,232,0.15) 0%, transparent 70%)", filter: "blur(60px)" }} />
+          </div>
+          <div className="lp-inner" style={{ position: "relative", zIndex: 1 }}>
             <div style={{ textAlign: "center", marginBottom: 56 }}>
-              <h2 style={{ fontSize: "clamp(26px,4vw,42px)", fontWeight: 900, letterSpacing: "-0.03em", color: ink, marginBottom: 14 }}>Trusted by performance-driven teams</h2>
+              <h2 style={{ fontSize: "clamp(26px,4vw,42px)", fontWeight: 900, letterSpacing: "-0.03em", color: "#f7f9fc", marginBottom: 14 }}>Trusted by performance-driven teams</h2>
+              <p style={{ color: "rgba(247,249,252,0.5)", fontSize: 16 }}>Real results from real contact center leaders</p>
             </div>
             <div className="lp-testi-grid">
               {TESTIMONIALS.map(t => (
-                <div key={t.name} style={{ background: surface, border: `1px solid ${border}`, borderRadius: 20, padding: 28 }}>
-                  <div style={{ fontSize: 32, color: accent, marginBottom: 16, opacity: 0.4, lineHeight: 1 }}>"</div>
-                  <div style={{ fontSize: 15, color: muted, lineHeight: 1.75, marginBottom: 24 }}>{t.quote}</div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div className="lp-testi-avatar" style={{ background: t.gradient }}>
-                      {t.initials}
-                    </div>
+                <div key={t.name} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 24, padding: 32, backdropFilter: "blur(12px)", transition: "background 0.2s, transform 0.2s" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.08)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-3px)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.05)"; (e.currentTarget as HTMLDivElement).style.transform = "none"; }}>
+                  {/* Quote mark */}
+                  <div style={{ fontSize: 48, color: "#7eb5e8", marginBottom: 4, opacity: 0.3, lineHeight: 1, fontFamily: "Georgia, serif" }}>"</div>
+                  <div style={{ fontSize: 15, color: "rgba(247,249,252,0.8)", lineHeight: 1.75, marginBottom: 28, fontStyle: "italic" }}>{t.quote}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                    <img
+                      src={t.photo}
+                      alt={t.name}
+                      style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(255,255,255,0.15)", flexShrink: 0 }}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).style.display = "none";
+                        (e.currentTarget.nextElementSibling as HTMLElement).style.display = "flex";
+                      }}
+                    />
+                    <div className="lp-testi-avatar" style={{ background: t.gradient, display: "none" }}>{t.initials}</div>
                     <div>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: ink }}>{t.name}</div>
-                      <div style={{ fontSize: 12, color: muted, marginTop: 2 }}>{t.role}</div>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: "#f7f9fc" }}>{t.name}</div>
+                      <div style={{ fontSize: 12, color: "rgba(247,249,252,0.5)", marginTop: 3 }}>{t.role}</div>
                     </div>
                   </div>
                 </div>
@@ -502,8 +529,8 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* WHO IT'S FOR */}
-        <section id="who" className="lp-section" style={{ background: surfaceAlt, overflow: "hidden" }}>
+        {/* WHO IT'S FOR — light */}
+        <section id="who" style={{ padding: "80px 32px", background: isDark ? "#0f1a2e" : "#f6f8fc", borderTop: `1px solid ${border}`, overflow: "hidden" }}>
           <div className="lp-inner">
             <div style={{ textAlign: "center", marginBottom: 60 }}>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20, background: `${accent}12`, border: `1px solid ${accent}25`, fontSize: 12, fontWeight: 700, color: accent, marginBottom: 16 }}>
@@ -517,164 +544,102 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-
-              {/* Card 1 — Contact Centers */}
-              <div style={{ position: "relative", borderRadius: 24, overflow: "hidden", border: `1px solid ${border}`, background: surface, minHeight: 220 }}>
-                {/* Floating elements */}
-                <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
-                  {[
-                    { top: "12%", left: "62%", text: "QA Score: 91", icon: "✅", color: "#22c55e", delay: "0s", size: 13 },
-                    { top: "55%", left: "68%", text: "Risk: Low ↓", icon: "🛡️", color: "#406184", delay: "1.4s", size: 12 },
-                    { top: "28%", left: "82%", text: "Script compliance 97%", icon: "📋", color: "#8b5cf6", delay: "2.6s", size: 11 },
-                    { top: "70%", left: "58%", text: "Coaching queue: 2 agents", icon: "🎯", color: "#f59e0b", delay: "0.8s", size: 12 },
-                    { top: "42%", left: "75%", text: "Avg handle time -18%", icon: "⚡", color: "#22c55e", delay: "1.9s", size: 11 },
-                  ].map((el, i) => (
-                    <div key={i} style={{
-                      position: "absolute", top: el.top, left: el.left,
-                      display: "flex", alignItems: "center", gap: 6,
-                      padding: "6px 12px", borderRadius: 20,
-                      background: isDark ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.95)",
-                      border: `1px solid ${el.color}30`,
-                      boxShadow: `0 4px 16px ${el.color}18`,
-                      fontSize: el.size, fontWeight: 700, color: ink,
-                      animation: `floatCard 4s ease-in-out infinite`,
-                      animationDelay: el.delay,
-                      whiteSpace: "nowrap",
-                    }}>
-                      <span>{el.icon}</span>
-                      <span style={{ color: el.color }}>{el.text}</span>
-                    </div>
-                  ))}
-                  {/* Gradient fade on right */}
-                  <div style={{ position: "absolute", top: 0, right: 0, bottom: 0, width: "45%", background: `linear-gradient(to left, ${surface}, transparent)` }} />
-                </div>
-
-                <div style={{ position: "relative", padding: "36px 40px", maxWidth: "58%", zIndex: 1 }}>
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "4px 12px", borderRadius: 10, background: "rgba(64,97,132,0.1)", marginBottom: 16 }}>
-                    <span style={{ fontSize: 18 }}>🏢</span>
-                    <span style={{ fontSize: 12, fontWeight: 800, color: accent, textTransform: "uppercase", letterSpacing: "0.06em" }}>Contact Centers</span>
-                  </div>
-                  <h3 style={{ fontSize: "clamp(20px,2.5vw,28px)", fontWeight: 900, color: ink, marginBottom: 12, letterSpacing: "-0.02em", lineHeight: 1.2 }}>
-                    Stop listening to every call.<br />Let AI do the QA.
-                  </h3>
-                  <p style={{ fontSize: 14, color: muted, lineHeight: 1.75, marginBottom: 20 }}>
-                    Automatically score 100% of conversations, surface coaching priorities, detect compliance risks, and reduce manual review by 80%.
-                  </p>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    {["Automated QA", "Compliance monitoring", "Coaching queue", "Risk alerts"].map(tag => (
-                      <span key={tag} style={{ padding: "4px 10px", borderRadius: 8, background: `${accent}10`, border: `1px solid ${accent}20`, fontSize: 12, fontWeight: 600, color: accent }}>{tag}</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+              {[
+                {
+                  icon: "🏢", label: "Contact Centers", labelColor: accent, tagBg: `${accent}10`, tagBorder: `${accent}20`, tagColor: accent,
+                  title: <>Stop listening to every call.<br />Let AI do the QA.</>,
+                  desc: "Automatically score 100% of conversations, surface coaching priorities, detect compliance risks, and reduce manual review by 80%.",
+                  tags: ["Automated QA", "Compliance monitoring", "Coaching queue", "Risk alerts"],
+                  floats: [
+                    { top: "12%", left: "62%", text: "QA Score: 91", icon: "✅", color: "#22c55e", delay: "0s" },
+                    { top: "55%", left: "68%", text: "Risk: Low ↓", icon: "🛡️", color: "#406184", delay: "1.4s" },
+                    { top: "28%", left: "82%", text: "Script compliance 97%", icon: "📋", color: "#8b5cf6", delay: "2.6s" },
+                    { top: "70%", left: "58%", text: "Coaching queue: 2 agents", icon: "🎯", color: "#f59e0b", delay: "0.8s" },
+                    { top: "42%", left: "75%", text: "Avg handle time -18%", icon: "⚡", color: "#22c55e", delay: "1.9s" },
+                  ],
+                  accentBg: isDark ? "rgba(64,97,132,0.08)" : "rgba(64,97,132,0.04)",
+                },
+                {
+                  icon: "💼", label: "Sales Organizations", labelColor: "#16a34a", tagBg: "rgba(34,197,94,0.08)", tagBorder: "rgba(34,197,94,0.2)", tagColor: "#16a34a",
+                  title: <>Find out exactly why<br />deals are won or lost.</>,
+                  desc: "Identify the phrases that close deals, the moments where revenue leaks, and replicate your top performers across the entire team.",
+                  tags: ["Revenue leakage", "Conversion drivers", "Deal intelligence", "Rep benchmarking"],
+                  floats: [
+                    { top: "15%", left: "60%", text: "Deal lost: pricing objection", icon: "⚠️", color: "#ef4444", delay: "0.3s" },
+                    { top: "50%", left: "72%", text: "Conversion +23% this week", icon: "📈", color: "#22c55e", delay: "1.6s" },
+                    { top: "30%", left: "80%", text: "Top phrase: 'Let me show you'", icon: "💡", color: "#f59e0b", delay: "2.8s" },
+                    { top: "68%", left: "62%", text: "Revenue leakage: $12k/mo", icon: "🔍", color: "#8b5cf6", delay: "1s" },
+                    { top: "42%", left: "76%", text: "Best closer: Marcus W.", icon: "🏆", color: "#406184", delay: "2.2s" },
+                  ],
+                  accentBg: isDark ? "rgba(34,197,94,0.06)" : "rgba(34,197,94,0.03)",
+                },
+                {
+                  icon: "💰", label: "Collections & Recovery", labelColor: "#b45309", tagBg: "rgba(245,158,11,0.08)", tagBorder: "rgba(245,158,11,0.2)", tagColor: "#b45309",
+                  title: <>Compliance by default.<br />Recovery by design.</>,
+                  desc: "Monitor every conversation for compliance violations, detect aggressive language before it becomes a liability, and coach your way to higher recovery rates.",
+                  tags: ["Compliance monitoring", "Script adherence", "Risk flagging", "Recovery analytics"],
+                  floats: [
+                    { top: "14%", left: "61%", text: "Compliance: ✓ Passed", icon: "🛡️", color: "#22c55e", delay: "0.5s" },
+                    { top: "48%", left: "74%", text: "Script deviation detected", icon: "⚠️", color: "#ef4444", delay: "1.8s" },
+                    { top: "27%", left: "81%", text: "Recovery rate +31%", icon: "📈", color: "#406184", delay: "3s" },
+                    { top: "66%", left: "63%", text: "Tone: empathetic ✓", icon: "💬", color: "#8b5cf6", delay: "1.1s" },
+                    { top: "40%", left: "77%", text: "Risk flag: aggressive lang.", icon: "🚨", color: "#f59e0b", delay: "2.4s" },
+                  ],
+                  accentBg: isDark ? "rgba(245,158,11,0.06)" : "rgba(245,158,11,0.03)",
+                },
+              ].map((card, ci) => (
+                <div key={ci} style={{ position: "relative", borderRadius: 24, overflow: "hidden", border: `1px solid ${border}`, background: isDark ? "rgba(255,255,255,0.03)" : "#ffffff", minHeight: 220, boxShadow: isDark ? "none" : "0 2px 20px rgba(0,0,0,0.06)" }}>
+                  {/* Accent bg glow */}
+                  <div style={{ position: "absolute", inset: 0, background: card.accentBg, pointerEvents: "none" }} />
+                  {/* Floating elements */}
+                  <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
+                    {card.floats.map((el, i) => (
+                      <div key={i} style={{
+                        position: "absolute", top: el.top, left: el.left,
+                        display: "flex", alignItems: "center", gap: 6,
+                        padding: "6px 12px", borderRadius: 20,
+                        background: isDark ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.96)",
+                        border: `1px solid ${el.color}30`,
+                        boxShadow: `0 4px 16px ${el.color}20`,
+                        fontSize: 12, fontWeight: 700, color: ink,
+                        animation: "floatCard 4s ease-in-out infinite",
+                        animationDelay: el.delay, whiteSpace: "nowrap",
+                      }}>
+                        <span>{el.icon}</span>
+                        <span style={{ color: el.color }}>{el.text}</span>
+                      </div>
                     ))}
+                    <div style={{ position: "absolute", top: 0, right: 0, bottom: 0, width: "44%", background: `linear-gradient(to left, ${isDark ? "#0f1a2e" : "#ffffff"}, transparent)` }} />
                   </div>
-                </div>
-              </div>
-
-              {/* Card 2 — Sales */}
-              <div style={{ position: "relative", borderRadius: 24, overflow: "hidden", border: `1px solid ${border}`, background: surface, minHeight: 220 }}>
-                <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
-                  {[
-                    { top: "15%", left: "60%", text: "Deal lost: pricing objection", icon: "⚠️", color: "#ef4444", delay: "0.3s", size: 12 },
-                    { top: "50%", left: "72%", text: "Conversion +23% this week", icon: "📈", color: "#22c55e", delay: "1.6s", size: 12 },
-                    { top: "30%", left: "80%", text: "Top phrase: 'Let me show you'", icon: "💡", color: "#f59e0b", delay: "2.8s", size: 11 },
-                    { top: "68%", left: "62%", text: "Revenue leakage: $12k/mo", icon: "🔍", color: "#8b5cf6", delay: "1s", size: 12 },
-                    { top: "42%", left: "76%", text: "Best closer: Marcus W.", icon: "🏆", color: "#406184", delay: "2.2s", size: 11 },
-                  ].map((el, i) => (
-                    <div key={i} style={{
-                      position: "absolute", top: el.top, left: el.left,
-                      display: "flex", alignItems: "center", gap: 6,
-                      padding: "6px 12px", borderRadius: 20,
-                      background: isDark ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.95)",
-                      border: `1px solid ${el.color}30`,
-                      boxShadow: `0 4px 16px ${el.color}18`,
-                      fontSize: el.size, fontWeight: 700, color: ink,
-                      animation: `floatCard 4.5s ease-in-out infinite`,
-                      animationDelay: el.delay,
-                      whiteSpace: "nowrap",
-                    }}>
-                      <span>{el.icon}</span>
-                      <span style={{ color: el.color }}>{el.text}</span>
+                  <div style={{ position: "relative", padding: "40px 44px", maxWidth: "57%", zIndex: 1 }}>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 10, background: card.tagBg, border: `1px solid ${card.tagBorder}`, marginBottom: 18 }}>
+                      <span style={{ fontSize: 16 }}>{card.icon}</span>
+                      <span style={{ fontSize: 11, fontWeight: 800, color: card.labelColor, textTransform: "uppercase", letterSpacing: "0.07em" }}>{card.label}</span>
                     </div>
-                  ))}
-                  <div style={{ position: "absolute", top: 0, right: 0, bottom: 0, width: "45%", background: `linear-gradient(to left, ${surface}, transparent)` }} />
-                </div>
-
-                <div style={{ position: "relative", padding: "36px 40px", maxWidth: "58%", zIndex: 1 }}>
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "4px 12px", borderRadius: 10, background: "rgba(34,197,94,0.1)", marginBottom: 16 }}>
-                    <span style={{ fontSize: 18 }}>💼</span>
-                    <span style={{ fontSize: 12, fontWeight: 800, color: "#16a34a", textTransform: "uppercase", letterSpacing: "0.06em" }}>Sales Organizations</span>
-                  </div>
-                  <h3 style={{ fontSize: "clamp(20px,2.5vw,28px)", fontWeight: 900, color: ink, marginBottom: 12, letterSpacing: "-0.02em", lineHeight: 1.2 }}>
-                    Find out exactly why<br />deals are won or lost.
-                  </h3>
-                  <p style={{ fontSize: 14, color: muted, lineHeight: 1.75, marginBottom: 20 }}>
-                    Identify the phrases that close deals, the moments where revenue leaks, and replicate your top performers across the entire team.
-                  </p>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    {["Revenue leakage", "Conversion drivers", "Deal intelligence", "Rep benchmarking"].map(tag => (
-                      <span key={tag} style={{ padding: "4px 10px", borderRadius: 8, background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)", fontSize: 12, fontWeight: 600, color: "#16a34a" }}>{tag}</span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 3 — Collections */}
-              <div style={{ position: "relative", borderRadius: 24, overflow: "hidden", border: `1px solid ${border}`, background: surface, minHeight: 220 }}>
-                <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
-                  {[
-                    { top: "14%", left: "61%", text: "Compliance: ✓ Passed", icon: "🛡️", color: "#22c55e", delay: "0.5s", size: 12 },
-                    { top: "48%", left: "74%", text: "Script deviation detected", icon: "⚠️", color: "#ef4444", delay: "1.8s", size: 12 },
-                    { top: "27%", left: "81%", text: "Recovery rate +31%", icon: "📈", color: "#406184", delay: "3s", size: 11 },
-                    { top: "66%", left: "63%", text: "Tone: empathetic ✓", icon: "💬", color: "#8b5cf6", delay: "1.1s", size: 12 },
-                    { top: "40%", left: "77%", text: "Risk flag: aggressive lang.", icon: "🚨", color: "#f59e0b", delay: "2.4s", size: 11 },
-                  ].map((el, i) => (
-                    <div key={i} style={{
-                      position: "absolute", top: el.top, left: el.left,
-                      display: "flex", alignItems: "center", gap: 6,
-                      padding: "6px 12px", borderRadius: 20,
-                      background: isDark ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.95)",
-                      border: `1px solid ${el.color}30`,
-                      boxShadow: `0 4px 16px ${el.color}18`,
-                      fontSize: el.size, fontWeight: 700, color: ink,
-                      animation: `floatCard 5s ease-in-out infinite`,
-                      animationDelay: el.delay,
-                      whiteSpace: "nowrap",
-                    }}>
-                      <span>{el.icon}</span>
-                      <span style={{ color: el.color }}>{el.text}</span>
+                    <h3 style={{ fontSize: "clamp(20px,2.5vw,28px)", fontWeight: 900, color: ink, marginBottom: 14, letterSpacing: "-0.02em", lineHeight: 1.2 }}>{card.title}</h3>
+                    <p style={{ fontSize: 14, color: muted, lineHeight: 1.8, marginBottom: 22 }}>{card.desc}</p>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      {card.tags.map(tag => (
+                        <span key={tag} style={{ padding: "4px 10px", borderRadius: 8, background: card.tagBg, border: `1px solid ${card.tagBorder}`, fontSize: 12, fontWeight: 600, color: card.tagColor }}>{tag}</span>
+                      ))}
                     </div>
-                  ))}
-                  <div style={{ position: "absolute", top: 0, right: 0, bottom: 0, width: "45%", background: `linear-gradient(to left, ${surface}, transparent)` }} />
-                </div>
-
-                <div style={{ position: "relative", padding: "36px 40px", maxWidth: "58%", zIndex: 1 }}>
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "4px 12px", borderRadius: 10, background: "rgba(245,158,11,0.1)", marginBottom: 16 }}>
-                    <span style={{ fontSize: 18 }}>💰</span>
-                    <span style={{ fontSize: 12, fontWeight: 800, color: "#b45309", textTransform: "uppercase", letterSpacing: "0.06em" }}>Collections & Recovery</span>
-                  </div>
-                  <h3 style={{ fontSize: "clamp(20px,2.5vw,28px)", fontWeight: 900, color: ink, marginBottom: 12, letterSpacing: "-0.02em", lineHeight: 1.2 }}>
-                    Compliance by default.<br />Recovery by design.
-                  </h3>
-                  <p style={{ fontSize: 14, color: muted, lineHeight: 1.75, marginBottom: 20 }}>
-                    Monitor every conversation for compliance violations, detect aggressive language before it becomes a liability, and coach your way to higher recovery rates.
-                  </p>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    {["Compliance monitoring", "Script adherence", "Risk flagging", "Recovery analytics"].map(tag => (
-                      <span key={tag} style={{ padding: "4px 10px", borderRadius: 8, background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)", fontSize: 12, fontWeight: 600, color: "#b45309" }}>{tag}</span>
-                    ))}
                   </div>
                 </div>
-              </div>
-
+              ))}
             </div>
           </div>
         </section>
 
-        {/* PRICING */}
-        <section id="pricing" className="lp-section" style={{ background: surfaceAlt }}>
-          <div className="lp-inner">
+        {/* PRICING — dark */}
+        <section id="pricing" style={{ padding: "80px 32px", background: isDark ? "#080f1c" : "#0b1220", position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+            <div style={{ position: "absolute", top: "-10%", left: "20%", width: "60%", height: "50%", borderRadius: "50%", background: "radial-gradient(circle, rgba(64,97,132,0.25) 0%, transparent 70%)", filter: "blur(80px)" }} />
+          </div>
+          <div className="lp-inner" style={{ position: "relative", zIndex: 1 }}>
             <div style={{ textAlign: "center", marginBottom: 56 }}>
-              <h2 style={{ fontSize: "clamp(26px,4vw,42px)", fontWeight: 900, letterSpacing: "-0.03em", marginBottom: 14, color: ink }}>Simple, transparent pricing</h2>
-              <p style={{ color: muted, fontSize: 17 }}>Start free. Scale as your team grows.</p>
+              <h2 style={{ fontSize: "clamp(26px,4vw,42px)", fontWeight: 900, letterSpacing: "-0.03em", marginBottom: 14, color: "#f7f9fc" }}>Simple, transparent pricing</h2>
+              <p style={{ color: "rgba(247,249,252,0.5)", fontSize: 17 }}>Start free. Scale as your team grows.</p>
             </div>
             <div className="lp-price-grid">
               {[
@@ -698,30 +663,31 @@ export default function HomePage() {
                 },
               ].map(plan => (
                 <div key={plan.name} style={{
-                  background: plan.primary ? accent : surface,
-                  border: `1px solid ${plan.primary ? accent : border}`,
+                  background: plan.primary ? accent : "rgba(255,255,255,0.05)",
+                  border: `1px solid ${plan.primary ? accent : "rgba(255,255,255,0.1)"}`,
                   borderRadius: 24, padding: 32, position: "relative",
-                  boxShadow: plan.primary ? `0 24px 60px ${accent}35` : "none",
+                  boxShadow: plan.primary ? `0 24px 60px ${accent}50` : "none",
                   transform: plan.primary ? "scale(1.03)" : "none",
+                  backdropFilter: "blur(12px)",
                 }}>
                   {(plan as any).badge && (
                     <div style={{ position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)", padding: "4px 16px", borderRadius: 20, background: "#22c55e", color: "#fff", fontSize: 11, fontWeight: 800, whiteSpace: "nowrap" }}>
                       {(plan as any).badge}
                     </div>
                   )}
-                  <div style={{ fontSize: 12, fontWeight: 800, color: plan.primary ? "rgba(255,255,255,0.65)" : muted, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>{plan.name}</div>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: plan.primary ? "rgba(255,255,255,0.65)" : "rgba(247,249,252,0.45)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>{plan.name}</div>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginBottom: 10 }}>
-                    <span style={{ fontSize: 40, fontWeight: 900, letterSpacing: "-0.05em", color: plan.primary ? "#fff" : ink }}>{plan.price}</span>
-                    <span style={{ fontSize: 14, color: plan.primary ? "rgba(255,255,255,0.55)" : muted }}>{plan.per}</span>
+                    <span style={{ fontSize: 40, fontWeight: 900, letterSpacing: "-0.05em", color: "#f7f9fc" }}>{plan.price}</span>
+                    <span style={{ fontSize: 14, color: plan.primary ? "rgba(255,255,255,0.55)" : "rgba(247,249,252,0.4)" }}>{plan.per}</span>
                   </div>
-                  <div style={{ fontSize: 13, color: plan.primary ? "rgba(255,255,255,0.65)" : muted, lineHeight: 1.65, marginBottom: 24, minHeight: 42 }}>{plan.desc}</div>
-                  <Link href="/sign-up" style={{ display: "block", textAlign: "center", padding: "12px 20px", borderRadius: 12, background: plan.primary ? "#fff" : accent, color: plan.primary ? accent : "#fff", textDecoration: "none", fontWeight: 800, fontSize: 14, marginBottom: 24 }}>
+                  <div style={{ fontSize: 13, color: plan.primary ? "rgba(255,255,255,0.65)" : "rgba(247,249,252,0.5)", lineHeight: 1.65, marginBottom: 24, minHeight: 42 }}>{plan.desc}</div>
+                  <Link href="/sign-up" style={{ display: "block", textAlign: "center", padding: "12px 20px", borderRadius: 12, background: plan.primary ? "#fff" : "rgba(255,255,255,0.12)", color: plan.primary ? accent : "#f7f9fc", textDecoration: "none", fontWeight: 800, fontSize: 14, marginBottom: 24, border: plan.primary ? "none" : "1px solid rgba(255,255,255,0.15)" }}>
                     {plan.cta}
                   </Link>
-                  <div style={{ borderTop: `1px solid ${plan.primary ? "rgba(255,255,255,0.18)" : border}`, paddingTop: 20 }}>
+                  <div style={{ borderTop: `1px solid ${plan.primary ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.08)"}`, paddingTop: 20 }}>
                     {plan.features.map(f => (
-                      <div key={f} style={{ display: "flex", gap: 9, alignItems: "flex-start", marginBottom: 10, fontSize: 13, color: plan.primary ? "rgba(255,255,255,0.82)" : muted }}>
-                        <span style={{ color: plan.primary ? "#86efac" : "#22c55e", fontWeight: 900, flexShrink: 0 }}>✓</span>
+                      <div key={f} style={{ display: "flex", gap: 9, alignItems: "flex-start", marginBottom: 10, fontSize: 13, color: plan.primary ? "rgba(255,255,255,0.82)" : "rgba(247,249,252,0.6)" }}>
+                        <span style={{ color: "#86efac", fontWeight: 900, flexShrink: 0 }}>✓</span>
                         {f}
                       </div>
                     ))}
@@ -729,35 +695,41 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-            <p style={{ textAlign: "center", marginTop: 36, fontSize: 14, color: muted }}>
+            <p style={{ textAlign: "center", marginTop: 36, fontSize: 14, color: "rgba(247,249,252,0.4)" }}>
               All plans include a 14-day free trial · No credit card required · Cancel anytime
             </p>
           </div>
         </section>
 
-        {/* FINAL CTA */}
-        <section className="lp-section" style={{ textAlign: "center" }}>
-          <div style={{ maxWidth: 580, margin: "0 auto" }}>
-            <h2 style={{ fontSize: "clamp(26px,4vw,42px)", fontWeight: 900, letterSpacing: "-0.03em", marginBottom: 16, color: ink }}>
-              Ready to see what your conversations really do?
+        {/* FINAL CTA — gradient */}
+        <section style={{ padding: "100px 32px", background: isDark ? `linear-gradient(135deg, #0f1a2e 0%, #1a2d45 50%, #0f1a2e 100%)` : `linear-gradient(135deg, #1e3a5f 0%, #406184 50%, #2d4f6e 100%)`, position: "relative", overflow: "hidden", textAlign: "center" }}>
+          <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+            <div style={{ position: "absolute", top: "20%", left: "10%", width: "40%", height: "60%", borderRadius: "50%", background: "radial-gradient(circle, rgba(126,181,232,0.15) 0%, transparent 70%)", filter: "blur(60px)" }} />
+            <div style={{ position: "absolute", bottom: "10%", right: "10%", width: "35%", height: "50%", borderRadius: "50%", background: "radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)", filter: "blur(50px)" }} />
+          </div>
+          <div style={{ position: "relative", zIndex: 1, maxWidth: 600, margin: "0 auto" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.8)", marginBottom: 24 }}>
+              ✨ Free 14-day trial — no card required
+            </div>
+            <h2 style={{ fontSize: "clamp(28px,4.5vw,48px)", fontWeight: 900, letterSpacing: "-0.03em", marginBottom: 20, color: "#ffffff", lineHeight: 1.1 }}>
+              Ready to see what your<br />conversations really do?
             </h2>
-            <p style={{ color: muted, fontSize: 17, marginBottom: 36, lineHeight: 1.7 }}>
+            <p style={{ color: "rgba(255,255,255,0.65)", fontSize: 17, marginBottom: 40, lineHeight: 1.7 }}>
               Import your agents and transcripts. Get first insights in minutes. No engineering required.
             </p>
             <div className="lp-cta-btns">
-              <Link href="/sign-up" style={{ padding: "14px 32px", borderRadius: 14, background: accent, color: "#fff", textDecoration: "none", fontWeight: 800, fontSize: 16, boxShadow: `0 8px 24px ${accent}40` }}>
+              <Link href="/sign-up" style={{ padding: "15px 36px", borderRadius: 14, background: "#ffffff", color: accent, textDecoration: "none", fontWeight: 900, fontSize: 16, boxShadow: "0 8px 32px rgba(0,0,0,0.25)" }}>
                 Start free trial →
               </Link>
-              <Link href="/app/dashboard" style={{ padding: "14px 32px", borderRadius: 14, background: surface, border: `1px solid ${border}`, color: ink, textDecoration: "none", fontWeight: 700, fontSize: 16 }}>
-                Open Dashboard
+              <Link href="/demo" style={{ padding: "15px 36px", borderRadius: 14, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 16 }}>
+                Try live demo
               </Link>
             </div>
-            <p style={{ marginTop: 18, fontSize: 13, color: muted }}>14-day free trial · No credit card required</p>
           </div>
         </section>
 
         {/* FOOTER */}
-        <footer style={{ borderTop: `1px solid ${border}`, padding: "24px 24px" }}>
+        <footer style={{ borderTop: `1px solid ${border}`, padding: "28px 24px", background: isDark ? "#080f1c" : "#ffffff" }}>
           <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <img src="/logo-512.png" alt="TalkScope" style={{ width: 26, height: 26, borderRadius: 7 }} />
