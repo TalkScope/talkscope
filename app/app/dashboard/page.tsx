@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import Onboarding from "../_components/Onboarding";
 
 type Org  = { id: string; name: string };
 type Team = { id: string; name: string; organizationId: string };
@@ -145,8 +146,15 @@ export default function DashboardPage() {
 
   const isLoading = loadingMeta||loadingScope;
 
+  // Show onboarding when no orgs exist and loading is done
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
+  const showOnboarding = !isLoading && !onboardingDismissed && orgs.length === 0;
+
   return (
     <>
+      {showOnboarding && (
+        <Onboarding onComplete={() => { setOnboardingDismissed(true); loadScope(); loadAgentsAndScores(); }} />
+      )}
       <style>{`
         .ts-kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px;}
         @media(max-width:900px){.ts-kpi-strip{grid-template-columns:repeat(3,1fr);}}
