@@ -9,7 +9,7 @@ const DEMO_EMAIL = "fernando.d.roberts@gmail.com";
 const DEMO_PASSWORD = "TalkScope2026!";
 
 export default function DemoPage() {
-  const { signIn, isLoaded } = useSignIn();
+  const { signIn, isLoaded, setActive } = useSignIn();
   const router = useRouter();
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [error, setError] = useState("");
@@ -24,10 +24,23 @@ export default function DemoPage() {
         identifier: DEMO_EMAIL,
         password: DEMO_PASSWORD,
       });
+
       if (result.status === "complete") {
+        await setActive!({ session: result.createdSessionId });
         router.push("/app/dashboard");
+      } else if (result.status === "needs_second_factor") {
+        throw new Error("2FA is enabled on demo account — please disable it in Clerk dashboard");
       } else {
-        throw new Error("Sign-in incomplete");
+        // Try to complete with first factor
+        const firstFactor = result.supportedFirstFactors?.find(
+          (f: any) => f.strategy === "password"
+        );
+        if (firstFactor) {
+          await setActive!({ session: result.createdSessionId });
+          router.push("/app/dashboard");
+        } else {
+          throw new Error("Unexpected sign-in state: " + result.status);
+        }
       }
     } catch (e: any) {
       setError(e?.errors?.[0]?.message || e?.message || "Failed to enter demo");
