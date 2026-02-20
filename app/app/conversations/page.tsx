@@ -55,6 +55,21 @@ export default function ConversationsPage() {
   const [scoreFilter, setScoreFilter]     = useState<"all"|"scored"|"unscored"|"high"|"low">("all");
   const [expanded, setExpanded]   = useState<string | null>(null);
   const [page, setPage]           = useState(1);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  async function deleteConversation(id: string) {
+    setDeletingId(id);
+    try {
+      const r = await fetch(`/api/conversations/delete?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      if (!r.ok) throw new Error("Failed");
+      setConvs(prev => prev.filter(c => c.id !== id));
+      if (expanded === id) setExpanded(null);
+    } catch {
+      // silently fail, could add toast later
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   useEffect(() => { load(); }, []);
   // reset page on filter change
@@ -354,6 +369,16 @@ export default function ConversationsPage() {
 
                     {/* Toggle */}
                     <div className="ts-conv-toggle">{isOpen ? "▲ Hide" : "▼ View"}</div>
+
+                    {/* Delete */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); if (window.confirm("Delete this conversation?")) deleteConversation(c.id); }}
+                      disabled={deletingId === c.id}
+                      style={{ padding: "4px 8px", borderRadius: 8, border: "1px solid rgba(180,35,24,0.2)", background: "transparent", color: "var(--ts-danger)", cursor: "pointer", fontSize: 13, flexShrink: 0, opacity: deletingId === c.id ? 0.5 : 1 }}
+                      title="Delete conversation"
+                    >
+                      {deletingId === c.id ? "…" : "🗑"}
+                    </button>
                   </div>
 
                   {/* Excerpt (collapsed) */}
