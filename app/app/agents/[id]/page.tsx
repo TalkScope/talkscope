@@ -208,6 +208,8 @@ export default function AgentPage() {
 
   const [activeTab, setActiveTab] = useState<"overview" | "conversations" | "patterns">("overview");
   const [copied, setCopied] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const agent = data?.agent;
   const last = data?.lastScore ?? null;
@@ -322,6 +324,23 @@ export default function AgentPage() {
     navigator.clipboard.writeText(agentId);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function deleteAgent() {
+    setDeleting(true);
+    try {
+      const r = await fetch(`/api/settings/agent-delete?id=${encodeURIComponent(agentId)}`, { method: "DELETE" });
+      const txt = await r.text();
+      const j = safeJsonParse(txt);
+      if (!r.ok || !j.ok) throw new Error(j.ok === false ? (j as any).error : txt.slice(0, 200));
+      // Redirect to agents list after deletion
+      window.location.href = "/app/agents";
+    } catch (e: any) {
+      setActionErr(e?.message || "Failed to delete agent");
+      setShowDeleteConfirm(false);
+    } finally {
+      setDeleting(false);
+    }
   }
 
   async function downloadPdf() {
@@ -592,6 +611,14 @@ export default function AgentPage() {
             </button>
             <button className="ts-btn" onClick={downloadPdf} disabled={!last}>
               ↓ PDF Report
+            </button>
+            <button
+              className="ts-btn"
+              style={{ borderColor: "rgba(180,35,24,0.3)", color: "var(--ts-danger)" }}
+              onClick={() => setShowDeleteConfirm(true)}
+              disabled={actionLoading || !agentId}
+            >
+              🗑 Delete
             </button>
           </div>
         </div>
@@ -1004,6 +1031,57 @@ export default function AgentPage() {
         </div>
 
       </div>
+
+      {/* DELETE CONFIRM MODAL */}
+      {showDeleteConfirm && (
+        <div
+          style={{
+            position: "fixed", inset: 0, zIndex: 60,
+            background: "rgba(0,0,0,0.5)", backdropFilter: "blur(3px)",
+            display: "flex", alignItems: "center", justifyContent: "center", padding: 24,
+          }}
+          onClick={() => !deleting && setShowDeleteConfirm(false)}
+        >
+          <div
+            style={{
+              background: "var(--ts-surface)", border: "1px solid var(--ts-border)",
+              borderRadius: 20, padding: 32, maxWidth: 420, width: "100%",
+              boxShadow: "var(--ts-shadow-md)",
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ fontSize: 32, marginBottom: 12 }}>🗑</div>
+            <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Delete agent?</div>
+            <div style={{ fontSize: 14, color: "var(--ts-muted)", marginBottom: 8, lineHeight: 1.6 }}>
+              <strong style={{ color: "var(--ts-ink)" }}>{agentName}</strong> and all their data will be permanently deleted:
+            </div>
+            <div style={{ fontSize: 13, color: "var(--ts-muted)", marginBottom: 24, lineHeight: 1.8, padding: "10px 14px", background: "var(--ts-bg-soft)", borderRadius: 10 }}>
+              · All conversations<br />
+              · All scores & score history<br />
+              · All pattern reports<br />
+              · All batch tasks
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                className="ts-btn"
+                style={{ flex: 1 }}
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                className="ts-btn"
+                style={{ flex: 1, background: "var(--ts-danger)", color: "#fff", border: "none" }}
+                onClick={deleteAgent}
+                disabled={deleting}
+              >
+                {deleting ? "Deleting…" : "Yes, delete agent"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
