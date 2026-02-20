@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { UserButton, SignedIn, SignedOut, useUser } from "@clerk/nextjs";
+import { UserButton, SignedIn, SignedOut, useUser, useClerk } from "@clerk/nextjs";
 import { BRAND, HEADER_NAV } from "../nav";
 
 const DEMO_USER_ID = "user_39vlY625s0Maj4GvJp5vPJvB7xU";
@@ -44,7 +44,13 @@ export default function Header() {
   const { theme, toggle } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user } = useUser();
+  const { signOut } = useClerk();
   const isDemo = user?.id === DEMO_USER_ID;
+
+  async function handleCreateAccount() {
+    await signOut();
+    window.location.href = "/sign-up";
+  }
 
   useEffect(() => { setMobileOpen(false); }, [pathname]);
   useEffect(() => {
@@ -198,9 +204,12 @@ export default function Header() {
       {isDemo && (
         <div style={{ background: "linear-gradient(90deg, #406184, #5a7fa8)", color: "#fff", padding: "9px 20px", display: "flex", alignItems: "center", justifyContent: "center", gap: 16, fontSize: 13, fontWeight: 600, flexWrap: "wrap", textAlign: "center" }}>
           <span>👀 You're exploring a live demo workspace · Data is read-only</span>
-          <Link href="/sign-up" style={{ padding: "4px 14px", borderRadius: 20, background: "#fff", color: "#406184", textDecoration: "none", fontWeight: 800, fontSize: 12, whiteSpace: "nowrap" }}>
+          <button
+            onClick={handleCreateAccount}
+            style={{ padding: "4px 14px", borderRadius: 20, background: "#fff", color: "#406184", border: "none", fontWeight: 800, fontSize: 12, whiteSpace: "nowrap", cursor: "pointer", fontFamily: "inherit" }}
+          >
             Create your account →
-          </Link>
+          </button>
         </div>
       )}
 
@@ -262,14 +271,19 @@ export default function Header() {
             {/* Auth — desktop */}
             <SignedIn>
               <div className="ts-user-btn ts-signin-btn-desktop">
-                <UserButton
-                  afterSignOutUrl="/"
-                  appearance={{
-                    elements: {
-                      avatarBox: { width: 34, height: 34, borderRadius: 10 },
-                    },
-                  }}
-                />
+                {isDemo ? (
+                  <button
+                    onClick={handleCreateAccount}
+                    style={{ padding: "7px 16px", borderRadius: 10, background: "#406184", color: "#fff", border: "none", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+                  >
+                    Sign up free →
+                  </button>
+                ) : (
+                  <UserButton
+                    afterSignOutUrl="/"
+                    appearance={{ elements: { avatarBox: { width: 34, height: 34, borderRadius: 10 } } }}
+                  />
+                )}
               </div>
             </SignedIn>
             <SignedOut>
