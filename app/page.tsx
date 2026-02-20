@@ -270,9 +270,20 @@ export default function HomePage() {
               <button onClick={toggle} style={{ width: 36, height: 36, borderRadius: 9, border: `1px solid ${border}`, background: surface, cursor: "pointer", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 {isDark ? "☀️" : "🌙"}
               </button>
-              <Link href="/app/dashboard" style={{ padding: "8px 18px", borderRadius: 10, background: accent, color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 14 }}>
-                Open App
-              </Link>
+              {isSignedIn ? (
+                <Link href="/app/dashboard" style={{ padding: "8px 18px", borderRadius: 10, background: accent, color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 14 }}>
+                  Open App
+                </Link>
+              ) : (
+                <>
+                  <Link href="/sign-in" style={{ padding: "8px 16px", borderRadius: 10, background: "transparent", color: muted, textDecoration: "none", fontWeight: 600, fontSize: 14, border: `1px solid ${border}` }} className="lp-nav-links">
+                    Sign In
+                  </Link>
+                  <Link href="/sign-up" style={{ padding: "8px 18px", borderRadius: 10, background: accent, color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 14 }}>
+                    Get started
+                  </Link>
+                </>
+              )}
               <button className="lp-hamburger lp-mobile-btn" onClick={() => setMobileMenuOpen(true)} style={{ display: "none" }}>
                 <span /><span /><span />
               </button>
