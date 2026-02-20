@@ -61,7 +61,7 @@ export default function ConversationsPage() {
   async function deleteConversation(id: string) {
     setDeletingId(id);
     try {
-      const r = await fetch(`/api/conversations/delete?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      const r = await fetch(`/api/conversations/delete?id=${encodeURIComponent(id)}`, { method: "POST" });
       const txt = await r.text();
       console.log("DELETE status:", r.status, "response:", txt);
       if (!r.ok) throw new Error(txt);
