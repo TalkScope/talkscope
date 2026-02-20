@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useSignIn } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
-const DEMO_EMAIL = "talkscope.demo@gmail.com";
+const DEMO_EMAIL = "fernando.d.roberts@gmail.com";
 const DEMO_PASSWORD = "TalkScope2026!";
 
 export default function DemoPage() {
