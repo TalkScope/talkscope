@@ -255,18 +255,43 @@ function AgentsTab() {
 }
 
 // ─── CONVERSATIONS TAB ───────────────────────────────────────
+type ScoreResult = {
+  agentName: string;
+  overallScore: number;
+  communicationScore: number;
+  conversionScore: number;
+  riskScore: number;
+  coachingPriority: number;
+  strengths: string[];
+  weaknesses: string[];
+  keyPatterns: string[];
+  uploadedCount: number;
+  agentId: string;
+};
+
+function scoreColor(n: number) {
+  if (n >= 80) return "var(--ts-success)";
+  if (n >= 60) return "var(--ts-warn)";
+  return "var(--ts-danger)";
+}
+function riskColor(n: number) {
+  if (n >= 70) return "var(--ts-danger)";
+  if (n >= 45) return "var(--ts-warn)";
+  return "var(--ts-success)";
+}
+
 function ConversationsTab() {
   const fileRef = useRef<HTMLInputElement>(null);
-  const [files, setFiles] = useState<{ name: string; size: number; type: string; content: string }[]>([]);
+  const [files, setFiles] = useState<{ name: string; size: number; content: string }[]>([]);
   const [dragover, setDragover] = useState(false);
   const [agentId, setAgentId] = useState("");
   const [agents, setAgents] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [err, setErr] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
+  const [phase, setPhase] = useState<"idle" | "uploading" | "scoring" | "done">("idle");
+  const [err, setErr] = useState<string | null>(null);
+  const [result, setResult] = useState<ScoreResult | null>(null);
 
-  // load agents for select
   useState(() => {
     fetch("/api/meta/agents", { cache: "no-store" })
       .then((r) => r.json())
@@ -278,157 +303,309 @@ function ConversationsTab() {
     Array.from(fileList).forEach((file) => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setFiles((prev) => [...prev, {
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          content: e.target?.result as string,
-        }]);
+        setFiles((prev) => [...prev, { name: file.name, size: file.size, content: e.target?.result as string }]);
       };
       reader.readAsText(file);
     });
   }
 
-  function removeFile(i: number) {
-    setFiles((prev) => prev.filter((_, idx) => idx !== i));
-  }
+  function removeFile(i: number) { setFiles((prev) => prev.filter((_, idx) => idx !== i)); }
+  function reset() { setFiles([]); setResult(null); setErr(null); setPhase("idle"); }
 
-  async function handleUpload() {
+  async function handleUpload(withScore = false) {
     if (!files.length || !agentId) return;
-    setLoading(true);
-    setErr(null);
-    setSuccess(null);
+    setErr(null); setResult(null);
+    setPhase("uploading");
+
     try {
-      const conversations = files.map((f) => ({ agentId, transcript: f.content, fileName: f.name }));
+      // Step 1: Upload conversations
+      const items = files.map((f) => ({ transcript: f.content }));
       const r = await fetch("/api/conversations/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversations }),
+        body: JSON.stringify({ agentId, items }),
       });
       const txt = await r.text();
-      if (!r.ok) throw new Error(`HTTP ${r.status}: ${txt.slice(0, 200)}`);
-      const p = safeJson(txt);
-      setSuccess(`Uploaded ${p.ok ? (p.json.created ?? files.length) : files.length} conversations.`);
-      setFiles([]);
-    } catch (e: any) {
-      setErr(e?.message || "Upload failed");
-    } finally {
-      setLoading(false);
-    }
-  }
+      if (!r.ok) throw new Error(`Upload failed: ${txt.slice(0, 200)}`);
 
-  async function handleUploadAndAnalyze() {
-    if (!files.length || !agentId) return;
-    setAnalyzing(true);
-    setErr(null);
-    setSuccess(null);
-    try {
-      const conversations = files.map((f) => ({ agentId, transcript: f.content, fileName: f.name }));
-      const r = await fetch("/api/conversations/bulk", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversations }),
-      });
-      const txt = await r.text();
-      if (!r.ok) throw new Error(`HTTP ${r.status}: ${txt.slice(0, 200)}`);
+      if (!withScore) {
+        const p = safeJson(txt);
+        setPhase("done");
+        setResult({
+          agentName: agents.find(a => a.id === agentId)?.name ?? agentId,
+          overallScore: 0, communicationScore: 0, conversionScore: 0,
+          riskScore: 0, coachingPriority: 0,
+          strengths: [], weaknesses: [], keyPatterns: [],
+          uploadedCount: p.ok ? (p.json.inserted ?? files.length) : files.length,
+          agentId,
+        });
+        setFiles([]);
+        return;
+      }
 
-      // Now generate score
+      // Step 2: Generate score
+      setPhase("scoring");
       const scoreR = await fetch("/api/agents/score/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ agentId, windowSize: 30 }),
       });
-      if (!scoreR.ok) throw new Error("Score generation failed");
+      const scoreTxt = await scoreR.text();
+      if (!scoreR.ok) throw new Error(`Scoring failed: ${scoreTxt.slice(0, 200)}`);
+      const scoreP = safeJson(scoreTxt);
+      if (!scoreP.ok || !scoreP.json?.ok) throw new Error(scoreP.json?.error || "Score generation failed");
 
-      setSuccess(`Uploaded ${files.length} conversations and generated score for agent. Check agent page for results.`);
+      const s = scoreP.json.score;
+      setResult({
+        agentName: agents.find(a => a.id === agentId)?.name ?? agentId,
+        overallScore: Number(s.overallScore),
+        communicationScore: Number(s.communicationScore),
+        conversionScore: Number(s.conversionScore),
+        riskScore: Number(s.riskScore),
+        coachingPriority: Number(s.coachingPriority),
+        strengths: s.strengths ?? [],
+        weaknesses: s.weaknesses ?? [],
+        keyPatterns: s.keyPatterns ?? [],
+        uploadedCount: files.length,
+        agentId,
+      });
       setFiles([]);
+      setPhase("done");
     } catch (e: any) {
-      setErr(e?.message || "Upload & analyze failed");
-    } finally {
-      setAnalyzing(false);
+      setErr(e?.message || "Failed");
+      setPhase("idle");
     }
   }
 
-  const canUpload = files.length > 0 && agentId;
+  const canUpload = files.length > 0 && !!agentId;
+  const busy = phase === "uploading" || phase === "scoring";
 
   return (
-    <div className="ts-card">
-      <div className="ts-card-pad">
-        <div className="ts-sectionhead">
-          <div>
-            <div className="ts-h2">Upload Conversation Transcripts</div>
-            <div className="ts-hint">TXT or CSV files · One file = one conversation</div>
+    <>
+      <style>{`
+        .ts-score-result {
+          background:var(--ts-surface); border:1px solid var(--ts-border);
+          border-radius:var(--ts-radius-lg); overflow:hidden; margin-top:0;
+        }
+        .ts-score-result-head {
+          padding:20px 24px; background:rgba(64,97,132,0.05);
+          border-bottom:1px solid var(--ts-border-soft);
+          display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+        }
+        .ts-score-big {
+          width:64px; height:64px; border-radius:16px; flex-shrink:0;
+          display:flex; align-items:center; justify-content:center;
+          font-size:22px; font-weight:900; border:2px solid currentColor;
+        }
+        .ts-score-grid {
+          display:grid; grid-template-columns:repeat(4,1fr); gap:10px;
+          padding:18px 24px; border-bottom:1px solid var(--ts-border-soft);
+        }
+        @media(max-width:640px){.ts-score-grid{grid-template-columns:repeat(2,1fr);}}
+        .ts-score-metric {
+          background:var(--ts-bg-soft); border-radius:12px; padding:12px 14px;
+          border:1px solid var(--ts-border-soft);
+        }
+        .ts-score-metric-label {
+          font-size:10px; font-weight:800; text-transform:uppercase;
+          letter-spacing:0.08em; color:var(--ts-muted); margin-bottom:6px;
+        }
+        .ts-score-metric-val { font-size:22px; font-weight:900; letter-spacing:-0.03em; }
+        .ts-score-metric-bar {
+          height:4px; border-radius:2px; background:var(--ts-border-soft);
+          margin-top:8px; overflow:hidden;
+        }
+        .ts-score-metric-fill { height:100%; border-radius:2px; transition:width 0.8s ease; }
+        .ts-score-lists { display:grid; grid-template-columns:1fr 1fr; gap:0; }
+        @media(max-width:600px){.ts-score-lists{grid-template-columns:1fr;}}
+        .ts-score-list-col { padding:16px 24px; }
+        .ts-score-list-col:first-child { border-right:1px solid var(--ts-border-soft); }
+        .ts-score-list-title {
+          font-size:11px; font-weight:800; text-transform:uppercase;
+          letter-spacing:0.08em; color:var(--ts-muted); margin-bottom:10px;
+        }
+        .ts-score-list-item {
+          display:flex; align-items:flex-start; gap:8px;
+          font-size:13px; line-height:1.5; margin-bottom:8px;
+        }
+        .ts-score-list-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; margin-top:5px; }
+        .ts-phase-indicator {
+          display:flex; align-items:center; gap:12px;
+          padding:16px 20px; border-radius:14px;
+          background:rgba(64,97,132,0.06); border:1px solid rgba(64,97,132,0.15);
+          margin-bottom:16px;
+        }
+        .ts-phase-spinner {
+          width:20px; height:20px; border-radius:50%;
+          border:2px solid rgba(64,97,132,0.2); border-top-color:var(--ts-accent);
+          animation:ts-spin 0.8s linear infinite; flex-shrink:0;
+        }
+        @keyframes ts-spin{to{transform:rotate(360deg)}}
+      `}</style>
+
+      <div className="ts-card">
+        <div className="ts-card-pad">
+          <div className="ts-sectionhead">
+            <div>
+              <div className="ts-h2">Upload Conversation Transcripts</div>
+              <div className="ts-hint">TXT files · One file = one conversation · Score generated instantly</div>
+            </div>
           </div>
-        </div>
-        <div className="ts-divider" />
+          <div className="ts-divider" />
 
-        {success && <div className="ts-upload-success">✓ {success}</div>}
-        {err && <div className="ts-alert ts-alert-error" style={{ marginBottom: 16 }}>{err}</div>}
+          {err && <div className="ts-alert ts-alert-error" style={{ marginBottom: 16 }}>⚠ {err}</div>}
 
-        {/* Agent selector */}
-        <div style={{ marginBottom: 16 }}>
-          <div className="ts-card-title" style={{ marginBottom: 8 }}>Assign to Agent</div>
-          <select className="ts-select-agent" value={agentId} onChange={(e) => setAgentId(e.target.value)}>
-            <option value="">Select agent…</option>
-            {agents.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-          </select>
-        </div>
-
-        {/* DROPZONE */}
-        <div
-          className={`ts-dropzone ${dragover ? "dragover" : ""}`}
-          onClick={() => fileRef.current?.click()}
-          onDragOver={(e) => { e.preventDefault(); setDragover(true); }}
-          onDragLeave={() => setDragover(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setDragover(false);
-            handleFiles(e.dataTransfer.files);
-          }}
-        >
-          <div className="ts-dropzone-icon">💬</div>
-          <div className="ts-dropzone-title">Drop transcript files here or click to browse</div>
-          <div className="ts-dropzone-sub">Supports .txt, .csv files · Multiple files allowed</div>
-          <input ref={fileRef} type="file" accept=".txt,.csv" multiple style={{ display: "none" }}
-            onChange={(e) => { if (e.target.files) handleFiles(e.target.files); }}
-          />
-        </div>
-
-        {/* FILE LIST */}
-        {files.length > 0 && (
-          <>
-            <div className="ts-divider" />
-            <div style={{ marginBottom: 14 }}>
-              {files.map((f, i) => (
-                <div key={i} className="ts-conv-item">
-                  <div className="ts-conv-icon">📄</div>
-                  <div style={{ flex: 1 }}>
-                    <div className="ts-conv-name">{f.name}</div>
-                    <div className="ts-conv-meta">
-                      {(f.size / 1024).toFixed(1)} KB · {f.content.length} chars
-                    </div>
-                  </div>
-                  <button className="ts-btn" style={{ padding: "0 10px", height: 28, fontSize: 12 }} onClick={() => removeFile(i)}>✕</button>
+          {/* Phase indicator */}
+          {busy && (
+            <div className="ts-phase-indicator">
+              <div className="ts-phase-spinner" />
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 14 }}>
+                  {phase === "uploading" ? "Uploading conversations…" : "AI is scoring the agent…"}
                 </div>
-              ))}
-            </div>
-            <div style={{ display: "flex", gap: 10 }}>
-              <button className="ts-btn" onClick={handleUpload} disabled={!canUpload || loading || analyzing}>
-                {loading ? "Uploading…" : `Upload ${files.length} file${files.length > 1 ? "s" : ""}`}
-              </button>
-              <button className="ts-btn ts-btn-primary" onClick={handleUploadAndAnalyze} disabled={!canUpload || loading || analyzing}>
-                {analyzing ? "Uploading & Analyzing…" : "Upload + Generate Score"}
-              </button>
-            </div>
-            {!agentId && (
-              <div className="ts-muted" style={{ marginTop: 8, fontSize: 13 }}>
-                ⚠ Select an agent above before uploading
+                <div style={{ fontSize: 12, color: "var(--ts-muted)", marginTop: 2 }}>
+                  {phase === "scoring" ? "Analyzing last 30 conversations with OpenAI" : "Saving to database"}
+                </div>
               </div>
-            )}
-          </>
-        )}
+            </div>
+          )}
+
+          {/* Result */}
+          {result && phase === "done" && (
+            <div className="ts-score-result" style={{ marginBottom: 20 }}>
+              <div className="ts-score-result-head">
+                {result.overallScore > 0 ? (
+                  <div className="ts-score-big" style={{ color: scoreColor(result.overallScore), borderColor: scoreColor(result.overallScore), background: `${scoreColor(result.overallScore)}12` }}>
+                    {Math.round(result.overallScore)}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 28 }}>✅</div>
+                )}
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 800, fontSize: 16 }}>
+                    {result.overallScore > 0 ? `Score generated for ${result.agentName}` : `${result.uploadedCount} conversations uploaded`}
+                  </div>
+                  <div style={{ fontSize: 13, color: "var(--ts-muted)", marginTop: 3 }}>
+                    {result.uploadedCount} conversation{result.uploadedCount !== 1 ? "s" : ""} added
+                    {result.overallScore > 0 ? " · Based on last 30 conversations" : ""}
+                  </div>
+                </div>
+                <a href={`/app/agents/${result.agentId}`} className="ts-btn ts-btn-primary" style={{ fontSize: 13 }}>
+                  View Agent →
+                </a>
+                <button className="ts-btn" style={{ fontSize: 13 }} onClick={reset}>
+                  Upload More
+                </button>
+              </div>
+
+              {/* Score metrics */}
+              {result.overallScore > 0 && (
+                <>
+                  <div className="ts-score-grid">
+                    {[
+                      { label: "Communication", val: result.communicationScore, color: scoreColor(result.communicationScore) },
+                      { label: "Conversion", val: result.conversionScore, color: scoreColor(result.conversionScore) },
+                      { label: "Risk Signal", val: result.riskScore, color: riskColor(result.riskScore) },
+                      { label: "Coaching Priority", val: result.coachingPriority, color: riskColor(result.coachingPriority) },
+                    ].map(m => (
+                      <div key={m.label} className="ts-score-metric">
+                        <div className="ts-score-metric-label">{m.label}</div>
+                        <div className="ts-score-metric-val" style={{ color: m.color }}>{m.val.toFixed(1)}</div>
+                        <div className="ts-score-metric-bar">
+                          <div className="ts-score-metric-fill" style={{ width: `${m.val}%`, background: m.color }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {(result.strengths.length > 0 || result.weaknesses.length > 0) && (
+                    <div className="ts-score-lists">
+                      <div className="ts-score-list-col">
+                        <div className="ts-score-list-title">✓ Strengths</div>
+                        {result.strengths.slice(0, 4).map((s, i) => (
+                          <div key={i} className="ts-score-list-item">
+                            <div className="ts-score-list-dot" style={{ background: "var(--ts-success)" }} />
+                            {s}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="ts-score-list-col">
+                        <div className="ts-score-list-title">✗ Areas to Improve</div>
+                        {result.weaknesses.slice(0, 4).map((w, i) => (
+                          <div key={i} className="ts-score-list-item">
+                            <div className="ts-score-list-dot" style={{ background: "var(--ts-danger)" }} />
+                            {w}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Agent selector — hide after result */}
+          {phase !== "done" && (
+            <div style={{ marginBottom: 16 }}>
+              <div className="ts-card-title" style={{ marginBottom: 8 }}>Assign to Agent</div>
+              <select className="ts-select-agent" value={agentId} onChange={(e) => setAgentId(e.target.value)}>
+                <option value="">Select agent…</option>
+                {agents.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+              </select>
+            </div>
+          )}
+
+          {/* Dropzone — hide after result */}
+          {phase !== "done" && (
+            <div
+              className={`ts-dropzone ${dragover ? "dragover" : ""}`}
+              onClick={() => fileRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); setDragover(true); }}
+              onDragLeave={() => setDragover(false)}
+              onDrop={(e) => { e.preventDefault(); setDragover(false); handleFiles(e.dataTransfer.files); }}
+            >
+              <div className="ts-dropzone-icon">💬</div>
+              <div className="ts-dropzone-title">Drop transcript files here or click to browse</div>
+              <div className="ts-dropzone-sub">Supports .txt files · Multiple files allowed</div>
+              <input ref={fileRef} type="file" accept=".txt,.csv" multiple style={{ display: "none" }}
+                onChange={(e) => { if (e.target.files) handleFiles(e.target.files); }}
+              />
+            </div>
+          )}
+
+          {/* File list + actions */}
+          {files.length > 0 && phase !== "done" && (
+            <>
+              <div className="ts-divider" />
+              <div style={{ marginBottom: 14 }}>
+                {files.map((f, i) => (
+                  <div key={i} className="ts-conv-item">
+                    <div className="ts-conv-icon">📄</div>
+                    <div style={{ flex: 1 }}>
+                      <div className="ts-conv-name">{f.name}</div>
+                      <div className="ts-conv-meta">{(f.size / 1024).toFixed(1)} KB · {f.content.length} chars</div>
+                    </div>
+                    <button className="ts-btn" style={{ padding: "0 10px", height: 28, fontSize: 12 }} onClick={() => removeFile(i)}>✕</button>
+                  </div>
+                ))}
+              </div>
+              {!agentId && (
+                <div className="ts-muted" style={{ marginBottom: 12, fontSize: 13 }}>⚠ Select an agent above before uploading</div>
+              )}
+              <div style={{ display: "flex", gap: 10 }}>
+                <button className="ts-btn" onClick={() => handleUpload(false)} disabled={!canUpload || busy}>
+                  {phase === "uploading" ? "Uploading…" : `Upload ${files.length} file${files.length > 1 ? "s" : ""}`}
+                </button>
+                <button className="ts-btn ts-btn-primary" onClick={() => handleUpload(true)} disabled={!canUpload || busy}>
+                  {busy ? (phase === "scoring" ? "Scoring…" : "Uploading…") : "⚡ Upload + Score Now"}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

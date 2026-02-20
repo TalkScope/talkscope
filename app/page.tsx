@@ -86,6 +86,14 @@ export default function HomePage() {
         .lp-uc-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
         @media(max-width:640px) { .lp-uc-grid { grid-template-columns:1fr; } }
 
+        /* Pricing grid */
+        .lp-price-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; max-width:900px; margin:0 auto; }
+        @media(max-width:780px) { .lp-price-grid { grid-template-columns:1fr; max-width:420px; } }
+
+        /* Testimonials grid */
+        .lp-testi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+        @media(max-width:780px) { .lp-testi-grid { grid-template-columns:1fr; } }
+
         /* How it works */
         .lp-steps { display:grid; grid-template-columns:repeat(3,1fr); gap:0; }
         @media(max-width:700px) { .lp-steps { grid-template-columns:1fr; gap:8px; } }
@@ -324,15 +332,116 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── CTA ── */}
-        <section id="pricing" className="lp-section" style={{ textAlign: "center" }}>
+        {/* ── PRICING ── */}
+        <section id="pricing" className="lp-section">
+          <div className="lp-inner">
+            <div style={{ textAlign: "center", marginBottom: 48 }}>
+              <h2 style={{ fontSize: "clamp(24px,4vw,38px)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: 12, color: ink }}>Simple, transparent pricing</h2>
+              <p style={{ color: muted, fontSize: 16 }}>Start free. Scale as your team grows.</p>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, maxWidth: 900, margin: "0 auto" }}>
+              {[
+                {
+                  name: "Starter", price: "$49", per: "/mo",
+                  desc: "Perfect for small teams getting started with conversation intelligence.",
+                  features: ["Up to 5 agents", "500 conversations/mo", "AI scoring", "Pattern detection", "Email support"],
+                  cta: "Start free trial", primary: false,
+                },
+                {
+                  name: "Growth", price: "$199", per: "/mo",
+                  desc: "For growing contact centers that need full performance intelligence.",
+                  features: ["Up to 25 agents", "5,000 conversations/mo", "Everything in Starter", "Batch scoring", "Coaching priority engine", "Revenue leakage detection", "Priority support"],
+                  cta: "Get started", primary: true,
+                  badge: "Most popular",
+                },
+                {
+                  name: "Enterprise", price: "Custom", per: "",
+                  desc: "Full platform for large operations with advanced needs.",
+                  features: ["Unlimited agents", "Unlimited conversations", "Everything in Growth", "Multi-team intelligence", "Custom AI rules", "SSO / SAML", "Dedicated success manager"],
+                  cta: "Contact us", primary: false,
+                },
+              ].map(plan => (
+                <div key={plan.name} style={{
+                  background: plan.primary ? accent : surface,
+                  border: `1px solid ${plan.primary ? accent : border}`,
+                  borderRadius: 20, padding: 28, position: "relative",
+                  boxShadow: plan.primary ? `0 20px 48px ${isDark ? "rgba(64,97,132,0.4)" : "rgba(64,97,132,0.2)"}` : "none",
+                  transform: plan.primary ? "scale(1.02)" : "none",
+                }}>
+                  {plan.badge && (
+                    <div style={{ position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)", padding: "4px 14px", borderRadius: 20, background: "#22c55e", color: "#fff", fontSize: 11, fontWeight: 800, whiteSpace: "nowrap" }}>
+                      {plan.badge}
+                    </div>
+                  )}
+                  <div style={{ fontSize: 13, fontWeight: 800, color: plan.primary ? "rgba(255,255,255,0.7)" : muted, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>{plan.name}</div>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 2, marginBottom: 8 }}>
+                    <span style={{ fontSize: 36, fontWeight: 900, letterSpacing: "-0.04em", color: plan.primary ? "#fff" : ink }}>{plan.price}</span>
+                    <span style={{ fontSize: 14, color: plan.primary ? "rgba(255,255,255,0.6)" : muted }}>{plan.per}</span>
+                  </div>
+                  <div style={{ fontSize: 13, color: plan.primary ? "rgba(255,255,255,0.7)" : muted, lineHeight: 1.6, marginBottom: 22, minHeight: 44 }}>{plan.desc}</div>
+                  <Link href="/sign-up" style={{
+                    display: "block", textAlign: "center", padding: "11px 20px", borderRadius: 12,
+                    background: plan.primary ? "#fff" : accent,
+                    color: plan.primary ? accent : "#fff",
+                    textDecoration: "none", fontWeight: 750, fontSize: 14, marginBottom: 22,
+                  }}>{plan.cta}</Link>
+                  <div style={{ borderTop: `1px solid ${plan.primary ? "rgba(255,255,255,0.15)" : border}`, paddingTop: 18 }}>
+                    {plan.features.map(f => (
+                      <div key={f} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 9, fontSize: 13, color: plan.primary ? "rgba(255,255,255,0.85)" : muted }}>
+                        <span style={{ color: plan.primary ? "#86efac" : "#22c55e", fontWeight: 800, flexShrink: 0, marginTop: 1 }}>✓</span>
+                        {f}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <p style={{ textAlign: "center", marginTop: 32, fontSize: 14, color: muted }}>
+              All plans include a 14-day free trial · No credit card required · Cancel anytime
+            </p>
+          </div>
+        </section>
+
+        {/* ── TESTIMONIALS ── */}
+        <section className="lp-section" style={{ background: surfaceAlt }}>
+          <div className="lp-inner">
+            <div style={{ textAlign: "center", marginBottom: 40 }}>
+              <h2 style={{ fontSize: "clamp(22px,3.5vw,34px)", fontWeight: 800, letterSpacing: "-0.03em", color: ink, marginBottom: 10 }}>Teams that use TalkScope</h2>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }}>
+              {[
+                { quote: "We cut coaching prep time by 70%. TalkScope shows exactly which agents need attention and why — no more guessing.", name: "Sarah K.", role: "Head of QA, FinTech", initials: "SK" },
+                { quote: "The pattern engine found a phrase that was killing 30% of our conversions. We fixed it in a week and saw immediate results.", name: "Marcus T.", role: "Sales Director", initials: "MT" },
+                { quote: "Finally a tool built for contact centers, not just sales. The risk detection alone paid for itself in the first month.", name: "Elena V.", role: "Operations Manager", initials: "EV" },
+              ].map(t => (
+                <div key={t.name} style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: 24 }}>
+                  <div style={{ fontSize: 24, color: accent, marginBottom: 12, opacity: 0.6 }}>"</div>
+                  <div style={{ fontSize: 14, color: muted, lineHeight: 1.7, marginBottom: 18 }}>{t.quote}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ width: 34, height: 34, borderRadius: 10, background: `rgba(64,97,132,0.15)`, border: `1px solid ${border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: accent, flexShrink: 0 }}>{t.initials}</div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 750, color: ink }}>{t.name}</div>
+                      <div style={{ fontSize: 11, color: muted }}>{t.role}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── FINAL CTA ── */}
+        <section className="lp-section" style={{ textAlign: "center" }}>
           <div style={{ maxWidth: 540, margin: "0 auto" }}>
             <h2 style={{ fontSize: "clamp(24px,4vw,38px)", fontWeight: 800, letterSpacing: "-0.03em", marginBottom: 14, color: ink }}>Ready to see what your conversations really do?</h2>
             <p style={{ color: muted, fontSize: 16, marginBottom: 32, lineHeight: 1.6 }}>Import your agents and transcripts. Get first insights in minutes.</p>
             <div className="lp-cta-btns">
-              <Link href="/app/dashboard" style={{ padding: "13px 28px", borderRadius: 12, background: accent, color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 15 }}>Open Dashboard →</Link>
-              <Link href="/app/upload" style={{ padding: "13px 28px", borderRadius: 12, background: surface, border: `1px solid ${border}`, color: ink, textDecoration: "none", fontWeight: 700, fontSize: 15 }}>Import Data</Link>
+              <Link href="/sign-up" style={{ padding: "13px 28px", borderRadius: 12, background: accent, color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 15 }}>Start free trial →</Link>
+              <Link href="/app/dashboard" style={{ padding: "13px 28px", borderRadius: 12, background: surface, border: `1px solid ${border}`, color: ink, textDecoration: "none", fontWeight: 700, fontSize: 15 }}>Open Dashboard</Link>
             </div>
+            <p style={{ marginTop: 16, fontSize: 13, color: muted }}>14-day free trial · No credit card required</p>
           </div>
         </section>
 
