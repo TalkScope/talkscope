@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 
-type UploadTab = "agents" | "conversations" | "rules";
+type UploadTab = "agents" | "conversations" | "audio" | "rules";
 
 function safeJson(txt: string) {
   try { return { ok: true as const, json: JSON.parse(txt) }; }
@@ -25,7 +25,8 @@ function parseCsvAgents(csv: string): { name: string; email: string; team: strin
 // ─── TABS ────────────────────────────────────────────────────
 const TABS: { id: UploadTab; label: string; icon: string; desc: string }[] = [
   { id: "agents", label: "Import Agents", icon: "👥", desc: "Upload CSV with agent names, emails, teams" },
-  { id: "conversations", label: "Upload Conversations", icon: "💬", desc: "Upload chat transcripts or audio files" },
+  { id: "conversations", label: "Upload Transcripts", icon: "💬", desc: "Upload .txt conversation transcripts" },
+  { id: "audio", label: "Upload Audio", icon: "🎙️", desc: "Upload MP3/WAV/M4A — auto-transcribed by AI" },
   { id: "rules", label: "Company Rules", icon: "📋", desc: "Upload scripts, standards, compliance docs" },
 ];
 
@@ -134,6 +135,7 @@ export default function UploadPage() {
 
         {tab === "agents" && <AgentsTab />}
         {tab === "conversations" && <ConversationsTab />}
+        {tab === "audio" && <AudioTab />}
         {tab === "rules" && <RulesTab />}
       </div>
     </>
@@ -612,6 +614,251 @@ function ConversationsTab() {
         </div>
       </div>
     </>
+  );
+}
+
+// ─── AUDIO TAB ───────────────────────────────────────────────
+function AudioTab() {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [agents, setAgents] = useState<{ id: string; name: string }[]>([]);
+  const [agentId, setAgentId] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [phase, setPhase] = useState<"idle" | "transcribing" | "saving" | "scoring" | "done">("idle");
+  const [result, setResult] = useState<any>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/meta/agents", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((j) => setAgents(j.agents?.map((a: any) => ({ id: a.id, name: a.name })) ?? []))
+      .catch(() => {});
+  }, []);
+
+  function handleFile(f: File) {
+    const MAX = 25 * 1024 * 1024;
+    if (f.size > MAX) { setErr(`File too large: ${(f.size/1024/1024).toFixed(1)}MB. Max 25MB.`); return; }
+    setFile(f);
+    setErr(null);
+    setResult(null);
+  }
+
+  function reset() { setFile(null); setResult(null); setErr(null); setPhase("idle"); }
+
+  async function handleUpload(withScore = false) {
+    if (!file || !agentId) return;
+    setErr(null); setResult(null);
+    setPhase("transcribing");
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("agentId", agentId);
+
+      const r = await fetch("/api/upload/audio", { method: "POST", body: formData });
+      const txt = await r.text();
+      if (!r.ok) throw new Error(txt.slice(0, 300));
+      const data = JSON.parse(txt);
+
+      if (!withScore) {
+        setPhase("done");
+        setResult({ ...data, overallScore: 0, uploadOnly: true });
+        setFile(null);
+        return;
+      }
+
+      setPhase("scoring");
+      const scoreR = await fetch("/api/agents/score/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ agentId, windowSize: 30 }),
+      });
+      const scoreTxt = await scoreR.text();
+      if (!scoreR.ok) throw new Error(`Scoring failed: ${scoreTxt.slice(0, 200)}`);
+      const scoreP = JSON.parse(scoreTxt);
+      if (!scoreP?.ok) throw new Error(scoreP?.error || "Score failed");
+      const s = scoreP.score;
+
+      setResult({
+        ...data,
+        overallScore: Number(s.overallScore ?? s.overall_score ?? 0),
+        communicationScore: Number(s.communicationScore ?? s.communication_score ?? 0),
+        conversionScore: Number(s.conversionScore ?? s.conversion_score ?? 0),
+        riskScore: Number(s.riskScore ?? s.risk_score ?? 0),
+        coachingPriority: Number(s.coachingPriority ?? s.coaching_priority ?? 0),
+        strengths: s.strengths ?? [],
+        weaknesses: s.weaknesses ?? [],
+      });
+      setFile(null);
+      setPhase("done");
+    } catch (e: any) {
+      setErr(e?.message || "Failed");
+      setPhase("idle");
+    }
+  }
+
+  const busy = phase === "transcribing" || phase === "saving" || phase === "scoring";
+  const canUpload = !!file && !!agentId;
+  const fileSizeMB = file ? (file.size / 1024 / 1024).toFixed(1) : "0";
+  const accent = "#406184";
+
+  const phaseLabel = phase === "transcribing" ? "🎙️ Transcribing audio with Whisper AI…"
+    : phase === "saving" ? "💾 Saving transcript…"
+    : phase === "scoring" ? "🧠 Generating AI score…"
+    : "";
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <style>{`
+        .ts-audio-drop { border: 2px dashed var(--ts-border); border-radius: var(--ts-radius-lg); padding: 40px 24px; text-align: center; cursor: pointer; transition: all 0.15s; background: var(--ts-bg-soft); }
+        .ts-audio-drop:hover { border-color: #406184; background: rgba(64,97,132,0.04); }
+        .ts-audio-drop.has-file { border-color: #22c55e; border-style: solid; background: rgba(34,197,94,0.04); }
+      `}</style>
+
+      {/* Info banner */}
+      <div style={{ display: "flex", gap: 12, padding: "12px 16px", borderRadius: 12, background: "rgba(64,97,132,0.06)", border: "1px solid rgba(64,97,132,0.2)" }}>
+        <span style={{ fontSize: 20 }}>🎙️</span>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 13, color: accent, marginBottom: 2 }}>Audio Transcription powered by OpenAI Whisper</div>
+          <div style={{ fontSize: 12, color: "var(--ts-muted)", lineHeight: 1.6 }}>
+            Supported: MP3, WAV, M4A, MP4 · Max 25MB (~25 min at 128kbps) · Auto PII redaction · ~$0.006/min
+          </div>
+        </div>
+      </div>
+
+      {/* Agent selector */}
+      <div>
+        <label className="ts-label">Select Agent</label>
+        <select className="ts-select" value={agentId} onChange={e => setAgentId(e.target.value)} disabled={busy}>
+          <option value="">— Select agent —</option>
+          {agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+        </select>
+      </div>
+
+      {/* Drop zone */}
+      {!result && (
+        <div
+          className={`ts-audio-drop ${file ? "has-file" : ""}`}
+          onClick={() => !busy && fileRef.current?.click()}
+          onDragOver={e => { e.preventDefault(); }}
+          onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
+        >
+          <input
+            ref={fileRef} type="file"
+            accept=".mp3,.wav,.m4a,.mp4,.webm,audio/*"
+            style={{ display: "none" }}
+            onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+          />
+          {!file ? (
+            <>
+              <div style={{ fontSize: 36, marginBottom: 12 }}>🎵</div>
+              <div style={{ fontWeight: 700, fontSize: 15, color: "var(--ts-ink)", marginBottom: 6 }}>Drop audio file here or click to browse</div>
+              <div style={{ fontSize: 13, color: "var(--ts-muted)" }}>MP3, WAV, M4A, MP4 · Max 25MB</div>
+            </>
+          ) : (
+            <>
+              <div style={{ fontSize: 36, marginBottom: 12 }}>🎵</div>
+              <div style={{ fontWeight: 700, fontSize: 15, color: "#22c55e", marginBottom: 4 }}>{file.name}</div>
+              <div style={{ fontSize: 13, color: "var(--ts-muted)" }}>{fileSizeMB} MB · Ready to transcribe</div>
+              {!busy && (
+                <button onClick={e => { e.stopPropagation(); reset(); }}
+                  style={{ marginTop: 10, fontSize: 12, color: "#ef4444", background: "none", border: "none", cursor: "pointer" }}>
+                  Remove
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Progress */}
+      {busy && (
+        <div style={{ padding: "20px 24px", borderRadius: 14, background: "rgba(64,97,132,0.06)", border: "1px solid rgba(64,97,132,0.2)", textAlign: "center" }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: accent, marginBottom: 8 }}>{phaseLabel}</div>
+          <div style={{ height: 4, borderRadius: 4, background: "rgba(64,97,132,0.15)", overflow: "hidden" }}>
+            <div style={{ height: "100%", background: accent, borderRadius: 4, width: phase === "transcribing" ? "60%" : phase === "scoring" ? "90%" : "30%", transition: "width 0.5s ease" }} />
+          </div>
+          {phase === "transcribing" && <div style={{ fontSize: 12, color: "var(--ts-muted)", marginTop: 8 }}>This may take 10–30 seconds depending on audio length</div>}
+        </div>
+      )}
+
+      {/* Error */}
+      {err && (
+        <div style={{ padding: "12px 16px", borderRadius: 10, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#dc2626", fontSize: 13 }}>
+          ⚠️ {err}
+        </div>
+      )}
+
+      {/* Result */}
+      {result && (
+        <div style={{ borderRadius: 14, border: "1px solid var(--ts-border)", overflow: "hidden" }}>
+          <div style={{ padding: "16px 20px", background: "rgba(34,197,94,0.06)", borderBottom: "1px solid var(--ts-border-soft)", display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 24 }}>✅</span>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 15, color: "var(--ts-ink)" }}>
+                Audio transcribed {result.uploadOnly ? "& saved" : "& scored"}
+              </div>
+              <div style={{ fontSize: 12, color: "var(--ts-muted)" }}>
+                {result.agentName} · {result.durationEstimate} · {result.transcriptLength} chars
+                {result.piiRedacted && <span style={{ marginLeft: 8, color: "#22c55e" }}>🔒 PII redacted</span>}
+              </div>
+            </div>
+          </div>
+
+          {/* Transcript preview */}
+          <div style={{ padding: "14px 20px", background: "var(--ts-bg-soft)", borderBottom: "1px solid var(--ts-border-soft)" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--ts-muted)", marginBottom: 8 }}>Transcript Preview</div>
+            <div style={{ fontSize: 12, color: "var(--ts-ink)", lineHeight: 1.7, fontFamily: "monospace", opacity: 0.8 }}>{result.transcript}</div>
+          </div>
+
+          {/* Scores */}
+          {!result.uploadOnly && result.overallScore > 0 && (
+            <div style={{ padding: "16px 20px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+              {[
+                { label: "Overall", value: result.overallScore, color: accent },
+                { label: "Communication", value: result.communicationScore, color: "#8b5cf6" },
+                { label: "Conversion", value: result.conversionScore, color: "#22c55e" },
+                { label: "Risk", value: result.riskScore, color: "#ef4444" },
+                { label: "Coaching Priority", value: result.coachingPriority, color: "#f59e0b" },
+              ].map(m => (
+                <div key={m.label} style={{ textAlign: "center", padding: "10px 8px", borderRadius: 10, background: "var(--ts-bg-soft)", border: "1px solid var(--ts-border)" }}>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: m.color }}>{Math.round(m.value)}</div>
+                  <div style={{ fontSize: 11, color: "var(--ts-muted)", marginTop: 2 }}>{m.label}</div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div style={{ padding: "12px 20px", display: "flex", gap: 10 }}>
+            <button onClick={reset} className="ts-btn" style={{ fontSize: 13 }}>Upload another</button>
+            <a href={`/app/agents/${result.agentId}`} className="ts-btn ts-btn-primary" style={{ fontSize: 13, textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
+              View agent →
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* Action buttons */}
+      {!result && !busy && (
+        <div style={{ display: "flex", gap: 10 }}>
+          <button
+            onClick={() => handleUpload(false)}
+            disabled={!canUpload}
+            className="ts-btn"
+            style={{ fontSize: 14, opacity: canUpload ? 1 : 0.5 }}
+          >
+            Save transcript only
+          </button>
+          <button
+            onClick={() => handleUpload(true)}
+            disabled={!canUpload}
+            className="ts-btn ts-btn-primary"
+            style={{ fontSize: 14, opacity: canUpload ? 1 : 0.5 }}
+          >
+            ⚡ Transcribe + Score Now
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
