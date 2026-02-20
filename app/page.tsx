@@ -311,19 +311,19 @@ export default function HomePage() {
                 TalkScope analyzes agent conversations, detects behavioral patterns, scores performance, and tells you exactly why deals are won or lost.
               </p>
 
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 48 }}>
-                <Link href="/app/dashboard" style={{ padding: "13px 26px", borderRadius: 12, background: accent, color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 15, boxShadow: `0 8px 24px ${accent}40` }}>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 48, alignItems: "center" }}>
+                <Link href="/app/dashboard" style={{ padding: "13px 26px", borderRadius: 12, background: accent, color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 15, boxShadow: `0 8px 24px ${accent}40`, whiteSpace: "nowrap" }}>
                   {isSignedIn ? "Open Dashboard" : "Start free trial"}
                 </Link>
                 {!isSignedIn && (
-                  <Link href="/demo" style={{ padding: "13px 26px", borderRadius: 12, background: surface, border: `1px solid ${border}`, color: ink, textDecoration: "none", fontWeight: 700, fontSize: 15, display: "flex", alignItems: "center", gap: 8 }}>
+                  <Link href="/demo" style={{ padding: "13px 22px", borderRadius: 12, background: surface, border: `1px solid ${border}`, color: ink, textDecoration: "none", fontWeight: 700, fontSize: 15, display: "flex", alignItems: "center", gap: 8, whiteSpace: "nowrap" }}>
                     <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e", display: "inline-block", boxShadow: "0 0 6px #22c55e" }} />
                     Try live demo
                   </Link>
                 )}
-                <Link href="/guide" style={{ padding: "13px 26px", borderRadius: 12, background: "transparent", border: `1px solid ${border}`, color: muted, textDecoration: "none", fontWeight: 600, fontSize: 15, display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 16 }}>📖</span>
-                  Documentation
+                <Link href="/guide" style={{ padding: "13px 22px", borderRadius: 12, background: `${accent}12`, border: `1px solid ${accent}30`, color: accent, textDecoration: "none", fontWeight: 700, fontSize: 15, display: "flex", alignItems: "center", gap: 8, whiteSpace: "nowrap" }}>
+                  <span style={{ fontSize: 15 }}>📖</span>
+                  Docs
                 </Link>
               </div>
 
