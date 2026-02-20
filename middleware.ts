@@ -15,8 +15,17 @@ const isProtectedRoute = createRouteMatcher([
   "/api/dashboard(.*)",
 ]);
 
+// Public: accessible without auth
+const isPublicRoute = createRouteMatcher([
+  "/",
+  "/demo(.*)",
+  "/api/demo-login(.*)",
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+]);
+
 export default clerkMiddleware(async (auth, req) => {
-  if (isProtectedRoute(req)) {
+  if (!isPublicRoute(req) && isProtectedRoute(req)) {
     await auth.protect();
   }
 });
