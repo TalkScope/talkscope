@@ -765,6 +765,7 @@ export default function HomePage() {
             </div>
             <div style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
               <Link href="/guide" style={{ fontSize: 13, color: muted, textDecoration: "none" }}>📖 Docs</Link>
+              <Link href="/terms" style={{ fontSize: 13, color: muted, textDecoration: "none" }}>📄 Terms</Link>
               <Link href="/privacy" style={{ fontSize: 13, color: muted, textDecoration: "none" }}>🔒 Privacy</Link>
               <Link href="/security" style={{ fontSize: 13, color: muted, textDecoration: "none" }}>🛡️ Security</Link>
               <span style={{ fontSize: 13, color: muted }}>© 2026 TalkScope</span>
