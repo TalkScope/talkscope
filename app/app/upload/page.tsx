@@ -1,6 +1,27 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
+
+const DEMO_USER_ID = "user_39vlY625s0Maj4GvJp5vPJvB7xU";
+
+function DemoCTA() {
+  return (
+    <div style={{ margin: "20px 0", padding: "20px 24px", borderRadius: 14, background: "linear-gradient(135deg, #406184, #5a7fa8)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+      <div>
+        <div style={{ fontWeight: 800, fontSize: 15, color: "#fff", marginBottom: 4 }}>
+          🎉 Your data was just analyzed!
+        </div>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", lineHeight: 1.5 }}>
+          Create a free account to save this permanently, add your team, and unlock all features.
+        </div>
+      </div>
+      <a href="/sign-up" style={{ flexShrink: 0, padding: "10px 20px", borderRadius: 10, background: "#fff", color: "#406184", fontWeight: 800, fontSize: 13, textDecoration: "none", whiteSpace: "nowrap" }}>
+        Save my data → Free
+      </a>
+    </div>
+  );
+}
 
 type UploadTab = "agents" | "conversations" | "audio" | "rules";
 
@@ -32,6 +53,8 @@ const TABS: { id: UploadTab; label: string; icon: string; desc: string }[] = [
 
 export default function UploadPage() {
   const [tab, setTab] = useState<UploadTab>("agents");
+  const { user } = useUser();
+  const isDemo = user?.id === DEMO_USER_ID;
 
   return (
     <>
@@ -134,8 +157,8 @@ export default function UploadPage() {
         </div>
 
         {tab === "agents" && <AgentsTab />}
-        {tab === "conversations" && <ConversationsTab />}
-        {tab === "audio" && <AudioTab />}
+        {tab === "conversations" && <ConversationsTab isDemo={isDemo} />}
+        {tab === "audio" && <AudioTab isDemo={isDemo} />}
         {tab === "rules" && <RulesTab />}
       </div>
     </>
@@ -286,7 +309,7 @@ function riskColor(n: number) {
   return "var(--ts-success)";
 }
 
-function ConversationsTab() {
+function ConversationsTab({ isDemo = false }: { isDemo?: boolean }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<{ name: string; size: number; content: string }[]>([]);
   const [dragover, setDragover] = useState(false);
@@ -480,7 +503,9 @@ function ConversationsTab() {
 
           {/* Result */}
           {result && phase === "done" && (
-            <div className="ts-score-result" style={{ marginBottom: 20 }}>
+            <>
+              {isDemo && <DemoCTA />}
+              <div className="ts-score-result" style={{ marginBottom: 20 }}>
               <div className="ts-score-result-head">
                 {result.overallScore > 0 ? (
                   <div className="ts-score-big" style={{ color: scoreColor(result.overallScore), borderColor: scoreColor(result.overallScore), background: `${scoreColor(result.overallScore)}12` }}>
@@ -551,6 +576,7 @@ function ConversationsTab() {
                 </>
               )}
             </div>
+            </>
           )}
 
           {/* Agent selector — hide after result */}
@@ -618,7 +644,7 @@ function ConversationsTab() {
 }
 
 // ─── AUDIO TAB ───────────────────────────────────────────────
-function AudioTab() {
+function AudioTab({ isDemo = false }: { isDemo?: boolean }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [agents, setAgents] = useState<{ id: string; name: string }[]>([]);
   const [agentId, setAgentId] = useState("");
@@ -790,7 +816,9 @@ function AudioTab() {
 
       {/* Result */}
       {result && (
-        <div style={{ borderRadius: 14, border: "1px solid var(--ts-border)", overflow: "hidden" }}>
+        <>
+          {isDemo && <DemoCTA />}
+          <div style={{ borderRadius: 14, border: "1px solid var(--ts-border)", overflow: "hidden" }}>
           <div style={{ padding: "16px 20px", background: "rgba(34,197,94,0.06)", borderBottom: "1px solid var(--ts-border-soft)", display: "flex", alignItems: "center", gap: 12 }}>
             <span style={{ fontSize: 24 }}>✅</span>
             <div>
@@ -835,6 +863,7 @@ function AudioTab() {
             </a>
           </div>
         </div>
+        </>
       )}
 
       {/* Action buttons */}

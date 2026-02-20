@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth";
+import { requireNonDemo } from "@/lib/auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
-    const { userId } = await requireAuth();
+    const { userId } = await requireNonDemo();
     const { id, name } = await req.json() as { id?: string; name: string };
     if (!name?.trim()) return NextResponse.json({ ok: false, error: "Name is required" }, { status: 400 });
 
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
-    const { userId } = await requireAuth();
+    const { userId } = await requireNonDemo();
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id")?.trim();
     if (!id) return NextResponse.json({ ok: false, error: "Missing id" }, { status: 400 });
