@@ -360,14 +360,14 @@ function ConversationsTab() {
       const s = scoreP.json.score;
       setResult({
         agentName: agents.find(a => a.id === agentId)?.name ?? agentId,
-        overallScore: Number(s.overallScore),
-        communicationScore: Number(s.communicationScore),
-        conversionScore: Number(s.conversionScore),
-        riskScore: Number(s.riskScore),
-        coachingPriority: Number(s.coachingPriority),
+        overallScore: Number(s.overallScore ?? s.overall_score ?? 0),
+        communicationScore: Number(s.communicationScore ?? s.communication_score ?? 0),
+        conversionScore: Number(s.conversionScore ?? s.conversion_score ?? 0),
+        riskScore: Number(s.riskScore ?? s.risk_score ?? 0),
+        coachingPriority: Number(s.coachingPriority ?? s.coaching_priority ?? 0),
         strengths: s.strengths ?? [],
         weaknesses: s.weaknesses ?? [],
-        keyPatterns: s.keyPatterns ?? [],
+        keyPatterns: s.keyPatterns ?? s.key_patterns ?? [],
         uploadedCount: files.length,
         agentId,
       });
