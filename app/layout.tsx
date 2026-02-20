@@ -16,15 +16,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "TalkScope — Conversation Intelligence OS",
   description: "AI-powered conversation intelligence, agent scoring, and performance management for contact centers, sales teams, and collections.",
-  icons: {
-    icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
-      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
-      { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon.ico" },
-    ],
-    apple: { url: "/logo-192.png", sizes: "192x192", type: "image/png" },
-  },
   openGraph: {
     title: "TalkScope — Conversation Intelligence OS",
     description: "AI that analyzes every conversation, scores agents, and tells you exactly why deals are won or lost.",
