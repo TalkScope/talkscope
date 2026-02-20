@@ -694,7 +694,7 @@ export default function HomePage() {
         </section>
 
         {/* PRICING — dark */}
-        <section id="pricing" style={{ padding: "80px 32px", background: isDark ? "#080f1c" : "#0b1220", position: "relative", overflow: "hidden" }}>
+        <section id="pricing" style={{ padding: "80px 32px 0", background: isDark ? "#080f1c" : "#0b1220", position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
             <div style={{ position: "absolute", top: "-10%", left: "20%", width: "60%", height: "50%", borderRadius: "50%", background: "radial-gradient(circle, rgba(64,97,132,0.25) 0%, transparent 70%)", filter: "blur(80px)" }} />
           </div>
@@ -761,6 +761,8 @@ export default function HomePage() {
               All plans include a 14-day free trial · No credit card required · Cancel anytime
             </p>
           </div>
+          {/* Gradient bridge to CTA */}
+          <div style={{ height: 120, background: "linear-gradient(to bottom, transparent, rgba(64,97,132,0.12))", marginTop: 40 }} />
         </section>
 
         {/* FINAL CTA — split layout with photo */}
@@ -804,13 +806,14 @@ export default function HomePage() {
               {/* Left fade */}
               <div style={{ position: "absolute", top: 0, left: 0, bottom: 0, width: "20%", background: "linear-gradient(to right, #0b1220, transparent)", zIndex: 2, pointerEvents: "none" }} />
 
-              {/* Photo */}
+              {/* Photo — with mix-blend-mode for transparency effect */}
               <img
-                src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=600&h=620&fit=crop&crop=top"
+                src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=640&h=680&fit=crop&crop=center"
                 alt="Contact center agent"
-                style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", display: "block", minHeight: 480, filter: "brightness(0.85) saturate(0.9)" }}
+                style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top", display: "block", minHeight: 480, filter: "brightness(0.75) saturate(0.8) contrast(1.1)", mixBlendMode: "luminosity" as any }}
                 onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src = "https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=600&h=620&fit=crop&crop=top";
+                  (e.currentTarget as HTMLImageElement).src = "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=640&h=680&fit=crop&crop=center";
+                  (e.currentTarget as HTMLImageElement).style.filter = "brightness(0.7) saturate(0.7)";
                 }}
               />
 
@@ -845,21 +848,34 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* FOOTER */}
-        <footer style={{ borderTop: `1px solid ${border}`, padding: "28px 24px", background: isDark ? "#080f1c" : "#ffffff" }}>
-          <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+        {/* FOOTER — dark */}
+        <footer style={{ background: isDark ? "#05080f" : "#080f1c", padding: "36px 24px" }}>
+          <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+            {/* Logo */}
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <img src="/logo-512.png" alt="TalkScope" style={{ width: 26, height: 26, borderRadius: 7 }} />
-              <span style={{ fontWeight: 800, fontSize: 14, color: accent }}>TalkScope</span>
+              <img src="/logo-512.png" alt="TalkScope" style={{ width: 28, height: 28, borderRadius: 8 }} />
+              <span style={{ fontWeight: 800, fontSize: 15, color: "#ffffff" }}>TalkScope</span>
             </div>
-            <div style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
-              <Link href="/guide" style={{ fontSize: 13, color: muted, textDecoration: "none" }}>📖 Docs</Link>
-              <Link href="/terms" style={{ fontSize: 13, color: muted, textDecoration: "none" }}>📄 Terms</Link>
-              <Link href="/privacy" style={{ fontSize: 13, color: muted, textDecoration: "none" }}>🔒 Privacy</Link>
-              <Link href="/security" style={{ fontSize: 13, color: muted, textDecoration: "none" }}>🛡️ Security</Link>
-              <span style={{ fontSize: 13, color: muted }}>© 2026 TalkScope</span>
+            {/* Links */}
+            <div style={{ display: "flex", gap: 28, alignItems: "center", flexWrap: "wrap" }}>
+              {[
+                { href: "/guide",    label: "Docs" },
+                { href: "/terms",    label: "Terms" },
+                { href: "/privacy",  label: "Privacy" },
+                { href: "/security", label: "Security" },
+              ].map(l => (
+                <Link key={l.href} href={l.href} style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", textDecoration: "none", fontWeight: 500, transition: "color 0.15s" }}
+                  onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.85)")}
+                  onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.45)")}>
+                  {l.label}
+                </Link>
+              ))}
+              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.25)" }}>© 2026 TalkScope</span>
             </div>
-            <Link href="/app/dashboard" style={{ fontSize: 13, color: accent, textDecoration: "none", fontWeight: 600 }}>Open App →</Link>
+            {/* CTA */}
+            <Link href="/app/dashboard" style={{ fontSize: 13, color: "#7eb5e8", textDecoration: "none", fontWeight: 700 }}>
+              Open App →
+            </Link>
           </div>
         </footer>
       </main>
