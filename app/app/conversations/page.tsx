@@ -177,12 +177,12 @@ export default function ConversationsPage() {
 
         .ts-conv-header {
           display:grid;
-          grid-template-columns:36px 1fr 64px 90px 60px;
+          grid-template-columns:36px 1fr 64px 90px 60px 36px;
           gap:12px; align-items:center;
           padding:12px 18px; cursor:pointer;
         }
         @media(max-width:600px){
-          .ts-conv-header { grid-template-columns:36px 1fr 56px 40px; }
+          .ts-conv-header { grid-template-columns:36px 1fr 56px 40px 32px; }
           .ts-conv-date-col { display:none; }
         }
 
@@ -372,30 +372,29 @@ export default function ConversationsPage() {
                     <div className="ts-conv-toggle">{isOpen ? "▲ Hide" : "▼ View"}</div>
 
                     {/* Delete */}
-                    {confirmDeleteId === c.id ? (
-                      <div style={{ display: "flex", gap: 6, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-                        <button
-                          onClick={() => { setConfirmDeleteId(null); deleteConversation(c.id); }}
-                          style={{ padding: "4px 10px", borderRadius: 8, border: "none", background: "var(--ts-danger)", color: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700 }}
-                        >
-                          {deletingId === c.id ? "…" : "Delete"}
-                        </button>
-                        <button
-                          onClick={() => setConfirmDeleteId(null)}
-                          style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid var(--ts-border)", background: "transparent", color: "var(--ts-muted)", cursor: "pointer", fontSize: 12 }}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(c.id); }}
-                        style={{ padding: "4px 8px", borderRadius: 8, border: "1px solid rgba(180,35,24,0.2)", background: "transparent", color: "var(--ts-danger)", cursor: "pointer", fontSize: 13, flexShrink: 0 }}
-                        title="Delete conversation"
-                      >
-                        🗑
-                      </button>
-                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirmDeleteId === c.id) {
+                          setConfirmDeleteId(null);
+                          deleteConversation(c.id);
+                        } else {
+                          setConfirmDeleteId(c.id);
+                          setTimeout(() => setConfirmDeleteId(id => id === c.id ? null : id), 3000);
+                        }
+                      }}
+                      disabled={deletingId === c.id}
+                      style={{
+                        padding: "4px 8px", borderRadius: 8, cursor: "pointer", fontSize: 11, fontWeight: 700,
+                        flexShrink: 0, transition: "all 0.15s", whiteSpace: "nowrap",
+                        border: confirmDeleteId === c.id ? "none" : "1px solid rgba(180,35,24,0.25)",
+                        background: confirmDeleteId === c.id ? "var(--ts-danger)" : "transparent",
+                        color: confirmDeleteId === c.id ? "#fff" : "var(--ts-danger)",
+                      }}
+                      title="Delete conversation"
+                    >
+                      {deletingId === c.id ? "…" : confirmDeleteId === c.id ? "Sure?" : "Delete"}
+                    </button>
                   </div>
 
                   {/* Excerpt (collapsed) */}
