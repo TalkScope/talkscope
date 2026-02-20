@@ -799,49 +799,76 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* RIGHT — photo with floating elements */}
-            <div style={{ flex: "0 0 48%", position: "relative", display: "flex", alignItems: "flex-end", justifyContent: "center", overflow: "hidden" }}>
-              {/* Soft top fade */}
-              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "30%", background: "linear-gradient(to bottom, #0b1220, transparent)", zIndex: 2, pointerEvents: "none" }} />
-              {/* Left fade */}
-              <div style={{ position: "absolute", top: 0, left: 0, bottom: 0, width: "20%", background: "linear-gradient(to right, #0b1220, transparent)", zIndex: 2, pointerEvents: "none" }} />
+            {/* RIGHT — uploaded agent image with branded overlay cards */}
+            <div style={{ flex: "0 0 48%", position: "relative", display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px 40px 0" }}>
 
-              {/* Photo — with mix-blend-mode for transparency effect */}
-              <img
-                src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=640&h=680&fit=crop&crop=center"
-                alt="Contact center agent"
-                style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top", display: "block", minHeight: 480, filter: "brightness(0.75) saturate(0.8) contrast(1.1)", mixBlendMode: "luminosity" as any }}
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src = "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=640&h=680&fit=crop&crop=center";
-                  (e.currentTarget as HTMLImageElement).style.filter = "brightness(0.7) saturate(0.7)";
-                }}
-              />
+              {/* Container that mimics the hexagon composition */}
+              <div style={{ position: "relative", width: "100%", maxWidth: 480 }}>
 
-              {/* Floating insight cards */}
-              <div style={{ position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none" }}>
-                {[
-                  { top: "14%", left: "8%",  text: "Score improved +12 pts",     color: "#22c55e", delay: "0s" },
-                  { top: "30%", left: "52%", text: "Risk detected: call #203",    color: "#ef4444", delay: "1.3s" },
-                  { top: "50%", left: "6%",  text: "Coaching priority: High",     color: "#f59e0b", delay: "2.2s" },
-                  { top: "66%", left: "48%", text: "Pattern: objection at min 3", color: "#7eb5e8", delay: "0.8s" },
-                  { top: "80%", left: "10%", text: "QA Score: 94 — Excellent",    color: "#22c55e", delay: "1.8s" },
-                ].map((el, i) => (
-                  <div key={i} style={{
-                    position: "absolute", top: el.top, left: el.left,
-                    display: "flex", alignItems: "center", gap: 7,
-                    padding: "7px 14px", borderRadius: 22,
-                    background: "rgba(11,18,32,0.82)",
-                    border: `1px solid ${el.color}35`,
-                    backdropFilter: "blur(12px)",
-                    boxShadow: `0 4px 20px rgba(0,0,0,0.3), 0 0 0 1px ${el.color}15`,
-                    fontSize: 12, fontWeight: 700, color: "#f7f9fc",
-                    animation: "floatCard 4s ease-in-out infinite",
-                    animationDelay: el.delay, whiteSpace: "nowrap",
-                  }}>
-                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: el.color, flexShrink: 0 }} />
-                    <span style={{ color: el.color }}>{el.text}</span>
+                {/* The image — no clipping, natural transparent bg blends into dark */}
+                <img
+                  src="/cta-agent.webp"
+                  alt="TalkScope agent scoring"
+                  style={{ width: "100%", display: "block", filter: "drop-shadow(0 20px 60px rgba(0,0,0,0.5))" }}
+                />
+
+                {/* TOP LEFT — Overall Score card */}
+                <div style={{
+                  position: "absolute", top: "2%", left: "0%",
+                  background: "rgba(10,18,34,0.92)", backdropFilter: "blur(16px)",
+                  border: "1px solid rgba(255,255,255,0.12)", borderRadius: 14,
+                  padding: "12px 18px", minWidth: 160,
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+                  animation: "floatCard 5s ease-in-out infinite", animationDelay: "0s",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>Conversation Score</span>
+                    <span style={{ fontSize: 10, fontWeight: 800, background: "#22c55e", color: "#fff", padding: "2px 7px", borderRadius: 6 }}>Excellent</span>
                   </div>
-                ))}
+                  <div style={{ fontSize: 28, fontWeight: 900, color: "#fff", letterSpacing: "-0.04em", lineHeight: 1 }}>94<span style={{ fontSize: 16, color: "rgba(255,255,255,0.5)" }}>%</span></div>
+                </div>
+
+                {/* LEFT SIDE — metric rows */}
+                <div style={{
+                  position: "absolute", top: "33%", left: "-2%",
+                  display: "flex", flexDirection: "column", gap: 8,
+                  animation: "floatCard 4.5s ease-in-out infinite", animationDelay: "0.6s",
+                }}>
+                  {[
+                    { label: "Tone & Empathy",     badge: "Excellent", badgeColor: "#22c55e" },
+                    { label: "Script Compliance",  badge: "Good",      badgeColor: "#3b82f6" },
+                    { label: "Objection Handling", badge: "Good",      badgeColor: "#3b82f6" },
+                    { label: "Revenue Signal",     badge: "Excellent", badgeColor: "#22c55e" },
+                  ].map(row => (
+                    <div key={row.label} style={{
+                      display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+                      background: "rgba(10,18,34,0.88)", backdropFilter: "blur(12px)",
+                      border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10,
+                      padding: "7px 12px", minWidth: 210,
+                      boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
+                    }}>
+                      <span style={{ fontSize: 12, color: "rgba(255,255,255,0.8)", fontWeight: 600 }}>{row.label}</span>
+                      <span style={{ fontSize: 10, fontWeight: 800, background: row.badgeColor, color: "#fff", padding: "2px 8px", borderRadius: 6, whiteSpace: "nowrap" }}>{row.badge}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* BOTTOM RIGHT — coaching insight card */}
+                <div style={{
+                  position: "absolute", bottom: "6%", right: "-2%",
+                  background: "rgba(10,18,34,0.92)", backdropFilter: "blur(16px)",
+                  border: "1px solid rgba(126,181,232,0.25)", borderRadius: 14,
+                  padding: "14px 18px", maxWidth: 200,
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(126,181,232,0.1)",
+                  animation: "floatCard 5.5s ease-in-out infinite", animationDelay: "1.4s",
+                }}>
+                  <div style={{ fontSize: 11, color: "#7eb5e8", fontWeight: 700, marginBottom: 6 }}>AI Coaching Note</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", lineHeight: 1.4 }}>
+                    "Revenue leakage at minute 4 — address pricing earlier."
+                  </div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 6 }}>Agent: Sarah K. · Just analyzed</div>
+                </div>
+
               </div>
             </div>
 
