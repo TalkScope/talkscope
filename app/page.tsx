@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
+import { useUser } from "@clerk/nextjs";
 
 function useTheme() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -86,6 +87,7 @@ export default function HomePage() {
   const { isDark, toggle } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [visibleInsight, setVisibleInsight] = useState(0);
+  const { isSignedIn } = useUser();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -300,12 +302,14 @@ export default function HomePage() {
 
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 48 }}>
                 <Link href="/app/dashboard" style={{ padding: "13px 26px", borderRadius: 12, background: accent, color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 15, boxShadow: `0 8px 24px ${accent}40` }}>
-                  Start free trial
+                  {isSignedIn ? "Open Dashboard" : "Start free trial"}
                 </Link>
-                <Link href="/demo" style={{ padding: "13px 26px", borderRadius: 12, background: surface, border: `1px solid ${border}`, color: ink, textDecoration: "none", fontWeight: 700, fontSize: 15, display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e", display: "inline-block", boxShadow: "0 0 6px #22c55e" }} />
-                  Try live demo
-                </Link>
+                {!isSignedIn && (
+                  <Link href="/demo" style={{ padding: "13px 26px", borderRadius: 12, background: surface, border: `1px solid ${border}`, color: ink, textDecoration: "none", fontWeight: 700, fontSize: 15, display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e", display: "inline-block", boxShadow: "0 0 6px #22c55e" }} />
+                    Try live demo
+                  </Link>
+                )}
               </div>
 
               {/* Stats */}
