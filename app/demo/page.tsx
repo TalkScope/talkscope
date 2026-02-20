@@ -2,48 +2,22 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useSignIn } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
-
-const DEMO_EMAIL = "fernando.d.roberts@gmail.com";
-const DEMO_PASSWORD = "TalkScope2026!";
 
 export default function DemoPage() {
-  const { signIn, isLoaded, setActive } = useSignIn();
-  const router = useRouter();
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [error, setError] = useState("");
   const accent = "#406184";
 
   async function handleEnterDemo() {
-    if (!isLoaded) return;
     setStatus("loading");
     setError("");
     try {
-      const result = await signIn.create({
-        identifier: DEMO_EMAIL,
-        password: DEMO_PASSWORD,
-      });
-
-      if (result.status === "complete") {
-        await setActive!({ session: result.createdSessionId });
-        router.push("/app/dashboard");
-      } else if (result.status === "needs_second_factor") {
-        throw new Error("2FA is enabled on demo account — please disable it in Clerk dashboard");
-      } else {
-        // Try to complete with first factor
-        const firstFactor = result.supportedFirstFactors?.find(
-          (f: any) => f.strategy === "password"
-        );
-        if (firstFactor) {
-          await setActive!({ session: result.createdSessionId });
-          router.push("/app/dashboard");
-        } else {
-          throw new Error("Unexpected sign-in state: " + result.status);
-        }
-      }
+      const r = await fetch("/api/demo-login", { method: "POST" });
+      const data = await r.json();
+      if (!data.ok) throw new Error(data.error || "Failed to create demo session");
+      window.location.href = `/sign-in?__clerk_ticket=${data.token}&redirect_url=/app/dashboard`;
     } catch (e: any) {
-      setError(e?.errors?.[0]?.message || e?.message || "Failed to enter demo");
+      setError(e?.message || "Failed to enter demo");
       setStatus("error");
     }
   }
@@ -69,7 +43,6 @@ export default function DemoPage() {
           Explore a live workspace with 8 agents, AI scores, patterns, and coaching intelligence.
         </p>
 
-        {/* What you'll see */}
         <div style={{ background: "#f6f8fc", border: "1px solid #e4e7ef", borderRadius: 14, padding: 16, marginBottom: 24 }}>
           {[
             { icon: "📊", text: "Operations dashboard with coaching queue" },
@@ -94,7 +67,7 @@ export default function DemoPage() {
           disabled={status === "loading"}
           style={{ width: "100%", padding: "14px 24px", borderRadius: 14, background: accent, color: "#fff", border: "none", fontWeight: 800, fontSize: 16, cursor: status === "loading" ? "default" : "pointer", opacity: status === "loading" ? 0.8 : 1, marginBottom: 14, boxShadow: "0 8px 24px rgba(64,97,132,0.3)" }}
         >
-          {status === "loading" ? "Entering demo…" : "Enter live demo →"}
+          {status === "loading" ? "Preparing demo…" : "Enter live demo →"}
         </button>
 
         <div style={{ borderTop: "1px solid #e4e7ef", paddingTop: 18, display: "flex", justifyContent: "space-between" }}>
