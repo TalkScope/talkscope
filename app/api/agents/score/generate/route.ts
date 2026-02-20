@@ -83,7 +83,7 @@ export async function POST(req: Request) {
     }
 
     const convs = await fetchAgentWindow(agentId, windowSize);
-    if (convs.length < 5) return new NextResponse("Not enough conversations to score", { status: 400 });
+    if (convs.length < 1) return new NextResponse("Not enough conversations to score", { status: 400 });
 
     // Compact payload: prefer reportJson; fallback to excerpt
     const items = convs.map((c) => {
