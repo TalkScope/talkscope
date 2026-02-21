@@ -102,20 +102,22 @@ function WhoTabs({ tabs, isDark, ink, muted, border }: any) {
   return (
     <div>
       <style>{`
-        .who-tab-bar { display:flex; gap:4px; margin-bottom:28px; background:${isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"}; border-radius:14px; padding:4px; }
+        .who-tab-bar { display:flex; gap:4px; margin-bottom:28px; background:${isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.06)"}; border-radius:14px; padding:4px; }
         @media(max-width:600px) {
-          .who-tab-bar { flex-direction:column; gap:2px; }
-          .who-tab-btn span.who-tab-label { font-size:13px !important; }
+          .who-tab-bar { flex-direction:column; gap:2px; border-radius:12px; }
+          .who-tab-btn { justify-content:flex-start !important; padding:12px 16px !important; border-radius:8px !important; border:1px solid transparent; }
+          .who-tab-btn.active-tab { border-color:${isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.1)"} !important; }
           .who-panel { grid-template-columns:1fr !important; }
           .who-panel-right { display:none !important; }
           .who-panel-left { border-right:none !important; padding:28px 24px !important; }
+          .cta-float-cards { display:none !important; }
         }
       `}</style>
 
       {/* Tab bar */}
       <div className="who-tab-bar">
         {tabs.map((tab: any, i: number) => (
-          <button key={tab.id} onClick={() => setActive(i)} className="who-tab-btn" style={{
+          <button key={tab.id} onClick={() => setActive(i)} className={`who-tab-btn${active === i ? " active-tab" : ""}`} style={{
             flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
             padding: "10px 16px", borderRadius: 10, border: "none", cursor: "pointer",
             background: active === i ? (isDark ? "#1a2d45" : "#ffffff") : "transparent",
@@ -377,26 +379,39 @@ export default function HomePage() {
           {[["Features", "#features"], ["Who it's for", "#who"], ["How it works", "#how"], ["Pricing", "#pricing"]].map(([l, h]) => (
             <a key={l} href={h} onClick={() => setMobileMenuOpen(false)}>{l}</a>
           ))}
-          <a href="/app/dashboard" style={{ marginTop: 8, background: `rgba(64,97,132,0.1)` }}>Open Dashboard</a>
         </nav>
         <div className="lp-mob-footer">
+          {isSignedIn ? (
+            <Link href="/app/dashboard" style={{ display: "block", width: "100%", padding: "11px", borderRadius: 10, background: accent, color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 14, textAlign: "center", marginBottom: 8 }}>
+              Open Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link href="/sign-up" style={{ display: "block", padding: "11px", borderRadius: 10, background: accent, color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 14, textAlign: "center", marginBottom: 8 }}>
+                Get started
+              </Link>
+              <Link href="/sign-in" style={{ display: "block", padding: "11px", borderRadius: 10, border: `1px solid ${border}`, color: ink, textDecoration: "none", fontWeight: 600, fontSize: 14, textAlign: "center", marginBottom: 12 }}>
+                Sign In
+              </Link>
+            </>
+          )}
           <button onClick={toggle} style={{ width: "100%", padding: "10px", borderRadius: 10, border: `1px solid ${border}`, background: surface, cursor: "pointer", fontSize: 14, fontWeight: 700, color: ink }}>
             {isDark ? "☀️ Light mode" : "🌙 Dark mode"}
           </button>
         </div>
       </div>
 
-      <div style={{ overflowX: "hidden" }}>
-      <main style={{ minHeight: "100vh", background: bg, color: ink, fontFamily: "'DM Sans','Segoe UI',system-ui,sans-serif" }}>
+      <main style={{ minHeight: "100vh", background: bg, color: ink, fontFamily: "'DM Sans','Segoe UI',system-ui,sans-serif", paddingTop: 64 }}>
 
         {/* NAV */}
         <header style={{
-          position: "sticky", top: 0, zIndex: 40,
+          position: "fixed", top: 0, left: 0, right: 0, zIndex: 40,
           background: scrolled ? navBg : "transparent",
           backdropFilter: scrolled ? "blur(20px)" : "none",
+          WebkitBackdropFilter: scrolled ? "blur(20px)" : "none",
           borderBottom: scrolled ? `1px solid ${border}` : "1px solid transparent",
           boxShadow: scrolled ? "0 2px 20px rgba(0,0,0,0.08)" : "none",
-          transition: "background 0.3s, border-color 0.3s, box-shadow 0.3s, backdrop-filter 0.3s",
+          transition: "background 0.3s, border-color 0.3s, box-shadow 0.3s",
         }}>
           <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: scrolled ? 54 : 64, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, transition: "height 0.3s" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
@@ -479,17 +494,17 @@ export default function HomePage() {
               </div>
 
               {/* Stats */}
-              <div style={{ display: "flex", gap: 40, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: 32, flexWrap: "nowrap" }}>
                 {[
-                  { value: 74, suffix: "%", label: "avg coaching time saved" },
-                  { value: 30, suffix: "%", label: "more conversions detected" },
-                  { value: 3, suffix: "s", label: "to score a conversation" },
+                  { value: 74, suffix: "%", label: "coaching time saved" },
+                  { value: 30, suffix: "%", label: "more conversions" },
+                  { value: 3, suffix: "s", label: "to score a call" },
                 ].map(s => (
-                  <div key={s.label} className="lp-stat">
-                    <div style={{ fontSize: "clamp(24px,3vw,36px)", fontWeight: 900, color: accent, letterSpacing: "-0.04em", lineHeight: 1 }}>
+                  <div key={s.label} className="lp-stat" style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: "clamp(22px,3vw,36px)", fontWeight: 900, color: accent, letterSpacing: "-0.04em", lineHeight: 1 }}>
                       <AnimatedNumber target={s.value} />{s.suffix}
                     </div>
-                    <div style={{ fontSize: 12, color: muted, marginTop: 5, fontWeight: 500 }}>{s.label}</div>
+                    <div style={{ fontSize: 11, color: muted, marginTop: 5, fontWeight: 500, lineHeight: 1.3 }}>{s.label}</div>
                   </div>
                 ))}
               </div>
@@ -867,6 +882,7 @@ export default function HomePage() {
                   style={{ width: "100%", display: "block", filter: "drop-shadow(0 20px 60px rgba(0,0,0,0.5))" }}
                 />
 
+                <div className="cta-float-cards">
                 {/* TOP LEFT — Overall Score card */}
                 <div style={{
                   position: "absolute", top: "2%", left: "0%",
@@ -923,6 +939,7 @@ export default function HomePage() {
                   </div>
                   <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 6 }}>Agent: Sarah K. · Just analyzed</div>
                 </div>
+                </div>{/* end cta-float-cards */}
 
               </div>
             </div>
@@ -962,7 +979,6 @@ export default function HomePage() {
           </div>
         </footer>
       </main>
-      </div>
     </>
   );
 }
