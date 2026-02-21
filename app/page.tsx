@@ -406,9 +406,9 @@ export default function HomePage() {
         {/* NAV */}
         <header style={{
           position: "fixed", top: 0, left: 0, right: 0, zIndex: 40,
-          background: scrolled ? navBg : "transparent",
-          backdropFilter: scrolled ? "blur(20px)" : "none",
-          WebkitBackdropFilter: scrolled ? "blur(20px)" : "none",
+          background: scrolled ? navBg : (isDark ? "rgba(11,18,32,0.75)" : "rgba(246,248,252,0.82)"),
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
           borderBottom: scrolled ? `1px solid ${border}` : "1px solid transparent",
           boxShadow: scrolled ? "0 2px 20px rgba(0,0,0,0.08)" : "none",
           transition: "background 0.3s, border-color 0.3s, box-shadow 0.3s",
