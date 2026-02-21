@@ -101,30 +101,40 @@ function WhoTabs({ tabs, isDark, ink, muted, border }: any) {
 
   return (
     <div>
+      <style>{`
+        .who-tab-bar { display:flex; gap:4px; margin-bottom:28px; background:${isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"}; border-radius:14px; padding:4px; }
+        @media(max-width:600px) {
+          .who-tab-bar { flex-direction:column; gap:2px; }
+          .who-tab-btn span.who-tab-label { font-size:13px !important; }
+          .who-panel { grid-template-columns:1fr !important; }
+          .who-panel-right { display:none !important; }
+          .who-panel-left { border-right:none !important; padding:28px 24px !important; }
+        }
+      `}</style>
+
       {/* Tab bar */}
-      <div style={{ display: "flex", gap: 4, marginBottom: 28, background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)", borderRadius: 14, padding: 4 }}>
+      <div className="who-tab-bar">
         {tabs.map((tab: any, i: number) => (
-          <button key={tab.id} onClick={() => setActive(i)} style={{
+          <button key={tab.id} onClick={() => setActive(i)} className="who-tab-btn" style={{
             flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
             padding: "10px 16px", borderRadius: 10, border: "none", cursor: "pointer",
             background: active === i ? (isDark ? "#1a2d45" : "#ffffff") : "transparent",
             color: active === i ? tab.labelColor : muted,
             fontWeight: active === i ? 800 : 600, fontSize: 14,
             boxShadow: active === i ? (isDark ? "none" : "0 1px 8px rgba(0,0,0,0.1)") : "none",
-            transition: "all 0.2s",
-            fontFamily: "inherit",
+            transition: "all 0.2s", fontFamily: "inherit",
           }}>
             <span style={{ color: active === i ? tab.labelColor : muted, opacity: active === i ? 1 : 0.5 }}>{tab.icon}</span>
-            <span style={{ display: "block" }}>{tab.label}</span>
+            <span className="who-tab-label">{tab.label}</span>
           </button>
         ))}
       </div>
 
       {/* Content panel */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0, borderRadius: 24, overflow: "hidden", border: `1px solid ${border}`, background: bgCard, boxShadow: shadow, minHeight: 360 }}>
+      <div className="who-panel" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0, borderRadius: 24, overflow: "hidden", border: `1px solid ${border}`, background: bgCard, boxShadow: shadow, minHeight: 360 }}>
 
         {/* Left — text */}
-        <div style={{ padding: "48px 52px", borderRight: `1px solid ${border}`, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div className="who-panel-left" style={{ padding: "48px 52px", borderRight: `1px solid ${border}`, display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 10, background: t.tagBg, border: `1px solid ${t.tagBorder}`, marginBottom: 20, width: "fit-content" }}>
             <span style={{ color: t.labelColor }}>{t.icon}</span>
             <span style={{ fontSize: 11, fontWeight: 800, color: t.labelColor, textTransform: "uppercase", letterSpacing: "0.07em" }}>{t.label}</span>
@@ -147,11 +157,9 @@ function WhoTabs({ tabs, isDark, ink, muted, border }: any) {
           </div>
         </div>
 
-        {/* Right — visual with floating cards */}
-        <div style={{ position: "relative", background: isDark ? "rgba(255,255,255,0.02)" : t.tagBg, overflow: "hidden", minHeight: 320 }}>
-          {/* bg glow */}
+        {/* Right — visual with floating cards (hidden on mobile) */}
+        <div className="who-panel-right" style={{ position: "relative", background: isDark ? "rgba(255,255,255,0.02)" : t.tagBg, overflow: "hidden", minHeight: 320 }}>
           <div style={{ position: "absolute", top: "20%", left: "20%", width: "60%", height: "60%", borderRadius: "50%", background: `radial-gradient(circle, ${t.tagBorder.replace("0.2", "0.6")} 0%, transparent 70%)`, filter: "blur(40px)", pointerEvents: "none" }} />
-          {/* Floating insight cards */}
           {t.floats.map((el: any, i: number) => (
             <div key={i} style={{
               position: "absolute", top: el.top, right: el.right,
@@ -169,7 +177,6 @@ function WhoTabs({ tabs, isDark, ink, muted, border }: any) {
               <span style={{ color: el.dot }}>{el.text}</span>
             </div>
           ))}
-          {/* Center icon */}
           <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 80, height: 80, borderRadius: 24, background: isDark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.8)", border: `2px solid ${t.tagBorder}`, display: "flex", alignItems: "center", justifyContent: "center", color: t.labelColor, boxShadow: `0 8px 32px ${t.tagBorder.replace("0.2", "0.3")}` }}>
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">{active === 0 ? <><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l.91-1.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></> : active === 1 ? <><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></> : <><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>}</svg>
           </div>
@@ -773,10 +780,20 @@ export default function HomePage() {
             <div style={{ position: "absolute", bottom: "-20%", right: "30%", width: "40%", height: "80%", borderRadius: "50%", background: "radial-gradient(circle, rgba(126,181,232,0.12) 0%, transparent 70%)", filter: "blur(60px)" }} />
           </div>
 
-          <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "stretch", minHeight: 520, position: "relative", zIndex: 1 }}>
+          <style>{`
+            .cta-split { display:flex; align-items:stretch; min-height:520px; position:relative; z-index:1; }
+            .cta-left  { flex:0 0 52%; padding:80px 56px 80px 32px; display:flex; flex-direction:column; justify-content:center; }
+            .cta-right { flex:0 0 48%; position:relative; display:flex; align-items:center; justify-content:center; padding:40px 24px 40px 0; }
+            @media(max-width:768px) {
+              .cta-split { flex-direction:column; min-height:auto; }
+              .cta-left  { flex:none; padding:56px 24px 32px; }
+              .cta-right { flex:none; padding:0 24px 48px; justify-content:center; }
+            }
+          `}</style>
+          <div style={{ maxWidth: 1200, margin: "0 auto" }} className="cta-split">
 
             {/* LEFT — text */}
-            <div style={{ flex: "0 0 52%", padding: "80px 56px 80px 32px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <div className="cta-left">
               <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.75)", marginBottom: 28, width: "fit-content" }}>
                 ✨ Free 14-day trial — no card required
               </div>
@@ -800,7 +817,7 @@ export default function HomePage() {
             </div>
 
             {/* RIGHT — uploaded agent image with branded overlay cards */}
-            <div style={{ flex: "0 0 48%", position: "relative", display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px 40px 0" }}>
+            <div className="cta-right">
 
               {/* Container that mimics the hexagon composition */}
               <div style={{ position: "relative", width: "100%", maxWidth: 480 }}>
