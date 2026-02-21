@@ -644,6 +644,141 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* COMPARISON — light */}
+        <section style={{ padding: "80px 32px", background: isDark ? "#0b1220" : "#ffffff", borderTop: `1px solid ${border}`, position: "relative", overflow: "hidden" }}>
+          {/* Subtle grid bg */}
+          <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: `linear-gradient(${isDark ? "rgba(64,97,132,0.06)" : "rgba(64,97,132,0.04)"} 1px, transparent 1px), linear-gradient(90deg, ${isDark ? "rgba(64,97,132,0.06)" : "rgba(64,97,132,0.04)"} 1px, transparent 1px)`, backgroundSize: "48px 48px" }} />
+          <div className="lp-inner" style={{ position: "relative", zIndex: 1 }}>
+            <div style={{ textAlign: "center", marginBottom: 52 }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20, background: `${accent}12`, border: `1px solid ${accent}25`, fontSize: 12, fontWeight: 700, color: accent, marginBottom: 16 }}>
+                HOW WE COMPARE
+              </div>
+              <h2 style={{ fontSize: "clamp(26px,4vw,42px)", fontWeight: 900, letterSpacing: "-0.03em", color: ink, marginBottom: 14 }}>
+                Built different. Priced fairly.
+              </h2>
+              <p style={{ color: muted, fontSize: 17, maxWidth: 500, margin: "0 auto" }}>
+                Most platforms give you data. TalkScope gives you decisions.
+              </p>
+            </div>
+
+            {/* Table wrapper */}
+            <div style={{ overflowX: "auto", borderRadius: 20, border: `1px solid ${border}`, boxShadow: isDark ? "none" : "0 4px 32px rgba(0,0,0,0.07)" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 600, background: isDark ? "rgba(255,255,255,0.02)" : "#ffffff" }}>
+                <thead>
+                  <tr>
+                    {/* Feature col */}
+                    <th style={{ padding: "16px 20px", textAlign: "left", fontSize: 12, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: `1px solid ${border}`, width: "34%" }}>
+                      Capability
+                    </th>
+                    {/* CallRail */}
+                    <th style={{ padding: "16px 20px", textAlign: "center", fontSize: 13, fontWeight: 800, color: ink, borderBottom: `1px solid ${border}`, width: "22%" }}>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                        <span>CallRail</span>
+                        <span style={{ fontSize: 11, fontWeight: 500, color: muted }}>Call tracking</span>
+                      </div>
+                    </th>
+                    {/* Gong */}
+                    <th style={{ padding: "16px 20px", textAlign: "center", fontSize: 13, fontWeight: 800, color: ink, borderBottom: `1px solid ${border}`, width: "22%" }}>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                        <span>Gong</span>
+                        <span style={{ fontSize: 11, fontWeight: 500, color: muted }}>Sales intelligence</span>
+                      </div>
+                    </th>
+                    {/* TalkScope */}
+                    <th style={{ padding: "16px 20px", textAlign: "center", fontSize: 13, fontWeight: 800, borderBottom: `1px solid ${border}`, width: "22%", background: isDark ? "rgba(64,97,132,0.15)" : "rgba(64,97,132,0.06)", position: "relative" }}>
+                      <div style={{ position: "absolute", top: -1, left: 0, right: 0, height: 3, background: accent, borderRadius: "0 0 0 0" }} />
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                        <span style={{ color: accent }}>TalkScope</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: accent, opacity: 0.7 }}>Performance OS</span>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    {
+                      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l.91-1.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>,
+                      label: "Call tracking & attribution",
+                      callrail: "full", gong: "full", ts: "full",
+                    },
+                    {
+                      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
+                      label: "AI agent scoring",
+                      callrail: "none", gong: "full", ts: "full",
+                    },
+                    {
+                      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="5" cy="6" r="2"/><circle cx="12" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="12" cy="18" r="2"/><circle cx="19" cy="18" r="2"/></svg>,
+                      label: "Pattern Intelligence Engine",
+                      callrail: "none", gong: "partial", ts: "full",
+                    },
+                    {
+                      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
+                      label: "Revenue leakage detection",
+                      callrail: "none", gong: "none", ts: "full",
+                    },
+                    {
+                      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
+                      label: "Coaching priority AI",
+                      callrail: "none", gong: "partial", ts: "full",
+                    },
+                    {
+                      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+                      label: "Real-time scoring & assist",
+                      callrail: "none", gong: "partial", ts: "full",
+                    },
+                    {
+                      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>,
+                      label: "Audio transcription (Whisper)",
+                      callrail: "none", gong: "full", ts: "full",
+                    },
+                    {
+                      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
+                      label: "Mid-market pricing",
+                      callrail: "full", gong: "none", ts: "full",
+                      note: { callrail: "from $5", gong: "from $500+/mo", ts: "from $49/mo" },
+                    },
+                  ].map((row, i) => {
+                    const isLast = i === 6;
+                    const rowBg = isDark
+                      ? (i % 2 === 0 ? "rgba(255,255,255,0.02)" : "transparent")
+                      : (i % 2 === 0 ? "#ffffff" : "#f8fafc");
+                    const tsBg = isDark ? "rgba(64,97,132,0.12)" : "rgba(64,97,132,0.05)";
+                    const Cell = ({ val, note }: { val: string; note?: string }) => {
+                      if (val === "full")    return <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#22c55e" opacity="0.15"/><path d="M8 12l3 3 5-5" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>{note && <span style={{ fontSize: 10, color: muted, fontWeight: 600 }}>{note}</span>}</div>;
+                      if (val === "partial") return <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#f59e0b" opacity="0.15"/><path d="M12 8v4m0 4h.01" stroke="#d97706" strokeWidth="2.5" strokeLinecap="round"/></svg>{note && <span style={{ fontSize: 10, color: muted }}>{note}</span>}<span style={{ fontSize: 10, color: "#d97706", fontWeight: 600 }}>Partial</span></div>;
+                      return <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#ef4444" opacity="0.1"/><path d="M15 9l-6 6M9 9l6 6" stroke="#ef4444" strokeWidth="2" strokeLinecap="round"/></svg>{note && <span style={{ fontSize: 10, color: muted }}>{note}</span>}</div>;
+                    };
+                    return (
+                      <tr key={i}>
+                        <td style={{ padding: "14px 20px", borderBottom: isLast ? "none" : `1px solid ${border}`, background: rowBg }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <div style={{ color: accent, flexShrink: 0, opacity: 0.7 }}>{row.icon}</div>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: ink }}>{row.label}</span>
+                          </div>
+                        </td>
+                        <td style={{ padding: "14px 20px", textAlign: "center", borderBottom: isLast ? "none" : `1px solid ${border}`, background: rowBg }}>
+                          <Cell val={row.callrail} note={(row as any).note?.callrail} />
+                        </td>
+                        <td style={{ padding: "14px 20px", textAlign: "center", borderBottom: isLast ? "none" : `1px solid ${border}`, background: rowBg }}>
+                          <Cell val={row.gong} note={(row as any).note?.gong} />
+                        </td>
+                        <td style={{ padding: "14px 20px", textAlign: "center", borderBottom: isLast ? "none" : `1px solid ${border}`, background: tsBg }}>
+                          <Cell val={row.ts} note={(row as any).note?.ts} />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Footnote */}
+            <p style={{ textAlign: "center", marginTop: 20, fontSize: 12, color: muted, opacity: 0.7 }}>
+              * Based on publicly available information. Feature availability may vary by plan.
+            </p>
+          </div>
+        </section>
+
         {/* TESTIMONIALS — dark mesh */}
         <section style={{ padding: "80px 32px", background: isDark ? "#080f1c" : "#0b1220", position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
