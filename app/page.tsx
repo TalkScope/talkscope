@@ -426,7 +426,7 @@ export default function HomePage() {
 
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 48, alignItems: "center" }}>
                 <Link href="/app/dashboard" style={{ padding: "13px 26px", borderRadius: 12, background: accent, color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 15, boxShadow: `0 8px 24px ${accent}40`, whiteSpace: "nowrap" }}>
-                  {isSignedIn ? "Open Dashboard" : "Start free trial"}
+                  {isSignedIn ? "Open Dashboard" : "Get started"}
                 </Link>
                 {!isSignedIn && (
                   <Link href="/demo" style={{ padding: "13px 22px", borderRadius: 12, background: surface, border: `1px solid ${border}`, color: ink, textDecoration: "none", fontWeight: 700, fontSize: 15, display: "flex", alignItems: "center", gap: 8, whiteSpace: "nowrap" }}>
@@ -700,11 +700,17 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* PRICING — dark */}
-        <section id="pricing" style={{ padding: "80px 32px 0", background: isDark ? "#080f1c" : "#0b1220", position: "relative", overflow: "hidden" }}>
+        {/* PRICING + CTA — unified dark block */}
+        <div style={{ background: "#0b1220", position: "relative", overflow: "hidden" }}>
+          {/* Shared mesh gradient across both sections */}
           <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-            <div style={{ position: "absolute", top: "-10%", left: "20%", width: "60%", height: "50%", borderRadius: "50%", background: "radial-gradient(circle, rgba(64,97,132,0.25) 0%, transparent 70%)", filter: "blur(80px)" }} />
+            <div style={{ position: "absolute", top: "-5%", left: "10%", width: "50%", height: "45%", borderRadius: "50%", background: "radial-gradient(circle, rgba(64,97,132,0.28) 0%, transparent 70%)", filter: "blur(90px)" }} />
+            <div style={{ position: "absolute", top: "30%", right: "5%", width: "40%", height: "50%", borderRadius: "50%", background: "radial-gradient(circle, rgba(64,97,132,0.15) 0%, transparent 70%)", filter: "blur(80px)" }} />
+            <div style={{ position: "absolute", bottom: "5%", left: "20%", width: "60%", height: "40%", borderRadius: "50%", background: "radial-gradient(circle, rgba(126,181,232,0.08) 0%, transparent 70%)", filter: "blur(70px)" }} />
           </div>
+
+        {/* PRICING */}
+        <section id="pricing" style={{ padding: "80px 32px 60px", position: "relative", zIndex: 1 }}>
           <div className="lp-inner" style={{ position: "relative", zIndex: 1 }}>
             <div style={{ textAlign: "center", marginBottom: 56 }}>
               <h2 style={{ fontSize: "clamp(26px,4vw,42px)", fontWeight: 900, letterSpacing: "-0.03em", marginBottom: 14, color: "#f7f9fc" }}>Simple, transparent pricing</h2>
@@ -716,7 +722,7 @@ export default function HomePage() {
                   name: "Starter", price: "$49", per: "/mo",
                   desc: "Perfect for small teams getting started with conversation intelligence.",
                   features: ["Up to 5 agents", "500 conversations/mo", "AI scoring & patterns", "Basic coaching queue", "Email support"],
-                  cta: "Start free trial", primary: false,
+                  cta: "Get started", primary: false,
                 },
                 {
                   name: "Growth", price: "$199", per: "/mo",
@@ -765,20 +771,14 @@ export default function HomePage() {
               ))}
             </div>
             <p style={{ textAlign: "center", marginTop: 36, fontSize: 14, color: "rgba(247,249,252,0.4)" }}>
-              All plans include a 14-day free trial · No credit card required · Cancel anytime
+              All plans include a demo account · No credit card required to start
             </p>
           </div>
-          {/* Gradient bridge to CTA */}
-          <div style={{ height: 120, background: "linear-gradient(to bottom, transparent, rgba(64,97,132,0.12))", marginTop: 40 }} />
         </section>
 
         {/* FINAL CTA — split layout with photo */}
-        <section style={{ background: isDark ? "#080f1c" : "#0b1220", position: "relative", overflow: "hidden" }}>
-          {/* Mesh glows */}
-          <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-            <div style={{ position: "absolute", top: "-10%", left: "-5%", width: "50%", height: "120%", borderRadius: "50%", background: "radial-gradient(circle, rgba(64,97,132,0.4) 0%, transparent 65%)", filter: "blur(80px)" }} />
-            <div style={{ position: "absolute", bottom: "-20%", right: "30%", width: "40%", height: "80%", borderRadius: "50%", background: "radial-gradient(circle, rgba(126,181,232,0.12) 0%, transparent 70%)", filter: "blur(60px)" }} />
-          </div>
+        <section style={{ position: "relative", zIndex: 1 }}>
+          {/* no duplicate mesh — shared above */}
 
           <style>{`
             .cta-split { display:flex; align-items:stretch; min-height:520px; position:relative; z-index:1; }
@@ -795,7 +795,7 @@ export default function HomePage() {
             {/* LEFT — text */}
             <div className="cta-left">
               <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 20, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.75)", marginBottom: 28, width: "fit-content" }}>
-                ✨ Free 14-day trial — no card required
+                Try the live demo — no signup needed
               </div>
               <h2 style={{ fontSize: "clamp(28px,3.5vw,46px)", fontWeight: 900, letterSpacing: "-0.03em", marginBottom: 20, color: "#ffffff", lineHeight: 1.1 }}>
                 Ready to know what's<br />really happening in<br />your conversations?
@@ -812,7 +812,7 @@ export default function HomePage() {
                 </Link>
               </div>
               <p style={{ marginTop: 18, fontSize: 12, color: "rgba(255,255,255,0.35)" }}>
-                No credit card required · Cancel anytime · 14-day free trial
+                Book a call · See a live demo · Get started in minutes
               </p>
             </div>
 
@@ -891,6 +891,7 @@ export default function HomePage() {
 
           </div>
         </section>
+        </div>{/* end unified dark block */}
 
         {/* FOOTER — dark */}
         <footer style={{ background: isDark ? "#05080f" : "#080f1c", padding: "36px 24px" }}>
