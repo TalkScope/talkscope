@@ -1,0 +1,12 @@
+{
+  "name": "TalkScope — Conversation Intelligence",
+  "short_name": "TalkScope",
+  "description": "AI-powered conversation intelligence for contact centers and sales teams",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#406184",
+  "icons": [
+    { "src": "/logo-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

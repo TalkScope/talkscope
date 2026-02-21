@@ -414,10 +414,10 @@ export default function HomePage() {
           transition: "background 0.3s, border-color 0.3s, box-shadow 0.3s",
         }}>
           <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: scrolled ? 54 : 64, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, transition: "height 0.3s" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+            <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0, textDecoration: "none" }}>
               <img src="/logo-512.png" alt="TalkScope" style={{ width: scrolled ? 28 : 32, height: scrolled ? 28 : 32, borderRadius: 8, flexShrink: 0, transition: "all 0.3s" }} />
               <span style={{ fontWeight: 800, fontSize: scrolled ? 15 : 16, letterSpacing: "-0.3px", color: ink, transition: "font-size 0.3s" }}>TalkScope</span>
-            </div>
+            </Link>
             <nav className="lp-nav-links" style={{ display: "flex", gap: 2 }}>
               {([["Features", "#features"], ["Who it's for", "#who"], ["How it works", "#how"], ["Pricing", "#pricing"]] as [string,string][]).map(([l, h]) => {
                 const sectionId = h.replace("#", "");
