@@ -90,6 +90,8 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           width:36px; height:36px; border-radius:10px;
           background:linear-gradient(135deg,rgba(64,97,132,0.2),rgba(64,97,132,0.6));
           border:1px solid rgba(64,97,132,0.3);
+          display:flex; align-items:center; justify-content:center;
+          font-size:13px; font-weight:900; color:white;
         }
         .ts-ob-brand-name { font-size:17px; font-weight:800; letter-spacing:-0.03em; }
 
@@ -202,7 +204,8 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
         <div className="ts-ob-modal">
           <div className="ts-ob-header">
             <div className="ts-ob-brand">
-              <div className="ts-ob-brand-mark" />
+              <img src="/logo-512.png" alt="TalkScope" width={36} height={36} style={{ borderRadius: 10 }}
+                   onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
               <span className="ts-ob-brand-name">TalkScope</span>
             </div>
 
@@ -327,15 +330,26 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
             {/* ── STEP 5: Done ── */}
             {step === "done" && (
               <>
-                <div className="ts-ob-done-emoji">🚀</div>
-                <div className="ts-ob-title" style={{ textAlign: "center" }}>You're all set!</div>
-                <div className="ts-ob-subtitle" style={{ textAlign: "center" }}>
-                  Your workspace is ready. Head to the Dashboard to run batch scoring and start getting insights.
+                <div style={{ textAlign: "center", marginBottom: 20 }}>
+                  <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, margin: "0 auto 16px" }}>🚀</div>
+                  <div className="ts-ob-title">Workspace ready!</div>
+                  <div className="ts-ob-subtitle">Here's what to do next to get your first AI insights.</div>
                 </div>
-                <div className="ts-ob-hint">
-                  <strong>Next step:</strong> Go to Dashboard → open Batch Engine → click "Run to 100%" to score all conversations at once.
-                </div>
-                <button className="ts-ob-btn" onClick={onComplete}>
+                {[
+                  { icon: "📂", step: "1", title: "Upload conversations", sub: "Go to Upload → add .txt or audio files for your agents", href: "/app/upload" },
+                  { icon: "⚡", step: "2", title: "Run Batch Scoring", sub: "Dashboard → Batch Engine → Run to 100%", href: "/app/dashboard" },
+                  { icon: "🔍", step: "3", title: "Explore Pattern Intelligence", sub: "Patterns → select team → Generate report", href: "/app/patterns" },
+                ].map(item => (
+                  <a key={item.step} href={item.href} onClick={onComplete} className="ts-ob-action-card" style={{ textDecoration: "none", color: "inherit" }}>
+                    <div className="ts-ob-action-icon">{item.icon}</div>
+                    <div style={{ flex: 1 }}>
+                      <div className="ts-ob-action-title">{item.step}. {item.title}</div>
+                      <div className="ts-ob-action-sub">{item.sub}</div>
+                    </div>
+                    <div className="ts-ob-action-arrow">→</div>
+                  </a>
+                ))}
+                <button className="ts-ob-btn" onClick={onComplete} style={{ marginTop: 8 }}>
                   Go to Dashboard →
                 </button>
               </>
