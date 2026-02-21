@@ -190,7 +190,28 @@ export default function HomePage() {
   const { isDark, toggle } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [visibleInsight, setVisibleInsight] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState("");
   const { isSignedIn } = useUser();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+      // Active section detection
+      const sections = ["features", "who", "how", "pricing"];
+      let current = "";
+      for (const id of sections) {
+        const el = document.getElementById(id);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= 80) current = id;
+        }
+      }
+      setActiveSection(current);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -365,19 +386,36 @@ export default function HomePage() {
         </div>
       </div>
 
-      <main style={{ minHeight: "100vh", background: bg, color: ink, fontFamily: "'DM Sans','Segoe UI',system-ui,sans-serif", overflowX: "hidden" }}>
+      <div style={{ overflowX: "hidden" }}>
+      <main style={{ minHeight: "100vh", background: bg, color: ink, fontFamily: "'DM Sans','Segoe UI',system-ui,sans-serif" }}>
 
         {/* NAV */}
-        <header style={{ position: "sticky", top: 0, zIndex: 40, background: navBg, backdropFilter: "blur(16px)", borderBottom: `1px solid ${border}` }}>
-          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <header style={{
+          position: "sticky", top: 0, zIndex: 40,
+          background: scrolled ? navBg : "transparent",
+          backdropFilter: scrolled ? "blur(20px)" : "none",
+          borderBottom: scrolled ? `1px solid ${border}` : "1px solid transparent",
+          boxShadow: scrolled ? "0 2px 20px rgba(0,0,0,0.08)" : "none",
+          transition: "background 0.3s, border-color 0.3s, box-shadow 0.3s, backdrop-filter 0.3s",
+        }}>
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: scrolled ? 54 : 64, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, transition: "height 0.3s" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-              <img src="/logo-512.png" alt="TalkScope" style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0 }} />
-              <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: "-0.3px", color: ink }}>TalkScope</span>
+              <img src="/logo-512.png" alt="TalkScope" style={{ width: scrolled ? 28 : 32, height: scrolled ? 28 : 32, borderRadius: 8, flexShrink: 0, transition: "all 0.3s" }} />
+              <span style={{ fontWeight: 800, fontSize: scrolled ? 15 : 16, letterSpacing: "-0.3px", color: ink, transition: "font-size 0.3s" }}>TalkScope</span>
             </div>
             <nav className="lp-nav-links" style={{ display: "flex", gap: 2 }}>
-              {[["Features", "#features"], ["Who it's for", "#who"], ["How it works", "#how"], ["Pricing", "#pricing"]].map(([l, h]) => (
-                <a key={l} href={h}>{l}</a>
-              ))}
+              {([["Features", "#features"], ["Who it's for", "#who"], ["How it works", "#how"], ["Pricing", "#pricing"]] as [string,string][]).map(([l, h]) => {
+                const sectionId = h.replace("#", "");
+                const isActive = activeSection === sectionId;
+                return (
+                  <a key={l} href={h} style={{
+                    padding: "6px 13px", borderRadius: 8, fontSize: 14, fontWeight: isActive ? 700 : 500,
+                    color: isActive ? accent : muted, textDecoration: "none",
+                    background: isActive ? `${accent}12` : "transparent",
+                    transition: "all 0.2s",
+                  }}>{l}</a>
+                );
+              })}
             </nav>
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
               <button onClick={toggle} style={{ width: 36, height: 36, borderRadius: 9, border: `1px solid ${border}`, background: surface, cursor: "pointer", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -924,6 +962,7 @@ export default function HomePage() {
           </div>
         </footer>
       </main>
+      </div>
     </>
   );
 }
