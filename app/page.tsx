@@ -958,9 +958,14 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-            <p style={{ textAlign: "center", marginTop: 36, fontSize: 14, color: "rgba(247,249,252,0.4)" }}>
-              All plans include a demo account · No credit card required to start
-            </p>
+            <div style={{ textAlign: "center", marginTop: 36, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+              <p style={{ fontSize: 14, color: "rgba(247,249,252,0.4)" }}>
+                All plans include a demo account · No credit card required to start
+              </p>
+              <Link href="/pricing" style={{ fontSize: 13, color: "#7eb5e8", textDecoration: "none", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4, opacity: 0.8 }}>
+                See full pricing details & FAQ →
+              </Link>
+            </div>
           </div>
         </section>
 
@@ -1094,6 +1099,7 @@ export default function HomePage() {
             {/* Links */}
             <div style={{ display: "flex", gap: 28, alignItems: "center", flexWrap: "wrap" }}>
               {[
+                { href: "/pricing",  label: "Pricing" },
                 { href: "/guide",    label: "Docs" },
                 { href: "/terms",    label: "Terms" },
                 { href: "/privacy",  label: "Privacy" },

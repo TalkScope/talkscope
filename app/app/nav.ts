@@ -13,7 +13,12 @@ export const HEADER_NAV: NavItem[] = [
   { label: "Settings",      href: "/app/settings" },
 ];
 
-export const FOOTER_NAV: NavItem[] = [];
+export const FOOTER_NAV: NavItem[] = [
+  { label: "Pricing",  href: "/pricing" },
+  { label: "Docs",     href: "/guide" },
+  { label: "Privacy",  href: "/privacy" },
+  { label: "Security", href: "/security" },
+];
 
 export const BRAND = {
   name: "TalkScope",
