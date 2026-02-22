@@ -45,7 +45,7 @@ export default function Footer() {
                 href={item.href}
                 target="_blank"
                 rel="noreferrer"
-                style={{ padding: "5px 12px", fontSize: 13, color: "rgba(255,255,255,0.45)", textDecoration: "none", borderRadius: 8, transition: "color 0.15s" }}
+                style={{ padding: "8px 12px", fontSize: 13, color: "rgba(255,255,255,0.45)", textDecoration: "none", borderRadius: 8, transition: "color 0.15s", minHeight: 44, display: "flex", alignItems: "center" }}
                 onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.85)")}
                 onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.45)")}
               >
@@ -55,7 +55,7 @@ export default function Footer() {
               <Link
                 key={item.href}
                 href={item.href}
-                style={{ padding: "5px 12px", fontSize: 13, color: "rgba(255,255,255,0.45)", textDecoration: "none", borderRadius: 8 }}
+                style={{ padding: "8px 12px", fontSize: 13, color: "rgba(255,255,255,0.45)", textDecoration: "none", borderRadius: 8, minHeight: 44, display: "flex", alignItems: "center" }}
               >
                 {item.label}
               </Link>
