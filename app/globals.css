@@ -916,11 +916,13 @@ html, body {
 .ts-mobile-drawer {
   display: none; position: fixed; top: 0; right: 0; bottom: 0;
   width: min(300px, 92vw); z-index: 50;
-  background: var(--ts-bg) !important;
+  background: #ffffff;
   border-left: 1px solid var(--ts-border);
-  box-shadow: -12px 0 50px rgba(0,0,0,0.5);
+  box-shadow: -12px 0 50px rgba(0,0,0,0.35);
   flex-direction: column;
-  opacity: 1 !important;
+}
+[data-theme="dark"] .ts-mobile-drawer {
+  background: #0f1a2e;
 }
 .ts-mobile-drawer.open { display: flex; }
 
