@@ -265,7 +265,7 @@ export default function GuidePage() {
           {/* Dashboard */}
           <section id="dashboard" style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: 28, marginTop: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <span style={{ fontSize: 24 }}>📊</span>
+              <span style={ display:"flex" }><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></span>
               <h2 style={{ margin: 0 }}>Dashboard — Operations Center</h2>
             </div>
             <p>The Dashboard is your command center. It shows the state of your entire organization in real time: average scores, risk zones, top and bottom performers, and the coaching queue.</p>
@@ -293,7 +293,7 @@ export default function GuidePage() {
           {/* Agents */}
           <section id="agents" style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: 28, marginTop: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <span style={{ fontSize: 24 }}>👥</span>
+              <span style={ display:"flex" }><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
               <h2 style={{ margin: 0 }}>Agents</h2>
             </div>
             <p>The Agent page is the heart of TalkScope. Each agent has a full performance profile including score history, conversation list, behavioral patterns, and coaching recommendations.</p>
@@ -327,7 +327,7 @@ export default function GuidePage() {
           {/* Conversations */}
           <section id="conversations" style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: 28, marginTop: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <span style={{ fontSize: 24 }}>💬</span>
+              <span style={ display:"flex" }><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
               <h2 style={{ margin: 0 }}>Conversations</h2>
             </div>
             <p>The Conversations page lists all uploaded transcripts across all agents. Filter, search, read full transcripts, and manage your conversation library.</p>
@@ -341,7 +341,7 @@ export default function GuidePage() {
 
             <h3>Deleting a Conversation</h3>
             <p>Click <strong>Delete</strong> next to a conversation → the button changes to <strong>Sure?</strong> (red, 3-second timeout) → click again to confirm. The action is irreversible. After deletion, regenerate the agent's score since the old score included the deleted data.</p>
-            <InfoBox icon="⚠️" title="After deletion" color="#f59e0b">
+            <InfoBox icon={<span style={display:"flex"}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>} title="After deletion" color="#f59e0b">
               The agent's score won't update automatically after you delete conversations. Go to the Agent page and click <strong>Generate Score</strong> to recalculate with the current data set.
             </InfoBox>
           </section>
@@ -349,7 +349,7 @@ export default function GuidePage() {
           {/* Patterns */}
           <section id="patterns" style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: 28, marginTop: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <span style={{ fontSize: 24 }}>🔍</span>
+              <span style={ display:"flex" }><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
               <h2 style={{ margin: 0 }}>Pattern Intelligence Engine</h2>
               <Badge text="Most powerful" color="#8b5cf6" />
             </div>
@@ -394,7 +394,7 @@ export default function GuidePage() {
           {/* Upload */}
           <section id="upload" style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: 28, marginTop: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <span style={{ fontSize: 24 }}>📂</span>
+              <span style={ display:"flex" }><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
               <h2 style={{ margin: 0 }}>Upload</h2>
             </div>
             <p>The Upload page has three tabs for bringing your data into TalkScope.</p>
@@ -402,7 +402,7 @@ export default function GuidePage() {
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {[
                 { tab: "Import Agents", badge: "CSV", desc: "Upload a CSV with columns: name, email, team. Creates agents and teams automatically. Headers must match exactly.", color: accent },
-                { tab: "Upload Conversations", badge: "TXT", desc: "One file = one conversation. Select an agent, upload .txt transcripts, then either save only or click ⚡ Upload + Score Now for immediate AI analysis.", color: "#22c55e" },
+                { tab: "Upload Conversations", badge: "TXT", desc: "One file = one conversation. Select an agent, upload .txt transcripts, then either save only or click Upload + Score Now for immediate AI analysis.", color: "#22c55e" },
                 { tab: "Company Rules", badge: "TXT", desc: "Upload your scripts, quality standards, and compliance rules. The AI incorporates these into every scoring and pattern analysis.", color: "#8b5cf6" },
               ].map(t => (
                 <div key={t.tab} style={{ display: "flex", gap: 14, padding: "14px 16px", borderRadius: 12, border: `1px solid ${border}`, background: soft }}>
@@ -428,7 +428,7 @@ export default function GuidePage() {
           {/* AI Scoring */}
           <section id="scoring" style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: 28, marginTop: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <span style={{ fontSize: 24 }}>🎯</span>
+              <span style={ display:"flex" }><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
               <h2 style={{ margin: 0 }}>How AI Scoring Works</h2>
             </div>
             <p>TalkScope's scoring is not simple keyword matching. The AI reads the full transcript and evaluates it across multiple behavioral and outcome dimensions, considering context, emotion, conversation structure, and business objectives.</p>
@@ -454,7 +454,7 @@ export default function GuidePage() {
 
             <h3>Ways to trigger scoring</h3>
             {[
-              { method: "⚡ Upload + Score Now", desc: "Score is generated immediately after upload. Results appear in ~10 seconds." },
+              { method: "Upload + Score Now", desc: "Score is generated immediately after upload. Results appear in ~10 seconds." },
               { method: "Agent page → Generate Score", desc: "Rescores the agent using the latest 30 conversations (the scoring window)." },
               { method: "Dashboard → Batch Scoring", desc: "Scores all agents in the org at once. Best for initial setup or weekly refreshes." },
             ].map(s => (
@@ -468,7 +468,7 @@ export default function GuidePage() {
           {/* Security */}
           <section id="security" style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: 28, marginTop: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <span style={{ fontSize: 24 }}>🔒</span>
+              <span style={ display:"flex" }><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
               <h2 style={{ margin: 0 }}>Security & Privacy</h2>
               <Badge text="Important" color="#22c55e" />
             </div>
@@ -501,7 +501,7 @@ export default function GuidePage() {
 
             <div style={{ display: "flex", gap: 10, marginTop: 16, flexWrap: "wrap" }}>
               <a href="/privacy" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 10, background: `${accent}10`, border: `1px solid ${accent}25`, color: accent, textDecoration: "none", fontWeight: 700, fontSize: 13 }}>
-                🔒 Privacy Policy →
+                Privacy Policy →
               </a>
               <a href="/security" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 10, background: soft, border: `1px solid ${border}`, color: ink, textDecoration: "none", fontWeight: 700, fontSize: 13 }}>
                 🛡️ Full Security Details →
@@ -512,7 +512,7 @@ export default function GuidePage() {
           {/* FAQ */}
           <section id="faq" style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: 28, marginTop: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <span style={{ fontSize: 24 }}>❓</span>
+              <span style={ display:"flex" }><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
               <h2 style={{ margin: 0 }}>FAQ</h2>
             </div>
             {[
@@ -529,7 +529,7 @@ export default function GuidePage() {
 
           {/* CTA */}
           <div style={{ background: `linear-gradient(135deg, ${accent}, #5a7fa8)`, borderRadius: 16, padding: 32, textAlign: "center", marginTop: 24, marginBottom: 8 }}>
-            <div style={{ fontSize: 28, marginBottom: 10 }}>🚀</div>
+            <div style={ display:"flex", justifyContent:"center", marginBottom:10 }><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7eb5e8" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></div>
             <div style={{ fontWeight: 900, fontSize: 22, color: "#fff", marginBottom: 8, letterSpacing: "-0.02em" }}>Ready to get started?</div>
             <div style={{ fontSize: 14, color: "rgba(255,255,255,0.75)", marginBottom: 20 }}>Try the live demo or create your workspace in 2 minutes</div>
             <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
