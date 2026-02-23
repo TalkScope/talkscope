@@ -94,9 +94,6 @@ async function scoreWithRepair(
   const raw1 = (resp1.output_text || "").trim();
 
   try {
-
-  const { userId } = await auth();
-  if (!userId) return new NextResponse("Unauthorized", { status: 401 });
     return { parsed: parseStrictScoreJson(raw1), raw: raw1, usedRepair: false };
   } catch (e1: any) {
     // 2) repair attempt (single retry)
@@ -129,6 +126,9 @@ async function scoreWithRepair(
 }
 
 export async function POST(req: Request) {
+  const { userId } = await auth();
+  if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return new NextResponse("Missing OPENAI_API_KEY", { status: 500 });
   const client = new OpenAI({ apiKey });
