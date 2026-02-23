@@ -241,7 +241,7 @@ export default function HomePage() {
         /* Nav */
         .lp-nav-links a { padding:6px 13px; border-radius:8px; color:${muted}; text-decoration:none; font-size:14px; font-weight:500; transition:color 0.15s; }
         .lp-nav-links a:hover { color:${ink}; }
-        @media(max-width:767px) { .lp-nav-links { display:none !important; } .lp-mobile-btn { display:flex !important; } }
+        @media(max-width:767px) { .lp-nav-links { display:none !important; } .lp-mobile-btn { display:flex !important; } .lp-hero-floats { display:none !important; } .lp-animated-mock { display:none !important; } }
         @media(min-width:768px) { .lp-mobile-btn { display:none !important; } }
 
         /* Mobile */
@@ -323,6 +323,7 @@ export default function HomePage() {
         .lp-float-out { animation: floatOut 0.4s ease forwards; }
 
         /* Who it's for — floating cards */
+        @media(max-width:767px) { .who-panel-right { display:none !important; } }
         @keyframes floatCard {
           0%   { transform: translateY(0px) scale(1); opacity: 0.85; }
           50%  { transform: translateY(-8px) scale(1.02); opacity: 1; }
@@ -1095,7 +1096,7 @@ export default function HomePage() {
             .ts-footer-links { display: flex; align-items: center; flex-wrap: wrap; gap: 0; }
             .ts-footer-link { font-size: 13px; color: rgba(255,255,255,0.45); text-decoration: none; font-weight: 500; padding: 10px 12px; min-height: 44px; display: inline-flex; align-items: center; border-radius: 8px; transition: color 0.15s, background 0.15s; }
             .ts-footer-link:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.06); }
-            .ts-footer-cta { font-size: 13px; color: #7eb5e8; text-decoration: none; font-weight: 700; padding: 10px 14px; min-height: 44px; display: inline-flex; align-items: center; border-radius: 8px; }
+            .ts-footer-cta { font-size: 13px; color: #7eb5e8; text-decoration: none; font-weight: 700; padding: 10px 20px; min-height: 44px; display: inline-flex; align-items: center; border-radius: 8px; position: relative; z-index: 2; }
             .ts-footer-cta:hover { background: rgba(126,181,232,0.1); }
             @media (max-width: 640px) { .ts-footer-inner { flex-direction: column; align-items: flex-start; } }
           `}</style>

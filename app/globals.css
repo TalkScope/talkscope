@@ -915,11 +915,12 @@ html, body {
 
 .ts-mobile-drawer {
   display: none; position: fixed; top: 0; right: 0; bottom: 0;
-  width: min(290px, 88vw); z-index: 50;
-  background: var(--ts-surface);
+  width: min(300px, 92vw); z-index: 50;
+  background: var(--ts-bg) !important;
   border-left: 1px solid var(--ts-border);
-  box-shadow: -8px 0 40px rgba(0,0,0,0.22);
+  box-shadow: -12px 0 50px rgba(0,0,0,0.5);
   flex-direction: column;
+  opacity: 1 !important;
 }
 .ts-mobile-drawer.open { display: flex; }
 

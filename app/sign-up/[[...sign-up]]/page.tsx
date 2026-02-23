@@ -53,11 +53,11 @@ export default function SignUpPage() {
           padding: "0 8px",
         }}>
           By creating an account you agree to our{" "}
-          <Link href="/terms" style={{ color: "#406184", fontWeight: 600, textDecoration: "none" }}>
+          <Link href="/terms" style={{ color: "#406184", fontWeight: 600, textDecoration: "none", display: "inline-block", padding: "4px 2px", minHeight: 44, lineHeight: "44px" }}>
             Terms of Service
           </Link>{" "}
           and{" "}
-          <Link href="/privacy" style={{ color: "#406184", fontWeight: 600, textDecoration: "none" }}>
+          <Link href="/privacy" style={{ color: "#406184", fontWeight: 600, textDecoration: "none", display: "inline-block", padding: "4px 2px", minHeight: 44, lineHeight: "44px" }}>
             Privacy Policy
           </Link>.
         </p>

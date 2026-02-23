@@ -103,10 +103,10 @@ export default function Header() {
 
         <div className="ts-mobile-footer">
           <SignedIn>
-            <div className="ts-mobile-user">
+            <Link href="/app/account" className="ts-mobile-user" style={{ textDecoration: "none" }}>
               <UserButton afterSignOutUrl="/" />
               <span style={{ fontSize: 14, fontWeight: 600, color: "var(--ts-ink)" }}>Account</span>
-            </div>
+            </Link>
           </SignedIn>
           <SignedOut>
             <Link href="/sign-in" className="ts-btn ts-btn-primary" style={{ textAlign: "center", display: "block" }}>

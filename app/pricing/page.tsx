@@ -126,7 +126,7 @@ export default function PricingPage() {
       </section>
 
       {/* Plans */}
-      <section style={{ position: "relative", zIndex: 1, maxWidth: 1060, margin: "0 auto", padding: "0 24px 80px", display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20, alignItems: "start" }}>
+      <section style={{ position: "relative", zIndex: 1, maxWidth: 1060, margin: "0 auto" }} className="pricing-plans-grid">
         {plans.map(plan => (
           <div key={plan.name} style={{
             background: plan.primary ? ACCENT : "rgba(255,255,255,0.04)",
@@ -222,10 +222,18 @@ export default function PricingPage() {
       </footer>
 
       <style>{`
+        .pricing-plans-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 20px;
+          align-items: start;
+        }
+        @media (max-width: 900px) {
+          .pricing-plans-grid { grid-template-columns: 1fr !important; max-width: 440px; margin-left: auto; margin-right: auto; }
+        }
         @media (max-width: 768px) {
-          section:nth-of-type(3) { grid-template-columns: 1fr !important; }
           nav { padding: 14px 20px !important; }
-          section { padding-left: 20px !important; padding-right: 20px !important; }
+          section { padding-left: 16px !important; padding-right: 16px !important; }
         }
         @media (max-width: 640px) {
           section:nth-of-type(5) div[style*="grid-template-columns: 1fr 1fr"] { grid-template-columns: 1fr !important; }

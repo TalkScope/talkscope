@@ -253,6 +253,12 @@ export default function SettingsPage() {
           border-radius:var(--ts-radius-lg); padding:28px; max-width:420px; width:100%;
           box-shadow:var(--ts-shadow-md);
         }
+        .ts-settings-card, .ts-settings-section-title, .ts-settings-card p, .ts-settings-card label {
+          overflow-wrap: anywhere; word-break: break-word;
+        }
+        @media(max-width:600px) {
+          .ts-settings-card { padding: 16px !important; }
+        }
 
         /* Toast */
         .ts-toast {

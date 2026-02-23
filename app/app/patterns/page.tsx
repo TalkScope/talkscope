@@ -110,6 +110,7 @@ function PatternsInner() {
           padding: 18px 20px;
           font-size: 15px; line-height: 1.7;
           margin-bottom: 24px;
+          overflow-wrap: anywhere; word-break: break-word; white-space: normal;
         }
 
         /* Issue card */
@@ -133,7 +134,7 @@ function PatternsInner() {
           background: rgba(184,106,0,0.1); color: var(--ts-warn);
           border: 1px solid rgba(184,106,0,0.2);
         }
-        .ts-issue-title { font-size: 15px; font-weight: 750; flex: 1; line-height: 1.4; min-width: 0; word-break: normal; overflow-wrap: break-word; }
+        .ts-issue-title { font-size: 15px; font-weight: 750; flex: 1; line-height: 1.4; min-width: 0; word-break: break-word; overflow-wrap: anywhere; white-space: normal; }
         .ts-issue-freq {
           font-size: 12px; font-weight: 650;
           padding: 4px 10px; border-radius: 20px;
