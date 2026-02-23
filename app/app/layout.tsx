@@ -1,9 +1,14 @@
 import Header from "./_components/Header";
 import Footer from "./_components/Footer";
 
-export const metadata = {
-  title: "TalkScope",
-  description: "Conversation Intelligence OS",
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: {
+    default: "TalkScope",
+    template: "%s — TalkScope",
+  },
+  description: "TalkScope Conversation Intelligence OS — AI scoring, pattern detection, coaching, and revenue intelligence for contact centers.",
 };
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {

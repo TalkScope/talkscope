@@ -1,3 +1,18 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy — TalkScope",
+  description: "TalkScope Privacy Policy. We never sell your data, auto-redact PII from all transcripts, and give you full control over your data at any time.",
+  alternates: { canonical: "https://talk-scope.com/privacy" },
+  openGraph: {
+    title: "Privacy Policy — TalkScope",
+    description: "TalkScope Privacy Policy. We never sell your data, auto-redact PII from all transcripts, and give you full control over your data at any time.",
+    url: "https://talk-scope.com/privacy",
+    siteName: "TalkScope",
+    type: "website",
+  },
+};
+
 export default function PrivacyPage() {
   const accent = "#406184";
   const ink = "#0b1220";

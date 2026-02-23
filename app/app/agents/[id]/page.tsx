@@ -1,5 +1,11 @@
 "use client";
 
+export const metadata = {
+  title: "Agent Profile",
+  description: "Individual agent performance profile: AI scores, conversation history, strengths, weaknesses, coaching priority, and pattern analysis.",
+};
+
+
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 

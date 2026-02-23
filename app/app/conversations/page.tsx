@@ -1,5 +1,11 @@
 "use client";
 
+export const metadata = {
+  title: "Conversations",
+  description: "Browse all uploaded conversations across your organization. Filter by agent, team, score range, and date. Access transcripts and AI analysis.",
+};
+
+
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 

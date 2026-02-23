@@ -1,5 +1,11 @@
 "use client";
 
+export const metadata = {
+  title: "Agents",
+  description: "View and manage all agents in your organization. Filter by team, sort by score or risk, and navigate to individual agent performance profiles.",
+};
+
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 

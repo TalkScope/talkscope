@@ -1,5 +1,21 @@
 "use client";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Documentation & User Guide — TalkScope",
+  description: "Complete guide to using TalkScope: dashboard, agent scoring, conversation analysis, pattern intelligence, upload, and AI scoring explained.",
+  alternates: { canonical: "https://talk-scope.com/guide" },
+  openGraph: {
+    title: "Documentation & User Guide — TalkScope",
+    description: "Complete guide to using TalkScope: dashboard, agent scoring, conversation analysis, pattern intelligence, upload, and AI scoring explained.",
+    url: "https://talk-scope.com/guide",
+    siteName: "TalkScope",
+    type: "website",
+  },
+};
+
+
 import { useState } from "react";
 import Link from "next/link";
 

@@ -1,3 +1,18 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Security & Data Protection — TalkScope",
+  description: "TalkScope is built security-first. PII auto-redacted, audio never stored, multi-tenant isolation, TLS 1.3, SOC 2 certified infrastructure.",
+  alternates: { canonical: "https://talk-scope.com/security" },
+  openGraph: {
+    title: "Security & Data Protection — TalkScope",
+    description: "TalkScope is built security-first. PII auto-redacted, audio never stored, multi-tenant isolation, TLS 1.3, SOC 2 certified infrastructure.",
+    url: "https://talk-scope.com/security",
+    siteName: "TalkScope",
+    type: "website",
+  },
+};
+
 export default function SecurityPage() {
   const accent = "#406184";
   const ink = "#0b1220";

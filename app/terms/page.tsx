@@ -1,3 +1,18 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Terms of Service — TalkScope",
+  description: "TalkScope Terms of Service. Read our usage terms, subscription policy, data ownership rights, and acceptable use guidelines.",
+  alternates: { canonical: "https://talk-scope.com/terms" },
+  openGraph: {
+    title: "Terms of Service — TalkScope",
+    description: "TalkScope Terms of Service. Read our usage terms, subscription policy, data ownership rights, and acceptable use guidelines.",
+    url: "https://talk-scope.com/terms",
+    siteName: "TalkScope",
+    type: "website",
+  },
+};
+
 export default function TermsPage() {
   const accent = "#406184";
   const ink = "#0b1220";

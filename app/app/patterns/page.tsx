@@ -1,5 +1,11 @@
 "use client";
 
+export const metadata = {
+  title: "Pattern Intelligence",
+  description: "Discover behavioral patterns across thousands of conversations. Identify conversion drivers, risk triggers, and repeating agent behaviors.",
+};
+
+
 export const dynamic = "force-dynamic";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
