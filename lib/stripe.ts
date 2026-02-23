@@ -1,19 +1,21 @@
 import Stripe from "stripe";
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-02-24.acacia",
-});
+export function getStripe(): Stripe {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) throw new Error("STRIPE_SECRET_KEY is not set");
+  return new Stripe(key, { apiVersion: "2025-02-24.acacia" });
+}
 
 export const PLANS = {
   starter: {
     name: "Starter",
-    priceId: process.env.STRIPE_PRICE_STARTER!,
-    amount: 4900, // $49
+    priceId: process.env.STRIPE_PRICE_STARTER ?? "",
+    amount: 4900,
   },
   growth: {
     name: "Growth",
-    priceId: process.env.STRIPE_PRICE_GROWTH!,
-    amount: 19900, // $199
+    priceId: process.env.STRIPE_PRICE_GROWTH ?? "",
+    amount: 19900,
   },
 } as const;
 

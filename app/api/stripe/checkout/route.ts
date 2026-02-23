@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireNonDemo } from "@/lib/auth";
-import { stripe, PLANS, PlanKey } from "@/lib/stripe";
+import { getStripe, PLANS, PlanKey } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
+    const stripe = getStripe();
     const { userId } = await requireNonDemo();
     const { plan } = await req.json() as { plan: PlanKey };
 
