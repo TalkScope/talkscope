@@ -1,3 +1,5 @@
+"use client";
+
 export default function AboutPage() {
   const accent = "#406184";
   const ink = "#0b1220";
