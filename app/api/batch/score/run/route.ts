@@ -139,8 +139,13 @@ export async function POST(req: Request) {
 
     if (!jobId) return new NextResponse("Missing jobId", { status: 400 });
 
-    const job = await prisma.batchJob.findFirst({ where: { id: jobId, organization: { clerkUserId: userId } } });
+    const job = await prisma.batchJob.findUnique({ where: { id: jobId } });
     if (!job) return new NextResponse("Job not found", { status: 404 });
+    // Verify ownership via refId (org or team belonging to this user)
+    const owned = await prisma.organization.findFirst({
+      where: { clerkUserId: userId, OR: [{ id: job.refId }, { teams: { some: { id: job.refId } } }] },
+    });
+    if (!owned) return new NextResponse("Not found", { status: 404 });
     if (job.status === "done") return NextResponse.json({ ok: true, jobId, status: "done" });
 
     await prisma.batchJob.update({ where: { id: jobId }, data: { status: "running" } });
