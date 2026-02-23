@@ -27,7 +27,7 @@ const STATUS_COLORS: Record<string, string> = {
   past_due: "#f59e0b",
 };
 
-export default function AccountPage() {
+function AccountPageInner() {
   const [sub, setSub] = useState<SubData | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const searchParams = useSearchParams();
@@ -182,5 +182,14 @@ export default function AccountPage() {
         </div>
       </div>
     </>
+  );
+}
+
+import { Suspense } from "react";
+export default function AccountPage() {
+  return (
+    <Suspense fallback={<div className="ts-container"><div style={{ color: "var(--ts-muted)", padding: 40 }}>Loading…</div></div>}>
+      <AccountPageInner />
+    </Suspense>
   );
 }
