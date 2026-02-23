@@ -139,7 +139,7 @@ export default function UploadPage() {
             <div className="ts-title">Import & Upload</div>
             <div className="ts-subtitle">Bring your data into TalkScope — agents, conversations, company rules</div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 8, padding: "4px 12px", borderRadius: 20, background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)" }}>
-              <span style={{ fontSize: 12 }}>🔒</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
               <span style={{ fontSize: 12, fontWeight: 600, color: "#16a34a" }}>PII Protected — credit cards, phones, emails auto-redacted before storage</span>
             </div>
           </div>
@@ -241,7 +241,7 @@ function AgentsTab() {
             if (file) handleFile(file);
           }}
         >
-          <div className="ts-dropzone-icon">📂</div>
+          <div className="ts-dropzone-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
           <div className="ts-dropzone-title">Drop CSV file here or click to browse</div>
           <div className="ts-dropzone-sub">Supports .csv files · Max 5MB</div>
           <input
@@ -599,7 +599,7 @@ function ConversationsTab({ isDemo = false }: { isDemo?: boolean }) {
               onDragLeave={() => setDragover(false)}
               onDrop={(e) => { e.preventDefault(); setDragover(false); handleFiles(e.dataTransfer.files); }}
             >
-              <div className="ts-dropzone-icon">💬</div>
+              <div className="ts-dropzone-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
               <div className="ts-dropzone-title">Drop transcript files here or click to browse</div>
               <div className="ts-dropzone-sub">Supports .txt files · Multiple files allowed</div>
               <input ref={fileRef} type="file" accept=".txt,.csv" multiple style={{ display: "none" }}
@@ -632,7 +632,7 @@ function ConversationsTab({ isDemo = false }: { isDemo?: boolean }) {
                   {phase === "uploading" ? "Uploading…" : `Upload ${files.length} file${files.length > 1 ? "s" : ""}`}
                 </button>
                 <button className="ts-btn ts-btn-primary" onClick={() => handleUpload(true)} disabled={!canUpload || busy}>
-                  {busy ? (phase === "scoring" ? "Scoring…" : "Uploading…") : "⚡ Upload + Score Now"}
+                  {busy ? (phase === "scoring" ? "Scoring…" : "Uploading…") : <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Upload + Score Now</>}
                 </button>
               </div>
             </>
@@ -727,9 +727,9 @@ function AudioTab({ isDemo = false }: { isDemo?: boolean }) {
   const fileSizeMB = file ? (file.size / 1024 / 1024).toFixed(1) : "0";
   const accent = "#406184";
 
-  const phaseLabel = phase === "transcribing" ? "🎙️ Transcribing audio with Whisper AI…"
+  const phaseLabel = phase === "transcribing" ? "Transcribing audio with Whisper AI…"
     : phase === "saving" ? "💾 Saving transcript…"
-    : phase === "scoring" ? "🧠 Generating AI score…"
+    : phase === "scoring" ? "Generating AI score…"
     : "";
 
   return (
@@ -742,7 +742,7 @@ function AudioTab({ isDemo = false }: { isDemo?: boolean }) {
 
       {/* Info banner */}
       <div style={{ display: "flex", gap: 12, padding: "12px 16px", borderRadius: 12, background: "rgba(64,97,132,0.06)", border: "1px solid rgba(64,97,132,0.2)" }}>
-        <span style={{ fontSize: 20 }}>🎙️</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
         <div>
           <div style={{ fontWeight: 700, fontSize: 13, color: accent, marginBottom: 2 }}>Audio Transcription powered by OpenAI Whisper</div>
           <div style={{ fontSize: 12, color: "var(--ts-muted)", lineHeight: 1.6 }}>
@@ -810,7 +810,7 @@ function AudioTab({ isDemo = false }: { isDemo?: boolean }) {
       {/* Error */}
       {err && (
         <div style={{ padding: "12px 16px", borderRadius: 10, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#dc2626", fontSize: 13 }}>
-          ⚠️ {err}
+          {err}
         </div>
       )}
 
@@ -827,7 +827,7 @@ function AudioTab({ isDemo = false }: { isDemo?: boolean }) {
               </div>
               <div style={{ fontSize: 12, color: "var(--ts-muted)" }}>
                 {result.agentName} · {result.durationEstimate} · {result.transcriptLength} chars
-                {result.piiRedacted && <span style={{ marginLeft: 8, color: "#22c55e" }}>🔒 PII redacted</span>}
+                {result.piiRedacted && <span style={{ marginLeft: 8, color: "#22c55e", display:"inline-flex", alignItems:"center", gap:4 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>PII redacted</span>}
               </div>
             </div>
           </div>

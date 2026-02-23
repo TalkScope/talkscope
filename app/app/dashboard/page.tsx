@@ -238,7 +238,7 @@ export default function DashboardPage() {
         <div className="ts-batch-panel">
           <div className="ts-batch-toggle" onClick={()=>setBatchOpen(o=>!o)}>
             <div style={{display:"flex",alignItems:"center",gap:12}}>
-              <span style={{fontWeight:750,fontSize:15}}>⚡ Batch Scoring Engine</span>
+              <span style={{fontWeight:750,fontSize:15,display:"inline-flex",alignItems:"center",gap:6}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Batch Scoring Engine</span>
               {isComplete&&jobId&&<span style={{padding:"2px 10px",borderRadius:20,fontSize:11,fontWeight:700,background:"rgba(31,122,58,0.1)",border:"1px solid rgba(31,122,58,0.25)",color:"var(--ts-success)"}}>Done ✓</span>}
               {runningJob&&<span style={{padding:"2px 10px",borderRadius:20,fontSize:11,fontWeight:700,background:"rgba(184,106,0,0.1)",border:"1px solid rgba(184,106,0,0.25)",color:"var(--ts-warn)"}}>Running… {progressPct}%</span>}
             </div>
@@ -309,7 +309,7 @@ export default function DashboardPage() {
             {/* Coaching Queue */}
             <div className="ts-card">
               <div className="ts-table-head">
-                <div><div className="ts-table-head-title">🎯 Coaching Queue</div><div style={{fontSize:12,color:"var(--ts-muted)",marginTop:2}}>Highest priority first</div></div>
+                <div><div className="ts-table-head-title" style={{display:"flex",alignItems:"center",gap:6}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Coaching Queue</div><div style={{fontSize:12,color:"var(--ts-muted)",marginTop:2}}>Highest priority first</div></div>
                 <span className="ts-table-head-count">{coachingQueue.length}</span>
               </div>
               <div className="ts-col-headers ts-coach-row">
@@ -333,7 +333,7 @@ export default function DashboardPage() {
             {/* High Risk */}
             <div className="ts-card">
               <div className="ts-table-head">
-                <div><div className="ts-table-head-title">🚨 High Risk</div><div style={{fontSize:12,color:"var(--ts-muted)",marginTop:2}}>Risk ≥ 60</div></div>
+                <div><div className="ts-table-head-title" style={{display:"flex",alignItems:"center",gap:6}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>High Risk</div><div style={{fontSize:12,color:"var(--ts-muted)",marginTop:2}}>Risk ≥ 60</div></div>
                 <span className="ts-table-head-count" style={{color:highRisk.length>0?"var(--ts-danger)":undefined}}>{highRisk.length}</span>
               </div>
               <div className="ts-col-headers ts-risk-row">
@@ -357,7 +357,7 @@ export default function DashboardPage() {
             {/* Top Performers */}
             <div className="ts-card">
               <div className="ts-table-head">
-                <div><div className="ts-table-head-title">🏆 Top Performers</div><div style={{fontSize:12,color:"var(--ts-muted)",marginTop:2}}>Highest overall score</div></div>
+                <div><div className="ts-table-head-title" style={{display:"flex",alignItems:"center",gap:6}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Top Performers</div><div style={{fontSize:12,color:"var(--ts-muted)",marginTop:2}}>Highest overall score</div></div>
                 <span className="ts-table-head-count">{topPerformers.length}</span>
               </div>
               <div className="ts-col-headers ts-top-row">
