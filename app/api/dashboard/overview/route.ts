@@ -21,8 +21,15 @@ export async function GET(req: Request) {
     }
 
     // 1) Latest score per agent (simple approach: fetch recent scores and reduce in memory)
+    // Get agent IDs belonging to this user's orgs
+    const userAgents = await prisma.agent.findMany({
+      where: { team: { organization: { clerkUserId: userId } } },
+      select: { id: true },
+    });
+    const userAgentIds = userAgents.map(a => a.id);
+
     const recent = await prisma.agentScore.findMany({
-      where: { agent: { team: { organization: { clerkUserId: userId } } } },
+      where: { agentId: { in: userAgentIds } },
       orderBy: { createdAt: "desc" },
       take: 500,
       select: {
@@ -65,9 +72,9 @@ export async function GET(req: Request) {
 
     // 3) Quick system stats (conversations + reports)
     const [conversationsCount, patternReportsCount, agentScoresCount] = await Promise.all([
-      prisma.conversation.count({ where: { agent: { team: { organization: { clerkUserId: userId } } } } }),
+      prisma.conversation.count({ where: { agentId: { in: userAgentIds } } }),
       prisma.patternReport.count({ where: { refId: { in: (await prisma.organization.findMany({ where: { clerkUserId: userId }, select: { id: true } })).map(o => o.id) } } }).catch(() => 0),
-      prisma.agentScore.count({ where: { agent: { team: { organization: { clerkUserId: userId } } } } }).catch(() => 0),
+      prisma.agentScore.count({ where: { agentId: { in: userAgentIds } } }).catch(() => 0),
     ]);
 
     return NextResponse.json({
