@@ -1,28 +1,35 @@
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
+  const { userId } = await auth();
+  if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
-  const item = await prisma.report.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      createdAt: true,
-      mode: true,
-      summary: true,
-      reportJson: true,
-      transcriptChars: true,
-    },
-  });
+  try {
+    const { id } = await params;
+    const item = await prisma.report.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        createdAt: true,
+        mode: true,
+        summary: true,
+        reportJson: true,
+        transcriptChars: true,
+      },
+    });
 
-  if (!item) return new NextResponse("Not found", { status: 404 });
+    if (!item) return new NextResponse("Not found", { status: 404 });
 
-  return NextResponse.json({
-    ...item,
-    report: JSON.parse(item.reportJson),
-  });
+    return NextResponse.json({
+      ...item,
+      report: JSON.parse(item.reportJson),
+    });
+  } catch (e: any) {
+    return NextResponse.json({ error: e?.message || "Failed" }, { status: 500 });
+  }
 }

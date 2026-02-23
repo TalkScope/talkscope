@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@clerk/nextjs/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -69,6 +70,9 @@ async function fetchAgentWindow(agentId: string, windowSize: number) {
 
 export async function POST(req: Request) {
   try {
+
+  const { userId } = await auth();
+  if (!userId) return new NextResponse("Unauthorized", { status: 401 });
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) return new NextResponse("Missing OPENAI_API_KEY", { status: 500 });
     const client = new OpenAI({ apiKey });

@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@clerk/nextjs/server";
 
 export async function GET(req: Request) {
+
+  const { userId } = await auth();
+  if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+
   const url = new URL(req.url);
   const level = (url.searchParams.get("level") || "").trim(); // agent|team|org optional
   const refId = (url.searchParams.get("refId") || "").trim(); // optional

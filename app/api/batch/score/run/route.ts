@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@clerk/nextjs/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -93,6 +94,9 @@ async function scoreWithRepair(
   const raw1 = (resp1.output_text || "").trim();
 
   try {
+
+  const { userId } = await auth();
+  if (!userId) return new NextResponse("Unauthorized", { status: 401 });
     return { parsed: parseStrictScoreJson(raw1), raw: raw1, usedRepair: false };
   } catch (e1: any) {
     // 2) repair attempt (single retry)

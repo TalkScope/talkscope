@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@clerk/nextjs/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,6 +12,9 @@ function toNum(v: any) {
 
 export async function GET(req: Request) {
   try {
+
+  const { userId } = await auth();
+  if (!userId) return new NextResponse("Unauthorized", { status: 401 });
     const url = new URL(req.url);
     const limit = Number(url.searchParams.get("limit") ?? 20);
     if (!Number.isFinite(limit) || limit < 5 || limit > 200) {

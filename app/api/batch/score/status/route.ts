@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@clerk/nextjs/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,6 +11,9 @@ function uniq<T>(arr: T[]) {
 
 export async function GET(req: Request) {
   try {
+
+  const { userId } = await auth();
+  if (!userId) return new NextResponse("Unauthorized", { status: 401 });
     const url = new URL(req.url);
     const jobId = String(url.searchParams.get("jobId") ?? "").trim();
 
