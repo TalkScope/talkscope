@@ -4,6 +4,17 @@ import { NextResponse } from "next/server";
 export const DEMO_USER_ID = "user_39vlY625s0Maj4GvJp5vPJvB7xU";
 
 /**
+ * Returns true if userId is in the WHITELIST_USER_IDS env variable.
+ * Whitelist users get full "growth" access without a Stripe subscription.
+ * Set in Vercel: WHITELIST_USER_IDS=user_abc123,user_xyz456
+ */
+export function isWhitelisted(userId: string): boolean {
+  const raw = process.env.WHITELIST_USER_IDS ?? "";
+  if (!raw.trim()) return false;
+  return raw.split(",").map(s => s.trim()).filter(Boolean).includes(userId);
+}
+
+/**
  * Returns { userId } if authenticated, or throws a 401 NextResponse.
  * Use in API routes: const { userId } = await requireAuth();
  */

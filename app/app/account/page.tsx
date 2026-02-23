@@ -12,6 +12,7 @@ type SubData = {
   currentPeriodEnd: string | null;
   hasStripe: boolean;
   orgName: string;
+  isWhitelisted?: boolean;
 };
 
 const PLAN_LABELS: Record<string, string> = {
@@ -144,7 +145,12 @@ function AccountPageInner() {
                 )}
 
                 <div className="ts-billing-actions">
-                  {sub.hasStripe ? (
+                  {sub.isWhitelisted ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 14px", background: "rgba(64,97,132,0.08)", border: "1px solid rgba(64,97,132,0.2)", borderRadius: 10, fontSize: 13, color: "var(--ts-accent)", fontWeight: 700 }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                      Complimentary access
+                    </div>
+                  ) : sub.hasStripe ? (
                     <button className="ts-btn ts-btn-primary" onClick={openPortal} disabled={portalLoading}>
                       {portalLoading ? "Opening…" : "Manage billing →"}
                     </button>
@@ -153,7 +159,7 @@ function AccountPageInner() {
                       Upgrade plan →
                     </a>
                   )}
-                  {sub.plan === "free" && (
+                  {!sub.isWhitelisted && sub.plan === "free" && (
                     <a href="/pricing" className="ts-btn" style={{ textDecoration: "none" }}>View plans</a>
                   )}
                 </div>

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/auth";
+import { requireAuth, isWhitelisted } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -8,6 +8,27 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     const { userId } = await requireAuth();
+
+    // Whitelist users get full access without Stripe
+    if (isWhitelisted(userId)) {
+      const org = await prisma.organization.findFirst({
+        where: { clerkUserId: userId },
+        select: { id: true, name: true },
+      });
+      return NextResponse.json({
+        ok: true,
+        hasOrg: !!org,
+        orgId: org?.id ?? null,
+        orgName: org?.name ?? "My Workspace",
+        plan: "growth",
+        status: "active",
+        isActive: true,
+        isPastDue: false,
+        currentPeriodEnd: null,
+        hasStripe: false,
+        isWhitelisted: true,
+      });
+    }
 
     const org = await prisma.organization.findFirst({
       where: { clerkUserId: userId },
@@ -44,6 +65,7 @@ export async function GET() {
       isPastDue,
       currentPeriodEnd: sub?.stripeCurrentPeriodEnd ?? null,
       hasStripe: !!sub?.stripeCustomerId,
+      isWhitelisted: false,
     });
   } catch (e: any) {
     if (e?.isAuthError) return e;
