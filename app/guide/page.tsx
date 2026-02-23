@@ -265,7 +265,7 @@ export default function GuidePage() {
           {/* Dashboard */}
           <section id="dashboard" style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: 28, marginTop: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <span style={ display:"flex" }><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></span>
+              <span style={{ display:"flex" }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></span>
               <h2 style={{ margin: 0 }}>Dashboard — Operations Center</h2>
             </div>
             <p>The Dashboard is your command center. It shows the state of your entire organization in real time: average scores, risk zones, top and bottom performers, and the coaching queue.</p>
@@ -293,7 +293,7 @@ export default function GuidePage() {
           {/* Agents */}
           <section id="agents" style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: 28, marginTop: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <span style={ display:"flex" }><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+              <span style={{ display:"flex" }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
               <h2 style={{ margin: 0 }}>Agents</h2>
             </div>
             <p>The Agent page is the heart of TalkScope. Each agent has a full performance profile including score history, conversation list, behavioral patterns, and coaching recommendations.</p>
@@ -327,7 +327,7 @@ export default function GuidePage() {
           {/* Conversations */}
           <section id="conversations" style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: 28, marginTop: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <span style={ display:"flex" }><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+              <span style={{ display:"flex" }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
               <h2 style={{ margin: 0 }}>Conversations</h2>
             </div>
             <p>The Conversations page lists all uploaded transcripts across all agents. Filter, search, read full transcripts, and manage your conversation library.</p>
@@ -349,7 +349,7 @@ export default function GuidePage() {
           {/* Patterns */}
           <section id="patterns" style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: 28, marginTop: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <span style={ display:"flex" }><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+              <span style={{ display:"flex" }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
               <h2 style={{ margin: 0 }}>Pattern Intelligence Engine</h2>
               <Badge text="Most powerful" color="#8b5cf6" />
             </div>
@@ -394,7 +394,7 @@ export default function GuidePage() {
           {/* Upload */}
           <section id="upload" style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: 28, marginTop: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <span style={ display:"flex" }><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
+              <span style={{ display:"flex" }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
               <h2 style={{ margin: 0 }}>Upload</h2>
             </div>
             <p>The Upload page has three tabs for bringing your data into TalkScope.</p>
@@ -428,7 +428,7 @@ export default function GuidePage() {
           {/* AI Scoring */}
           <section id="scoring" style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: 28, marginTop: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <span style={ display:"flex" }><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
+              <span style={{ display:"flex" }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
               <h2 style={{ margin: 0 }}>How AI Scoring Works</h2>
             </div>
             <p>TalkScope's scoring is not simple keyword matching. The AI reads the full transcript and evaluates it across multiple behavioral and outcome dimensions, considering context, emotion, conversation structure, and business objectives.</p>
@@ -468,7 +468,7 @@ export default function GuidePage() {
           {/* Security */}
           <section id="security" style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: 28, marginTop: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <span style={ display:"flex" }><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+              <span style={{ display:"flex" }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
               <h2 style={{ margin: 0 }}>Security & Privacy</h2>
               <Badge text="Important" color="#22c55e" />
             </div>
@@ -512,7 +512,7 @@ export default function GuidePage() {
           {/* FAQ */}
           <section id="faq" style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: 28, marginTop: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <span style={ display:"flex" }><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+              <span style={{ display:"flex" }}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
               <h2 style={{ margin: 0 }}>FAQ</h2>
             </div>
             {[
