@@ -216,11 +216,11 @@ export default function PricingPage() {
 
       {/* Footer */}
       <footer style={{ position: "relative", zIndex: 1, borderTop: "1px solid rgba(255,255,255,0.07)", padding: "24px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-        <Link href="/" style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.4)", textDecoration: "none" }}>← TalkScope</Link>
+        <Link href="/" style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.4)", textDecoration: "none", padding: "10px 0", minHeight: 44, display: "inline-flex", alignItems: "center" }}>← TalkScope</Link>
         <span style={{ fontSize: 12, color: "rgba(255,255,255,0.22)" }}>© {new Date().getFullYear()} TalkScope</span>
-        <div style={{ display: "flex", gap: 16 }}>
-          {[["Privacy", "/privacy"], ["Security", "/security"], ["Guide", "/guide"]].map(([l, h]) => (
-            <Link key={l} href={h} style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", textDecoration: "none" }}>{l}</Link>
+        <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+          {[["About", "/about"], ["Privacy", "/privacy"], ["Security", "/security"], ["Guide", "/guide"]].map(([l, h]) => (
+            <Link key={l} href={h} style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", textDecoration: "none", padding: "10px 10px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>{l}</Link>
           ))}
         </div>
       </footer>

@@ -543,8 +543,9 @@ export default function GuidePage() {
           </div>
 
           <div style={{ textAlign: "center", padding: "16px 0 8px", display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap" }}>
-            <Link href="/privacy" style={{ fontSize: 12, color: muted, textDecoration: "none" }}>🔒 Privacy Policy</Link>
-            <Link href="/security" style={{ fontSize: 12, color: muted, textDecoration: "none" }}>🛡️ Security</Link>
+            <Link href="/about"    style={{ fontSize: 12, color: muted, textDecoration: "none", padding: "10px 10px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>About</Link>
+            <Link href="/privacy"  style={{ fontSize: 12, color: muted, textDecoration: "none", padding: "10px 10px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>🔒 Privacy Policy</Link>
+            <Link href="/security" style={{ fontSize: 12, color: muted, textDecoration: "none", padding: "10px 10px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>🛡️ Security</Link>
           </div>
           <div style={{ textAlign: "center", padding: "8px 0 32px", fontSize: 12, color: muted }}>
             © 2026 TalkScope · Conversation Intelligence OS

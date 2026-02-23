@@ -37,7 +37,7 @@ export default function Footer() {
         </Link>
 
         {/* Links */}
-        <nav style={{ display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
+        <nav style={{ display: "flex", gap: 0, flexWrap: "wrap", alignItems: "center" }}>
           {FOOTER_NAV.map((item) =>
             item.external ? (
               <a
@@ -45,9 +45,7 @@ export default function Footer() {
                 href={item.href}
                 target="_blank"
                 rel="noreferrer"
-                style={{ padding: "8px 12px", fontSize: 13, color: "rgba(255,255,255,0.45)", textDecoration: "none", borderRadius: 8, transition: "color 0.15s", minHeight: 44, display: "flex", alignItems: "center" }}
-                onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.85)")}
-                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.45)")}
+                style={{ padding: "10px 12px", fontSize: 13, color: "rgba(255,255,255,0.45)", textDecoration: "none", borderRadius: 8, minHeight: 44, display: "flex", alignItems: "center" }}
               >
                 {item.label}
               </a>
@@ -55,7 +53,7 @@ export default function Footer() {
               <Link
                 key={item.href}
                 href={item.href}
-                style={{ padding: "8px 12px", fontSize: 13, color: "rgba(255,255,255,0.45)", textDecoration: "none", borderRadius: 8, minHeight: 44, display: "flex", alignItems: "center" }}
+                style={{ padding: "10px 12px", fontSize: 13, color: "rgba(255,255,255,0.45)", textDecoration: "none", borderRadius: 8, minHeight: 44, display: "flex", alignItems: "center" }}
               >
                 {item.label}
               </Link>

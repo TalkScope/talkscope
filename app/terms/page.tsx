@@ -246,9 +246,10 @@ export default function TermsPage() {
         {/* Footer links */}
         <div style={{ marginTop: 32, textAlign: "center", display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" }}>
           <a href="/" style={{ fontSize: 13, color: muted, textDecoration: "none" }}>← Home</a>
-          <a href="/privacy" style={{ fontSize: 13, color: muted, textDecoration: "none" }}>🔒 Privacy Policy</a>
-          <a href="/security" style={{ fontSize: 13, color: muted, textDecoration: "none" }}>🛡️ Security</a>
-          <a href="/guide" style={{ fontSize: 13, color: muted, textDecoration: "none" }}>📖 Docs</a>
+          <a href="/about"    style={{ fontSize: 13, color: muted, textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>About</a>
+          <a href="/privacy"  style={{ fontSize: 13, color: muted, textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>🔒 Privacy Policy</a>
+          <a href="/security" style={{ fontSize: 13, color: muted, textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>🛡️ Security</a>
+          <a href="/guide"    style={{ fontSize: 13, color: muted, textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>📖 Docs</a>
         </div>
         <div style={{ textAlign: "center", marginTop: 16, fontSize: 12, color: muted }}>
           © 2026 TalkScope · Last updated {updated}

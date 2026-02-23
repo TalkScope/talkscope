@@ -1090,33 +1090,34 @@ export default function HomePage() {
 
         {/* FOOTER — dark */}
         <footer style={{ background: isDark ? "#05080f" : "#080f1c", padding: "36px 24px" }}>
-          <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
-            {/* Logo */}
+          <style>{`
+            .ts-footer-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+            .ts-footer-links { display: flex; align-items: center; flex-wrap: wrap; gap: 0; }
+            .ts-footer-link { font-size: 13px; color: rgba(255,255,255,0.45); text-decoration: none; font-weight: 500; padding: 10px 12px; min-height: 44px; display: inline-flex; align-items: center; border-radius: 8px; transition: color 0.15s, background 0.15s; }
+            .ts-footer-link:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.06); }
+            .ts-footer-cta { font-size: 13px; color: #7eb5e8; text-decoration: none; font-weight: 700; padding: 10px 14px; min-height: 44px; display: inline-flex; align-items: center; border-radius: 8px; }
+            .ts-footer-cta:hover { background: rgba(126,181,232,0.1); }
+            @media (max-width: 640px) { .ts-footer-inner { flex-direction: column; align-items: flex-start; } }
+          `}</style>
+          <div className="ts-footer-inner">
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <img src="/logo-512.png" alt="TalkScope" style={{ width: 28, height: 28, borderRadius: 8 }} />
               <span style={{ fontWeight: 800, fontSize: 15, color: "#ffffff" }}>TalkScope</span>
             </div>
-            {/* Links */}
-            <div style={{ display: "flex", gap: 28, alignItems: "center", flexWrap: "wrap" }}>
+            <div className="ts-footer-links">
               {[
+                { href: "/about",    label: "About" },
                 { href: "/pricing",  label: "Pricing" },
                 { href: "/guide",    label: "Docs" },
                 { href: "/terms",    label: "Terms" },
                 { href: "/privacy",  label: "Privacy" },
                 { href: "/security", label: "Security" },
               ].map(l => (
-                <Link key={l.href} href={l.href} style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", textDecoration: "none", fontWeight: 500, transition: "color 0.15s" }}
-                  onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.85)")}
-                  onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.45)")}>
-                  {l.label}
-                </Link>
+                <Link key={l.href} href={l.href} className="ts-footer-link">{l.label}</Link>
               ))}
-              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.25)" }}>© 2026 TalkScope</span>
+              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.2)", padding: "10px 12px" }}>© 2026</span>
             </div>
-            {/* CTA */}
-            <Link href="/app/dashboard" style={{ fontSize: 13, color: "#7eb5e8", textDecoration: "none", fontWeight: 700 }}>
-              Open App →
-            </Link>
+            <Link href="/app/dashboard" className="ts-footer-cta">Open App →</Link>
           </div>
         </footer>
       </main>

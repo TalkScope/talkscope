@@ -14,6 +14,7 @@ export const HEADER_NAV: NavItem[] = [
 ];
 
 export const FOOTER_NAV: NavItem[] = [
+  { label: "About",    href: "/about" },
   { label: "Pricing",  href: "/pricing" },
   { label: "Docs",     href: "/guide" },
   { label: "Privacy",  href: "/privacy" },
