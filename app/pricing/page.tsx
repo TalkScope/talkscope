@@ -1,4 +1,5 @@
 import Link from "next/link";
+import PricingCTA from "./PricingCTA";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -29,6 +30,7 @@ const plans = [
     ],
     cta: "Get started",
     ctaHref: "/sign-up",
+    plan: "starter" as const,
     primary: false,
   },
   {
@@ -48,6 +50,7 @@ const plans = [
     ],
     cta: "Get started",
     ctaHref: "/sign-up",
+    plan: "growth" as const,
     primary: true,
     badge: "Most popular",
   },
@@ -68,6 +71,7 @@ const plans = [
     ],
     cta: "Contact us",
     ctaHref: "mailto:hello@talk-scope.com",
+    plan: undefined,
     primary: false,
   },
 ];
@@ -142,15 +146,7 @@ export default function PricingPage() {
               <span style={{ fontSize: 15, color: "rgba(255,255,255,0.5)" }}>{plan.per}</span>
             </div>
             <p style={{ fontSize: 13, color: plan.primary ? "rgba(255,255,255,0.65)" : "rgba(255,255,255,0.45)", lineHeight: 1.65, marginBottom: 24, minHeight: 44 }}>{plan.desc}</p>
-            <Link href={plan.ctaHref} style={{
-              display: "block", textAlign: "center", padding: "12px 20px", borderRadius: 12,
-              background: plan.primary ? "white" : "rgba(255,255,255,0.1)",
-              color: plan.primary ? ACCENT : "white",
-              textDecoration: "none", fontWeight: 800, fontSize: 14, marginBottom: 24,
-              border: plan.primary ? "none" : "1px solid rgba(255,255,255,0.15)",
-            }}>
-              {plan.cta}
-            </Link>
+            <div style={{ marginBottom: 24 }}><PricingCTA plan={(plan as any).plan} primary={plan.primary} label={plan.cta} href={plan.ctaHref} /></div>
             <div style={{ borderTop: `1px solid ${plan.primary ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.08)"}`, paddingTop: 20, display: "flex", flexDirection: "column", gap: 10 }}>
               {plan.features.map(f => (
                 <div key={f} style={{ display: "flex", gap: 9, alignItems: "flex-start", fontSize: 13, color: plan.primary ? "rgba(255,255,255,0.82)" : "rgba(255,255,255,0.55)" }}>

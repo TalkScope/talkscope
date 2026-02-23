@@ -34,10 +34,34 @@ model Organization {
   createdAt    DateTime @default(now())
   clerkUserId  String   @default("")
 
-  teams     Team[]
-  patterns  PatternReport[]
+  teams        Team[]
+  patterns     PatternReport[]
+  subscription Subscription?
 
   @@index([clerkUserId])
+}
+
+model Subscription {
+  id                   String   @id @default(cuid())
+  organizationId       String   @unique
+  clerkUserId          String
+
+  stripeCustomerId     String?  @unique
+  stripeSubscriptionId String?  @unique
+  stripePriceId        String?
+  stripeCurrentPeriodEnd DateTime?
+
+  plan                 String   @default("free")  // "free" | "starter" | "growth"
+  status               String   @default("inactive") // "active" | "inactive" | "canceled" | "past_due"
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  organization         Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([clerkUserId])
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
 }
 
 model Team {
