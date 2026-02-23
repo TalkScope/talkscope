@@ -18,6 +18,7 @@ const isProtectedRoute = createRouteMatcher([
 // Public: accessible without auth
 const isPublicRoute = createRouteMatcher([
   "/",
+  "/checkout(.*)",
   "/demo(.*)",
   "/guide(.*)",
   "/privacy(.*)",
