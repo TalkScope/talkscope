@@ -1,20 +1,5 @@
 "use client";
 
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Live Demo — TalkScope Conversation Intelligence",
-  description: "Try TalkScope live. Explore AI-scored agents, real conversation analysis, pattern intelligence, and the coaching queue — no login required.",
-  alternates: { canonical: "https://talk-scope.com/demo" },
-  openGraph: {
-    title: "Live Demo — TalkScope Conversation Intelligence",
-    description: "Try TalkScope live. Explore AI-scored agents, real conversation analysis, pattern intelligence, and the coaching queue — no login required.",
-    url: "https://talk-scope.com/demo",
-    siteName: "TalkScope",
-    type: "website",
-  },
-};
-
 
 import Link from "next/link";
 import { useState } from "react";

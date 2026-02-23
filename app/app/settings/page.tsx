@@ -1,10 +1,5 @@
 "use client";
 
-export const metadata = {
-  title: "Settings",
-  description: "Manage your TalkScope workspace: organization details, company scripts and rules, team settings, and account preferences.",
-};
-
 
 import { useEffect, useState } from "react";
 

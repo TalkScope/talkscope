@@ -1,10 +1,5 @@
 "use client";
 
-export const metadata = {
-  title: "Account",
-  description: "Manage your TalkScope account: profile information, subscription, billing, and security settings.",
-};
-
 
 import { UserProfile } from "@clerk/nextjs";
 

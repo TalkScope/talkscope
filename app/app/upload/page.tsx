@@ -1,10 +1,5 @@
 "use client";
 
-export const metadata = {
-  title: "Upload",
-  description: "Upload conversation transcripts or audio files for AI scoring. Import agents via CSV or upload MP3/WAV files for automatic transcription.",
-};
-
 
 import { useRef, useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";

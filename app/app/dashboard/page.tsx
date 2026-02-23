@@ -1,10 +1,5 @@
 "use client";
 
-export const metadata = {
-  title: "Dashboard",
-  description: "Real-time overview of your organization: agent scores, risk zones, coaching queue, top and bottom performers, and batch scoring engine.",
-};
-
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
