@@ -23,19 +23,19 @@ export default function TermsPage() {
         <a href="/" style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 24, textDecoration: "none" }}>
           <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, fontWeight: 600 }}>← Back to TalkScope</span>
         </a>
-        <div style={{ fontSize: 40, marginBottom: 12 }}>📄</div>
+        <div style={{ display:"flex", justifyContent:"center", marginBottom:12 }}><div style={{ width:52, height:52, borderRadius:14, background:"rgba(255,255,255,0.12)", display:"flex", alignItems:"center", justifyContent:"center" }}><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div></div>
         <h1 style={{ color: "#fff", fontSize: 34, fontWeight: 900, letterSpacing: "-0.03em", marginBottom: 10 }}>Terms of Service</h1>
         <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, maxWidth: 480, margin: "0 auto 20px", lineHeight: 1.7 }}>
           Please read these terms carefully before using TalkScope. By creating an account, you agree to be bound by these terms.
         </p>
         <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
           {[
-            { icon: "📅", text: `Effective: ${updated}` },
-            { icon: "🌍", text: "Governing law: International" },
-            { icon: "📧", text: "Questions: legal@talk-scope.com" },
+            { icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, text: `Effective: ${updated}` },
+            { icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>, text: "Governing law: International" },
+            { icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>, text: "Questions: legal@talk-scope.com" },
           ].map(b => (
             <span key={b.text} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.75)" }}>
-              {b.icon} {b.text}
+              {b.icon}{b.text}
             </span>
           ))}
         </div>
@@ -247,9 +247,9 @@ export default function TermsPage() {
         <div style={{ marginTop: 32, textAlign: "center", display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" }}>
           <a href="/" style={{ fontSize: 13, color: muted, textDecoration: "none" }}>← Home</a>
           <a href="/about"    style={{ fontSize: 13, color: muted, textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>About</a>
-          <a href="/privacy"  style={{ fontSize: 13, color: muted, textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>🔒 Privacy Policy</a>
-          <a href="/security" style={{ fontSize: 13, color: muted, textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>🛡️ Security</a>
-          <a href="/guide"    style={{ fontSize: 13, color: muted, textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>📖 Docs</a>
+          <a href="/privacy"  style={{ fontSize: 13, color: muted, textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>Privacy Policy</a>
+          <a href="/security" style={{ fontSize: 13, color: muted, textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>Security</a>
+          <a href="/guide"    style={{ fontSize: 13, color: muted, textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>Docs</a>
         </div>
         <div style={{ textAlign: "center", marginTop: 16, fontSize: 12, color: muted }}>
           © 2026 TalkScope · Last updated {updated}

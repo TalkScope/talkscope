@@ -4,16 +4,16 @@ import { useState } from "react";
 import Link from "next/link";
 
 const SECTIONS = [
-  { id: "what", icon: "🧠", label: "What is TalkScope" },
-  { id: "quickstart", icon: "⚡", label: "Quick Start" },
-  { id: "dashboard", icon: "📊", label: "Dashboard" },
-  { id: "agents", icon: "👥", label: "Agents" },
-  { id: "conversations", icon: "💬", label: "Conversations" },
-  { id: "patterns", icon: "🔍", label: "Patterns" },
-  { id: "upload", icon: "📂", label: "Upload" },
-  { id: "scoring", icon: "🎯", label: "AI Scoring" },
-  { id: "security", icon: "🔒", label: "Security & Privacy" },
-  { id: "faq", icon: "❓", label: "FAQ" },
+  { id: "what", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-1.07-4.91 3 3 0 0 1 .34-5.58 2.5 2.5 0 0 1 1.32-4.24A2.5 2.5 0 0 1 9.5 2z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 1.07-4.91 3 3 0 0 0-.34-5.58 2.5 2.5 0 0 0-1.32-4.24A2.5 2.5 0 0 0 14.5 2z"/></svg>, label: "What is TalkScope" },
+  { id: "quickstart", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>, label: "Quick Start" },
+  { id: "dashboard", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>, label: "Dashboard" },
+  { id: "agents", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, label: "Agents" },
+  { id: "conversations", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>, label: "Conversations" },
+  { id: "patterns", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>, label: "Patterns" },
+  { id: "upload", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>, label: "Upload" },
+  { id: "scoring", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>, label: "AI Scoring" },
+  { id: "security", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>, label: "Security & Privacy" },
+  { id: "faq", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>, label: "FAQ" },
 ];
 
 const accent = "#406184";
@@ -219,7 +219,7 @@ export default function GuidePage() {
           {/* What is TalkScope */}
           <section id="what" style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: 28, marginTop: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <span style={{ fontSize: 24 }}>🧠</span>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#406184" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-1.07-4.91 3 3 0 0 1 .34-5.58 2.5 2.5 0 0 1 1.32-4.24A2.5 2.5 0 0 1 9.5 2z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 1.07-4.91 3 3 0 0 0-.34-5.58 2.5 2.5 0 0 0-1.32-4.24A2.5 2.5 0 0 0 14.5 2z"/></svg>
               <h2 style={{ margin: 0 }}>What is TalkScope?</h2>
             </div>
             <p>
@@ -227,10 +227,10 @@ export default function GuidePage() {
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }}>
               {[
-                { icon: "📊", title: "Operations Dashboard", desc: "Real-time view of your entire org" },
-                { icon: "🎯", title: "AI Scoring Engine", desc: "Deep analysis of every conversation" },
-                { icon: "🔍", title: "Pattern Intelligence", desc: "Behavioral patterns across teams" },
-                { icon: "🚀", title: "Coaching Engine", desc: "Prioritized coaching recommendations" },
+                { icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>, title: "Operations Dashboard", desc: "Real-time view of your entire org" },
+                { icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>, title: "AI Scoring Engine", desc: "Deep analysis of every conversation" },
+                { icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>, title: "Pattern Intelligence", desc: "Behavioral patterns across teams" },
+                { icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>, title: "Coaching Engine", desc: "Prioritized coaching recommendations" },
               ].map(c => (
                 <div key={c.title} style={{ padding: "14px 16px", borderRadius: 12, background: soft, border: `1px solid ${border}` }}>
                   <div style={{ fontSize: 20, marginBottom: 6 }}>{c.icon}</div>
@@ -239,7 +239,7 @@ export default function GuidePage() {
                 </div>
               ))}
             </div>
-            <InfoBox icon="💡" title="Key difference from CallRail / Gong">
+            <InfoBox icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/></svg>} title="Key difference from CallRail / Gong">
               CallRail answers "where did the lead come from." TalkScope answers "why did the deal fail" and "which agent is losing money." It sits between lightweight call tracking and heavy enterprise tools — faster, smarter, and built for mid-market.
             </InfoBox>
           </section>
@@ -247,17 +247,17 @@ export default function GuidePage() {
           {/* Quick Start */}
           <section id="quickstart" style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: 28, marginTop: 24 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <span style={{ fontSize: 24 }}>⚡</span>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
               <h2 style={{ margin: 0 }}>Quick Start</h2>
               <Badge text="3 minutes" color="#22c55e" />
             </div>
             <p>From zero to your first AI insights in under 3 minutes. No technical setup required.</p>
             <Step num="1" title="Create your account" desc="Go to talk-scope.com → Sign Up → enter your email and password. The onboarding wizard launches automatically." />
             <Step num="2" title="Set up your workspace" desc="Create an organization (company name), add a team (e.g. 'Sales Team A'), and add your first agent with name and email." />
-            <Step num="3" title="Upload conversations" desc="Go to Upload → Upload Conversations → select an agent → upload .txt transcript files → click ⚡ Upload + Score Now." color="#f59e0b" />
+            <Step num="3" title="Upload conversations" desc="Go to Upload → Upload Conversations → select an agent → upload .txt transcript files → click Upload + Score Now." color="#f59e0b" />
             <Step num="4" title="Get AI insights" desc="TalkScope instantly analyzes conversations and returns: Overall Score, Communication Score, Conversion Score, Risk Signal, Coaching Priority, strengths and weaknesses." color="#22c55e" />
             <Step num="5" title="Run Pattern Intelligence" desc="Go to Patterns → select level (agent / team / org) → click Generate. The AI finds recurring issues, conversion drivers, and coaching priorities." color="#8b5cf6" />
-            <InfoBox icon="🎯" title="Try the live demo first" color="#22c55e">
+            <InfoBox icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>} title="Try the live demo first" color="#22c55e">
               Not sure where to start? Click "Try live demo" on the homepage to explore a pre-populated workspace with 8 agents, 100+ conversations, and pre-generated insights — no login required.
             </InfoBox>
           </section>
@@ -285,7 +285,7 @@ export default function GuidePage() {
 
             <h3>Batch Scoring</h3>
             <p>The Batch Scoring panel at the bottom lets you score all agents at once. Click <strong>Create Job</strong> → <strong>Run</strong>. The worker processes agents in chunks and shows live progress. Use this after bulk-uploading conversations.</p>
-            <InfoBox icon="⚡" title="Pro tip">
+            <InfoBox icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>} title="Pro tip">
               Click the <strong>Refresh</strong> button in the header after uploading new conversations to update the dashboard instantly.
             </InfoBox>
           </section>
@@ -386,7 +386,7 @@ export default function GuidePage() {
                 </div>
               </div>
             ))}
-            <InfoBox icon="💡" title="Best practice">
+            <InfoBox icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/></svg>} title="Best practice">
               Run Pattern analysis weekly at the team level. It takes 30 seconds and gives you a strategic picture of where your team is losing deals or customers.
             </InfoBox>
           </section>
@@ -544,8 +544,8 @@ export default function GuidePage() {
 
           <div style={{ textAlign: "center", padding: "16px 0 8px", display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap" }}>
             <Link href="/about"    style={{ fontSize: 12, color: muted, textDecoration: "none", padding: "10px 10px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>About</Link>
-            <Link href="/privacy"  style={{ fontSize: 12, color: muted, textDecoration: "none", padding: "10px 10px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>🔒 Privacy Policy</Link>
-            <Link href="/security" style={{ fontSize: 12, color: muted, textDecoration: "none", padding: "10px 10px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>🛡️ Security</Link>
+            <Link href="/privacy"  style={{ fontSize: 12, color: muted, textDecoration: "none", padding: "10px 10px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>Privacy Policy</Link>
+            <Link href="/security" style={{ fontSize: 12, color: muted, textDecoration: "none", padding: "10px 10px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>Security</Link>
           </div>
           <div style={{ textAlign: "center", padding: "8px 0 32px", fontSize: 12, color: muted }}>
             © 2026 TalkScope · Conversation Intelligence OS

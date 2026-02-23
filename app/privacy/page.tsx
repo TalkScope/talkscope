@@ -23,18 +23,18 @@ export default function PrivacyPage() {
         <a href="/" style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 24, textDecoration: "none" }}>
           <span style={{ color: "rgba(255,255,255,0.65)", fontSize: 13, fontWeight: 600 }}>← Back to TalkScope</span>
         </a>
-        <div style={{ fontSize: 40, marginBottom: 12 }}>🔒</div>
+        <div style={{ display:"flex", justifyContent:"center", marginBottom:12 }}><div style={{ width:52, height:52, borderRadius:14, background:"rgba(255,255,255,0.15)", display:"flex", alignItems:"center", justifyContent:"center" }}><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div></div>
         <h1 style={{ color: "#fff", fontSize: 34, fontWeight: 900, letterSpacing: "-0.03em", marginBottom: 10 }}>Privacy Policy</h1>
         <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 14, maxWidth: 480, margin: "0 auto 20px" }}>
           We take your data seriously. This policy explains exactly what we collect, how we protect it, and what rights you have.
         </p>
         <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
           {[
-            { icon: "✅", text: "GDPR compliant", bg: "rgba(34,197,94,0.2)", color: "#86efac" },
-            { icon: "🔒", text: "PII auto-redacted", bg: "rgba(255,255,255,0.15)", color: "#fff" },
-            { icon: "📅", text: `Last updated: ${updated}`, bg: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.75)" },
+            { icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#86efac" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>, text: "GDPR compliant", bg: "rgba(34,197,94,0.2)", color: "#86efac" },
+            { icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>, text: "PII auto-redacted", bg: "rgba(255,255,255,0.15)", color: "#fff" },
+            { icon: <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, text: `Last updated: ${updated}`, bg: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.75)" },
           ].map(b => (
-            <span key={b.text} className="pp-badge" style={{ background: b.bg, color: b.color }}>
+            <span key={b.text} className="pp-badge" style={{ background: b.bg, color: b.color, gap: 6 }}>
               {b.icon} {b.text}
             </span>
           ))}
@@ -102,7 +102,7 @@ export default function PrivacyPage() {
             only the resulting transcript text is saved, and only after PII redaction has been applied.
           </p>
           <div style={{ padding: "12px 16px", borderRadius: 10, background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)", fontSize: 13, color: ink, marginTop: 12 }}>
-            <strong>⚠️ Note on OpenAI:</strong> Audio files are processed by OpenAI under their{" "}
+            <strong style={{display:"inline-flex",alignItems:"center",gap:4}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Note on OpenAI:</strong> Audio files are processed by OpenAI under their{" "}
             <a href="https://openai.com/policies/privacy-policy" target="_blank" rel="noopener" style={{ color: accent }}>Privacy Policy</a>.
             OpenAI states they do not use API data to train their models.
           </div>
@@ -115,17 +115,17 @@ export default function PrivacyPage() {
           <p className="pp-p">The following data is automatically redacted:</p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, margin: "12px 0 16px" }}>
             {[
-              { icon: "💳", label: "Credit & debit card numbers", replace: "[CARD-REDACTED]" },
-              { icon: "📞", label: "Phone numbers", replace: "[PHONE-REDACTED]" },
-              { icon: "📧", label: "Email addresses", replace: "[EMAIL-REDACTED]" },
-              { icon: "🪪", label: "Social Security Numbers", replace: "[SSN-REDACTED]" },
-              { icon: "🏦", label: "Bank account numbers", replace: "[ACCOUNT-REDACTED]" },
-              { icon: "🔑", label: "Passwords and PINs", replace: "[CREDENTIAL-REDACTED]" },
-              { icon: "📅", label: "Dates of birth", replace: "[DOB-REDACTED]" },
-              { icon: "🌐", label: "IP addresses", replace: "[IP-REDACTED]" },
+              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#406184" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>, label: "Credit & debit card numbers", replace: "[CARD-REDACTED]" },
+              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#406184" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.5 2 2 0 0 1 3.6 1.34h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16.9z"/></svg>, label: "Phone numbers", replace: "[PHONE-REDACTED]" },
+              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#406184" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>, label: "Email addresses", replace: "[EMAIL-REDACTED]" },
+              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#406184" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="9" cy="12" r="2"/><path d="M15 11h4"/><path d="M15 14h2"/></svg>, label: "Social Security Numbers", replace: "[SSN-REDACTED]" },
+              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#406184" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 22V4a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v18"/><path d="M9 22V12h6v10"/><path d="M3 22h18"/></svg>, label: "Bank account numbers", replace: "[ACCOUNT-REDACTED]" },
+              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#406184" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>, label: "Passwords and PINs", replace: "[CREDENTIAL-REDACTED]" },
+              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#406184" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, label: "Dates of birth", replace: "[DOB-REDACTED]" },
+              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#406184" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>, label: "IP addresses", replace: "[IP-REDACTED]" },
             ].map(item => (
               <div key={item.label} style={{ padding: "10px 12px", borderRadius: 10, background: soft, border: `1px solid ${border}`, display: "flex", gap: 8, alignItems: "flex-start" }}>
-                <span style={{ fontSize: 16, flexShrink: 0 }}>{item.icon}</span>
+                <span style={{ flexShrink: 0, display:"flex", alignItems:"center" }}>{item.icon}</span>
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 700, color: ink }}>{item.label}</div>
                   <div style={{ fontSize: 11, color: muted, fontFamily: "monospace", marginTop: 2 }}>{item.replace}</div>
@@ -263,8 +263,8 @@ export default function PrivacyPage() {
         <div style={{ marginTop: 32, textAlign: "center", display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" }}>
           <a href="/" style={{ fontSize: 13, color: muted, textDecoration: "none" }}>← Home</a>
           <a href="/about"    style={{ fontSize: 13, color: muted, textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>About</a>
-          <a href="/guide"    style={{ fontSize: 13, color: muted, textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>📖 Documentation</a>
-          <a href="/security" style={{ fontSize: 13, color: muted, textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>🛡️ Security</a>
+          <a href="/guide"    style={{ fontSize: 13, color: muted, textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>Documentation</a>
+          <a href="/security" style={{ fontSize: 13, color: muted, textDecoration: "none", padding: "10px 12px", minHeight: 44, display: "inline-flex", alignItems: "center", borderRadius: 8 }}>Security</a>
         </div>
         <div style={{ textAlign: "center", marginTop: 16, fontSize: 12, color: muted }}>
           © 2026 TalkScope · Last updated {updated}

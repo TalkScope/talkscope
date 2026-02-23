@@ -34,22 +34,22 @@ export default function AboutPage() {
 
   const values = [
     {
-      icon: "🎯",
+      icon: "crosshair",
       title: "Decision over data",
       desc: "We don't believe in dashboards for the sake of dashboards. Every feature in TalkScope is designed to tell you what to do next — not just show you numbers.",
     },
     {
-      icon: "⚡",
+      icon: "zap",
       title: "Speed without compromise",
       desc: "Intelligence should be instant. TalkScope scores a conversation in seconds, not minutes. Real-time feedback changes behavior; delayed reports don't.",
     },
     {
-      icon: "🔒",
+      icon: "lock",
       title: "Privacy by default",
       desc: "Your conversations contain sensitive business data. We treat it that way. PII is redacted automatically, audio is never stored, and your data is never used to train models.",
     },
     {
-      icon: "🌍",
+      icon: "globe",
       title: "Built for the middle",
       desc: "Enterprise tools are too expensive and too complex for most teams. We build for the contact center manager with 30 agents — not just the Fortune 500.",
     },
@@ -71,9 +71,7 @@ export default function AboutPage() {
         .team-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .value-card:hover { background: white !important; }
         .value-card { transition: background 0.2s ease; }
-        @media (max-width: 720px) {
-          .team-grid { flex-direction: column !important; }
-          .values-grid { grid-template-columns: 1fr !important; }
+        @media (max-width: 700px) {
           .timeline-row { flex-direction: column !important; gap: 8px !important; }
         }
       `}</style>
@@ -117,7 +115,7 @@ export default function AboutPage() {
         <div style={{ background: "white", borderRadius: 16, border: `1px solid ${border}`, padding: "40px 48px", marginBottom: 48 }}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 20 }}>
             <div style={{ width: 48, height: 48, borderRadius: 12, background: `linear-gradient(135deg, ${accent}, #7eb5e8)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <span style={{ fontSize: 22 }}>💡</span>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z"/></svg>
             </div>
             <div>
               <h2 style={{ fontSize: 22, fontWeight: 700, color: ink, marginBottom: 12 }}>Our Mission</h2>
@@ -140,7 +138,15 @@ export default function AboutPage() {
         </div>
 
         {/* ── Stats bar ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 56 }}>
+        <style>{`
+          .about-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12; margin-bottom: 56px; }
+          @media (max-width: 600px) { .about-stats { grid-template-columns: repeat(2, 1fr) !important; } }
+          .about-team-grid { display: flex; gap: 20px; margin-bottom: 64px; }
+          @media (max-width: 700px) { .about-team-grid { flex-direction: column !important; } }
+          .about-values { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 64px; }
+          @media (max-width: 600px) { .about-values { grid-template-columns: 1fr !important; } }
+        `}</style>
+        <div className="about-stats">
           {[
             { value: "100+", label: "Conversations analyzed" },
             { value: "8", label: "Scoring dimensions" },
@@ -160,7 +166,7 @@ export default function AboutPage() {
           Two people. One product. Fully committed.
         </p>
 
-        <div className="team-grid" style={{ display: "flex", gap: 20, marginBottom: 64 }}>
+        <div className="about-team-grid">
           {team.map((member) => (
             <div key={member.name} className="team-card" style={{
               flex: 1,
@@ -226,7 +232,7 @@ export default function AboutPage() {
           The principles behind every product decision we make.
         </p>
 
-        <div className="values-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 64 }}>
+        <div className="about-values">
           {values.map((v) => (
             <div key={v.title} className="value-card" style={{
               background: soft,
@@ -234,7 +240,12 @@ export default function AboutPage() {
               borderRadius: 14,
               padding: "24px 22px",
             }}>
-              <div style={{ fontSize: 28, marginBottom: 12 }}>{v.icon}</div>
+              <div style={{ marginBottom: 12 }}>
+                {v.icon === "crosshair" && <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#406184" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>}
+                {v.icon === "zap" && <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>}
+                {v.icon === "lock" && <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>}
+                {v.icon === "globe" && <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>}
+              </div>
               <h4 style={{ fontSize: 15, fontWeight: 700, color: ink, marginBottom: 8 }}>{v.title}</h4>
               <p style={{ fontSize: 13.5, color: muted, lineHeight: 1.75 }}>{v.desc}</p>
             </div>
