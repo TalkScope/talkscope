@@ -30,11 +30,11 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
   const [err, setErr]         = useState<string | null>(null);
 
   const steps: { id: Step; label: string; icon: string }[] = [
-    { id: "org",           label: "Organization", icon: "🏢" },
-    { id: "team",          label: "Team",          icon: "👥" },
-    { id: "agents",        label: "Import Agents", icon: "🧑‍💼" },
-    { id: "conversations", label: "Upload Data",   icon: "💬" },
-    { id: "done",          label: "Ready!",        icon: "🚀" },
+    { id: "org",           label: "Organization", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 22V4a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v18"/><path d="M9 22V12h6v10"/><path d="M3 22h18"/><path d="M7 7h1"/><path d="M7 11h1"/><path d="M16 7h1"/><path d="M16 11h1"/></svg> },
+    { id: "team",          label: "Team",          icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
+    { id: "agents",        label: "Import Agents", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> },
+    { id: "conversations", label: "Upload Data",   icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> },
+    { id: "done",          label: "Ready!",        icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> },
   ];
 
   const currentIdx = steps.findIndex(s => s.id === step);
@@ -216,7 +216,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                 return (
                   <div key={s.id} className={`ts-ob-step ${state}`}>
                     <div className="ts-ob-step-dot">
-                      {i < currentIdx ? "✓" : s.icon}
+                      {i < currentIdx ? "✓" : <span style={{display:"flex",alignItems:"center",justifyContent:"center"}}>{s.icon}</span>}
                     </div>
                     <div className="ts-ob-step-label">{s.label}</div>
                   </div>
@@ -245,7 +245,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   onKeyDown={e => e.key === "Enter" && createOrg()}
                   autoFocus
                 />
-                {err && <div style={{ color: "var(--ts-danger)", fontSize: 13, marginBottom: 12 }}>⚠ {err}</div>}
+                {err && <div style={{ color: "var(--ts-danger)", fontSize: 13, marginBottom: 12 }}>{err}</div>}
                 <button className="ts-ob-btn" onClick={createOrg} disabled={saving || !orgName.trim()}>
                   {saving ? "Creating…" : "Create Organization →"}
                 </button>
@@ -270,7 +270,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   onKeyDown={e => e.key === "Enter" && createTeam()}
                   autoFocus
                 />
-                {err && <div style={{ color: "var(--ts-danger)", fontSize: 13, marginBottom: 12 }}>⚠ {err}</div>}
+                {err && <div style={{ color: "var(--ts-danger)", fontSize: 13, marginBottom: 12 }}>{err}</div>}
                 <button className="ts-ob-btn" onClick={createTeam} disabled={saving || !teamName.trim()}>
                   {saving ? "Creating…" : "Create Team →"}
                 </button>
@@ -289,7 +289,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   className="ts-ob-action-card"
                   onClick={onComplete}
                 >
-                  <div className="ts-ob-action-icon">📂</div>
+                  <div className="ts-ob-action-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
                   <div>
                     <div className="ts-ob-action-title">Upload CSV file</div>
                     <div className="ts-ob-action-sub">name, email, team — one agent per row</div>
@@ -314,7 +314,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   className="ts-ob-action-card"
                   onClick={onComplete}
                 >
-                  <div className="ts-ob-action-icon">💬</div>
+                  <div className="ts-ob-action-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
                   <div>
                     <div className="ts-ob-action-title">Upload transcripts</div>
                     <div className="ts-ob-action-sub">.txt files, one conversation per file</div>
@@ -331,17 +331,17 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
             {step === "done" && (
               <>
                 <div style={{ textAlign: "center", marginBottom: 20 }}>
-                  <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, margin: "0 auto 16px" }}>🚀</div>
+                  <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.25)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
                   <div className="ts-ob-title">Workspace ready!</div>
                   <div className="ts-ob-subtitle">Here's what to do next to get your first AI insights.</div>
                 </div>
                 {[
-                  { icon: "📂", step: "1", title: "Upload conversations", sub: "Go to Upload → add .txt or audio files for your agents", href: "/app/upload" },
-                  { icon: "⚡", step: "2", title: "Run Batch Scoring", sub: "Dashboard → Batch Engine → Run to 100%", href: "/app/dashboard" },
-                  { icon: "🔍", step: "3", title: "Explore Pattern Intelligence", sub: "Patterns → select team → Generate report", href: "/app/patterns" },
+                  { icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>, step: "1", title: "Upload conversations", sub: "Go to Upload → add .txt or audio files for your agents", href: "/app/upload" },
+                  { icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>, step: "2", title: "Run Batch Scoring", sub: "Dashboard → Batch Engine → Run to 100%", href: "/app/dashboard" },
+                  { icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>, step: "3", title: "Explore Pattern Intelligence", sub: "Patterns → select team → Generate report", href: "/app/patterns" },
                 ].map(item => (
                   <a key={item.step} href={item.href} onClick={onComplete} className="ts-ob-action-card" style={{ textDecoration: "none", color: "inherit" }}>
-                    <div className="ts-ob-action-icon">{item.icon}</div>
+                    <div className="ts-ob-action-icon" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>{item.icon}</div>
                     <div style={{ flex: 1 }}>
                       <div className="ts-ob-action-title">{item.step}. {item.title}</div>
                       <div className="ts-ob-action-sub">{item.sub}</div>

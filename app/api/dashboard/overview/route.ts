@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@clerk/nextjs/server";
+import { requireAuth } from "@/lib/auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,8 +13,7 @@ function toNum(v: any) {
 export async function GET(req: Request) {
   try {
 
-  const { userId } = await auth();
-  if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+  const { userId } = await requireAuth();
     const url = new URL(req.url);
     const limit = Number(url.searchParams.get("limit") ?? 20);
     if (!Number.isFinite(limit) || limit < 5 || limit > 200) {
@@ -23,6 +22,7 @@ export async function GET(req: Request) {
 
     // 1) Latest score per agent (simple approach: fetch recent scores and reduce in memory)
     const recent = await prisma.agentScore.findMany({
+      where: { agent: { team: { organization: { clerkUserId: userId } } } },
       orderBy: { createdAt: "desc" },
       take: 500,
       select: {
@@ -65,9 +65,9 @@ export async function GET(req: Request) {
 
     // 3) Quick system stats (conversations + reports)
     const [conversationsCount, patternReportsCount, agentScoresCount] = await Promise.all([
-      prisma.conversation.count(),
-      prisma.patternReport.count().catch(() => 0),
-      prisma.agentScore.count().catch(() => 0),
+      prisma.conversation.count({ where: { agent: { team: { organization: { clerkUserId: userId } } } } }),
+      prisma.patternReport.count({ where: { refId: { in: (await prisma.organization.findMany({ where: { clerkUserId: userId }, select: { id: true } })).map(o => o.id) } } }).catch(() => 0),
+      prisma.agentScore.count({ where: { agent: { team: { organization: { clerkUserId: userId } } } } }).catch(() => 0),
     ]);
 
     return NextResponse.json({
@@ -111,10 +111,8 @@ export async function GET(req: Request) {
       })),
     });
   } catch (e: any) {
+    if (e?.isAuthError) return e;
     console.error("dashboard_overview_error:", e);
-    return NextResponse.json(
-      { ok: false, error: e?.message || "Failed to build dashboard overview" },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: false, error: e?.message || "Failed" }, { status: 500 });
   }
 }

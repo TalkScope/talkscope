@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { requireAuth } from "@/lib/auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,8 +16,7 @@ globalThis.__companyRules = globalThis.__companyRules ?? null;
 export async function POST(req: Request) {
   try {
 
-  const { userId } = await auth();
-  if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+  const { userId } = await requireAuth();
     const { title, content } = await req.json() as { title: string; content: string };
     if (!content?.trim()) {
       return NextResponse.json({ ok: false, error: "Content is required" }, { status: 400 });
@@ -34,8 +33,7 @@ export async function POST(req: Request) {
 }
 
 export async function GET() {
-  const { userId } = await auth();
-  if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+  const { userId } = await requireAuth();
   return NextResponse.json({
     ok: true,
     rules: globalThis.__companyRules,

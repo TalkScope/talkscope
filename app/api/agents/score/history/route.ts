@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@clerk/nextjs/server";
+import { requireAuth } from "@/lib/auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -8,8 +8,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   try {
 
-  const { userId } = await auth();
-  if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+  const { userId } = await requireAuth();
     const url = new URL(req.url);
     const agentId = String(url.searchParams.get("agentId") ?? "").trim();
     const limit = Number(url.searchParams.get("limit") ?? 30);
@@ -18,6 +17,10 @@ export async function GET(req: Request) {
     if (!Number.isFinite(limit) || limit < 2 || limit > 200) {
       return new NextResponse("Invalid limit (2..200)", { status: 400 });
     }
+
+    // Verify agent belongs to this user
+    const agentOwned = await prisma.agent.findFirst({ where: { id: agentId, team: { organization: { clerkUserId: userId } } } });
+    if (!agentOwned) return NextResponse.json({ ok: false, error: "Not found" }, { status: 404 });
 
     const rows = await prisma.agentScoreHistory.findMany({
       where: { agentId },
@@ -60,10 +63,7 @@ export async function GET(req: Request) {
       points,
     });
   } catch (e: any) {
-    console.error("agent_score_history_error:", e);
-    return NextResponse.json(
-      { ok: false, error: e?.message || "Failed to fetch score history" },
-      { status: 500 }
-    );
+    if (e?.isAuthError) return e;
+    return NextResponse.json({ ok: false, error: e?.message || "Failed" }, { status: 500 });
   }
 }

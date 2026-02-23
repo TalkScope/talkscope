@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@clerk/nextjs/server";
+import { requireAuth } from "@/lib/auth";
 
 export async function GET(req: Request) {
-
-  const { userId } = await auth();
-  if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+  try {
+  const { userId } = await requireAuth();
 
   const url = new URL(req.url);
   const level = (url.searchParams.get("level") || "").trim(); // agent|team|org optional
@@ -31,4 +30,8 @@ export async function GET(req: Request) {
   });
 
   return NextResponse.json(rows);
+  } catch(e: any) {
+    if (e?.isAuthError) return e;
+    return NextResponse.json({ error: "Failed" }, { status: 500 });
+  }
 }

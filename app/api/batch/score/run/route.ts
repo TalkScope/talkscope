@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@clerk/nextjs/server";
+import { requireAuth } from "@/lib/auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -126,8 +126,7 @@ async function scoreWithRepair(
 }
 
 export async function POST(req: Request) {
-  const { userId } = await auth();
-  if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+  const { userId } = await requireAuth();
 
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return new NextResponse("Missing OPENAI_API_KEY", { status: 500 });
@@ -140,7 +139,7 @@ export async function POST(req: Request) {
 
     if (!jobId) return new NextResponse("Missing jobId", { status: 400 });
 
-    const job = await prisma.batchJob.findUnique({ where: { id: jobId } });
+    const job = await prisma.batchJob.findFirst({ where: { id: jobId, organization: { clerkUserId: userId } } });
     if (!job) return new NextResponse("Job not found", { status: 404 });
     if (job.status === "done") return NextResponse.json({ ok: true, jobId, status: "done" });
 
