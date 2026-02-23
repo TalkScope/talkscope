@@ -163,7 +163,7 @@ export default function ConversationsPage() {
         .ts-fchip {
           height:32px; padding:0 12px; border-radius:20px; font-size:12px; font-weight:700;
           border:1px solid var(--ts-border); background:var(--ts-surface); color:var(--ts-muted);
-          cursor:pointer; transition:all 0.12s; white-space:nowrap;
+          cursor:pointer; transition:all 0.12s; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;
         }
         .ts-fchip:hover { border-color:rgba(64,97,132,0.3); color:var(--ts-accent); }
         .ts-fchip.active {
@@ -216,9 +216,13 @@ export default function ConversationsPage() {
 
         /* Excerpt */
         .ts-conv-excerpt {
-          padding:0 18px 10px calc(18px + 36px + 12px);
+          padding:0 18px 10px 18px;
           font-size:13px; color:var(--ts-muted); line-height:1.6;
-          display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden;
+          display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+        }
+
+        @media(max-width:700px) {
+          .ts-conv-date-col { display:none !important; }
         }
 
         /* Full transcript */

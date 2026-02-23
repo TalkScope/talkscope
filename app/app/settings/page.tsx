@@ -149,7 +149,13 @@ export default function SettingsPage() {
         /* Tabs */
         .ts-settings-tabs {
           display:flex; gap:2px; border-bottom:1px solid var(--ts-border);
-          margin-bottom:28px; overflow-x:auto;
+          margin-bottom:28px; overflow-x:auto; -webkit-overflow-scrolling:touch;
+        }
+        @media(max-width:600px) {
+          .ts-stab { padding:10px 12px; font-size:13px; }
+          .ts-settings-section { padding:16px !important; }
+          .ts-settings-section-title { font-size:14px !important; }
+          .ts-item-name { font-size:13px !important; }
         }
         .ts-stab {
           padding:10px 18px; font-size:14px; font-weight:700;

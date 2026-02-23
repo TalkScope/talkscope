@@ -163,7 +163,8 @@ export default function GuidePage() {
   return (
     <div style={{ fontFamily: "'DM Sans','Segoe UI',system-ui,sans-serif", background: soft, minHeight: "100vh" }}>
       <style>{`
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; max-width: 100%; }
+        p, div, span { overflow-wrap: anywhere; word-break: break-word; }
         h2 { font-size: 22px; font-weight: 800; color: ${ink}; margin-bottom: 8px; margin-top: 32px; letter-spacing: -0.02em; }
         h3 { font-size: 15px; font-weight: 700; color: ${ink}; margin-bottom: 6px; margin-top: 20px; }
         p { font-size: 14px; color: rgba(11,18,32,0.7); line-height: 1.8; margin-bottom: 12px; }
@@ -357,7 +358,7 @@ export default function GuidePage() {
             <p>The most advanced module in TalkScope. The AI analyzes conversations at the agent, team, or org level to surface behavioral patterns, risk triggers, and conversion drivers that aren't visible in raw scores.</p>
 
             <h3>Analysis Levels</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, margin: "8px 0 16px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10, margin: "8px 0 16px" }}>
               {[
                 { level: "Agent", desc: "Individual coaching insights", color: accent },
                 { level: "Team", desc: "Systemic training gaps", color: "#8b5cf6" },

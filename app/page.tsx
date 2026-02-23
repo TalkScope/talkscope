@@ -512,9 +512,10 @@ export default function HomePage() {
             </div>
 
             {/* Right — animated mock UI */}
-            <div style={{ position: "relative" }}>
+            <div className="lp-animated-mock" style={{ position: "relative" }}>
 
               {/* Floating insights */}
+              <div className="lp-hero-floats" style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 10 }}>
               {FLOATING_INSIGHTS.map((insight, i) => {
                 const isVisible = visibleInsight === i;
                 const wasVisible = (visibleInsight - 1 + FLOATING_INSIGHTS.length) % FLOATING_INSIGHTS.length === i;
@@ -534,6 +535,7 @@ export default function HomePage() {
                   </div>
                 );
               })}
+              </div>
 
               {/* Main card */}
               <div style={{ background: isDark ? "rgba(255,255,255,0.04)" : "#fff", border: `1px solid ${border}`, borderRadius: 24, padding: 22, boxShadow: isDark ? "0 32px 80px rgba(0,0,0,0.5)" : "0 32px 80px rgba(11,18,32,0.12)", position: "relative", zIndex: 1 }}>
