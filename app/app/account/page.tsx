@@ -1,8 +1,8 @@
 "use client";
 
-import { UserProfile } from "@clerk/nextjs";
+import { UserProfile, useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 type SubData = {
   plan: string;
@@ -28,11 +28,22 @@ const STATUS_COLORS: Record<string, string> = {
   past_due: "#f59e0b",
 };
 
+const DEMO_USER_ID = "user_39vlY625s0Maj4GvJp5vPJvB7xU";
+
 function AccountPageInner() {
+  const { user } = useUser();
+  const router = useRouter();
   const [sub, setSub] = useState<SubData | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const searchParams = useSearchParams();
   const checkoutSuccess = searchParams.get("checkout") === "success";
+
+  // Redirect demo users to sign-up
+  useEffect(() => {
+    if (user?.id === DEMO_USER_ID) {
+      router.replace("/sign-up");
+    }
+  }, [user, router]);
 
   useEffect(() => {
     fetch("/api/subscription")

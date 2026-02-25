@@ -126,7 +126,7 @@ export default function PricingPage() {
       </section>
 
       {/* Plans */}
-      <section style={{ position: "relative", zIndex: 1, maxWidth: 1060, margin: "0 auto" }} className="pricing-plans-grid">
+      <section className="pricing-plans-grid">
         {plans.map(plan => (
           <div key={plan.name} style={{
             background: plan.primary ? ACCENT : "rgba(255,255,255,0.04)",
@@ -223,6 +223,9 @@ export default function PricingPage() {
 
       <style>{`
         .pricing-plans-grid {
+          position: relative; z-index: 1;
+          max-width: 1060px; margin: 0 auto;
+          padding: 0 24px 80px;
           display: grid;
           grid-template-columns: repeat(3, 1fr);
           gap: 20px;

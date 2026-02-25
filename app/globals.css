@@ -157,6 +157,9 @@ a { color: inherit; text-decoration: none; }
   max-width: 1240px;
   margin: 0 auto;
   padding: 22px 18px 52px;
+  overflow-x: hidden;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 @media (min-width: 1024px) {
@@ -666,7 +669,9 @@ html, body {
 /* ── Container on mobile ── */
 @media (max-width: 767px) {
   .ts-container {
-    padding: 16px 16px 40px;
+    padding: 16px 14px 40px;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 
   /* Page head: stack on mobile */
@@ -915,14 +920,21 @@ html, body {
 
 .ts-mobile-drawer {
   display: none; position: fixed; top: 0; right: 0; bottom: 0;
-  width: min(300px, 92vw); z-index: 50;
-  background: #ffffff;
+  width: min(300px, 92vw); z-index: 200;
+  background: var(--ts-surface);
   border-left: 1px solid var(--ts-border);
-  box-shadow: -12px 0 50px rgba(0,0,0,0.35);
+  box-shadow: -20px 0 80px rgba(0,0,0,0.6);
   flex-direction: column;
+  isolation: isolate;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
-[data-theme="dark"] .ts-mobile-drawer {
-  background: #0f1a2e;
+[data-theme="dark"] .ts-mobile-drawer { background: #0f1c2e !important; }
+[data-theme="light"] .ts-mobile-drawer { background: #ffffff !important; }
+[data-theme="dark"] .ts-mobile-drawer,
+.dark .ts-mobile-drawer {
+  background: #0d1526;
+  border-left: 2px solid #1e2d47;
 }
 .ts-mobile-drawer.open { display: flex; }
 

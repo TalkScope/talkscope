@@ -241,7 +241,8 @@ export default function HomePage() {
         /* Nav */
         .lp-nav-links a { padding:6px 13px; border-radius:8px; color:${muted}; text-decoration:none; font-size:14px; font-weight:500; transition:color 0.15s; }
         .lp-nav-links a:hover { color:${ink}; }
-        @media(max-width:767px) { .lp-nav-links { display:none !important; } .lp-mobile-btn { display:flex !important; } .lp-hero-floats { display:none !important; } .lp-animated-mock { display:none !important; } }
+        @media(max-width:767px) { .lp-nav-links { display:none !important; } .lp-mobile-btn { display:flex !important; } }
+        @media(max-width:900px) { .lp-animated-mock { display:none !important; } .lp-hero-floats { display:none !important; } .lp-float-insight { display:none !important; } }
         @media(min-width:768px) { .lp-mobile-btn { display:none !important; } }
 
         /* Mobile */
@@ -257,7 +258,7 @@ export default function HomePage() {
 
         /* Hero */
         .lp-hero-grid { display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center; }
-        @media(max-width:900px) { .lp-hero-grid { grid-template-columns:1fr; gap:48px; } }
+        @media(max-width:900px) { .lp-hero-grid { grid-template-columns:1fr !important; } }
 
         /* Features grid */
         .lp-feat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
@@ -1092,15 +1093,20 @@ export default function HomePage() {
         </div>{/* end unified dark block */}
 
         {/* FOOTER — dark */}
-        <footer style={{ background: isDark ? "#05080f" : "#080f1c", padding: "36px 24px" }}>
+        <footer style={{ background: isDark ? "#05080f" : "#080f1c", padding: "36px 24px", position: "relative", zIndex: 10 }}>
           <style>{`
             .ts-footer-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
             .ts-footer-links { display: flex; align-items: center; flex-wrap: wrap; gap: 0; }
-            .ts-footer-link { font-size: 13px; color: rgba(255,255,255,0.45); text-decoration: none; font-weight: 500; padding: 10px 12px; min-height: 44px; display: inline-flex; align-items: center; border-radius: 8px; transition: color 0.15s, background 0.15s; }
+            .ts-footer-link { font-size: 13px; color: rgba(255,255,255,0.45); text-decoration: none; font-weight: 500; padding: 12px 14px; min-height: 48px; display: inline-flex; align-items: center; border-radius: 8px; transition: color 0.15s, background 0.15s; }
             .ts-footer-link:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.06); }
-            .ts-footer-cta { font-size: 13px; color: #7eb5e8; text-decoration: none; font-weight: 700; padding: 10px 20px; min-height: 44px; display: inline-flex; align-items: center; border-radius: 8px; position: relative; z-index: 2; }
-            .ts-footer-cta:hover { background: rgba(126,181,232,0.1); }
-            @media (max-width: 640px) { .ts-footer-inner { flex-direction: column; align-items: flex-start; } }
+            .ts-footer-cta { color: #7eb5e8; text-decoration: none; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; position: relative; z-index: 10; cursor: pointer; }
+            .ts-footer-cta:hover { background: rgba(64,97,132,0.4) !important; }
+            @media (max-width: 640px) {
+              .ts-footer-inner { flex-direction: column; align-items: stretch; gap: 16px; }
+              .ts-footer-links { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; width: 100%; }
+              .ts-footer-link { min-height: 52px; font-size: 14px; padding: 14px 12px; }
+              .ts-footer-cta { width: 100% !important; font-size: 16px !important; padding: 16px 24px !important; min-height: 56px !important; background: rgba(64,97,132,0.25) !important; border: 1px solid rgba(64,97,132,0.4) !important; border-radius: 14px !important; }
+            }
           `}</style>
           <div className="ts-footer-inner">
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -1120,7 +1126,7 @@ export default function HomePage() {
               ))}
               <span style={{ fontSize: 13, color: "rgba(255,255,255,0.2)", padding: "10px 12px" }}>© 2026</span>
             </div>
-            <Link href="/app/dashboard" className="ts-footer-cta">Open App →</Link>
+            <Link href="/app/dashboard" className="ts-footer-cta" style={{ fontSize: 15, fontWeight: 800, padding: "12px 24px", background: "rgba(64,97,132,0.2)", borderRadius: 12, border: "1px solid rgba(64,97,132,0.3)", minHeight: 48 }}>Open App →</Link>
           </div>
         </footer>
       </main>

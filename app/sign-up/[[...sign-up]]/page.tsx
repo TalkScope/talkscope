@@ -43,24 +43,30 @@ export default function SignUpPage() {
           }}
         />
 
-        {/* Terms consent — below the form */}
-        <p style={{
-          textAlign: "center",
-          fontSize: 12,
-          color: "var(--ts-muted)",
-          marginTop: 14,
-          lineHeight: 1.7,
-          padding: "0 8px",
-        }}>
-          By creating an account you agree to our{" "}
-          <Link href="/terms" style={{ color: "#406184", fontWeight: 600, textDecoration: "none", display: "inline-block", padding: "4px 2px", minHeight: 44, lineHeight: "44px" }}>
-            Terms of Service
-          </Link>{" "}
-          and{" "}
-          <Link href="/privacy" style={{ color: "#406184", fontWeight: 600, textDecoration: "none", display: "inline-block", padding: "4px 2px", minHeight: 44, lineHeight: "44px" }}>
-            Privacy Policy
-          </Link>.
-        </p>
+        {/* Terms — as proper tappable buttons */}
+        <div style={{ marginTop: 16, textAlign: "center" }}>
+          <p style={{ fontSize: 12, color: "var(--ts-muted)", marginBottom: 10 }}>
+            By creating an account you agree to our
+          </p>
+          <div style={{ display: "flex", justifyContent: "center", gap: 10 }}>
+            <Link href="/terms" style={{
+              color: "#406184", fontWeight: 700, textDecoration: "none",
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              padding: "10px 18px", minHeight: 44, borderRadius: 10, fontSize: 13,
+              background: "rgba(64,97,132,0.08)", border: "1px solid rgba(64,97,132,0.2)",
+            }}>
+              Terms of Service
+            </Link>
+            <Link href="/privacy" style={{
+              color: "#406184", fontWeight: 700, textDecoration: "none",
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              padding: "10px 18px", minHeight: 44, borderRadius: 10, fontSize: 13,
+              background: "rgba(64,97,132,0.08)", border: "1px solid rgba(64,97,132,0.2)",
+            }}>
+              Privacy Policy
+            </Link>
+          </div>
+        </div>
 
       </div>
     </div>

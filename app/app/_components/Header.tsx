@@ -103,10 +103,18 @@ export default function Header() {
 
         <div className="ts-mobile-footer">
           <SignedIn>
-            <Link href="/app/account" className="ts-mobile-user" style={{ textDecoration: "none" }}>
-              <UserButton afterSignOutUrl="/" />
-              <span style={{ fontSize: 14, fontWeight: 600, color: "var(--ts-ink)" }}>Account</span>
-            </Link>
+            {isDemo ? (
+              <button onClick={handleCreateAccount} className="ts-btn ts-btn-primary" style={{ width: "100%", textAlign: "center" }}>
+                Create free account →
+              </button>
+            ) : (
+              <Link href="/app/account" className="ts-mobile-user" style={{ textDecoration: "none" }} onClick={() => setMobileOpen(false)}>
+                <div style={{ width: 34, height: 34, borderRadius: 10, background: "rgba(64,97,132,0.15)", border: "1px solid rgba(64,97,132,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#406184" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <span style={{ fontSize: 14, fontWeight: 600, color: "var(--ts-ink)" }}>My Account</span>
+              </Link>
+            )}
           </SignedIn>
           <SignedOut>
             <Link href="/sign-in" className="ts-btn ts-btn-primary" style={{ textAlign: "center", display: "block" }}>

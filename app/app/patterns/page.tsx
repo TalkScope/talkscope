@@ -142,7 +142,7 @@ function PatternsInner() {
           color: var(--ts-warn); white-space: nowrap;
         }
         .ts-issue-chevron { color: var(--ts-muted); font-size: 12px; flex-shrink:0; }
-        .ts-issue-body { padding: 0 20px 20px; border-top: 1px solid var(--ts-border-soft); padding-top: 16px; }
+        .ts-issue-body { padding: 0 16px 16px; border-top: 1px solid var(--ts-border-soft); padding-top: 16px; overflow: hidden; word-break: break-word; overflow-wrap: anywhere; }
 
         /* Impact banner */
         .ts-impact-banner {
@@ -199,7 +199,15 @@ function PatternsInner() {
 
         /* Bottom grid */
         .ts-pi-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
-        @media(max-width:700px) { .ts-pi-bottom { grid-template-columns: 1fr; } }
+        @media(max-width:700px) {
+          .ts-pi-bottom { grid-template-columns: 1fr; }
+          .ts-pi-controls { flex-direction: column; align-items: stretch; }
+          .ts-pi-select { width: 100%; }
+          .ts-pi-summary { font-size: 14px; padding: 14px 16px; overflow-wrap: anywhere; word-break: break-word; }
+          .ts-issue-title { font-size: 13px; }
+          .ts-issue-row { flex-wrap: wrap; }
+          * { max-width: 100%; overflow-wrap: anywhere; }
+        }
 
         /* Skeleton */
         .ts-skel { background: var(--ts-border-soft); border-radius: 10px; animation: ts-pulse 1.4s ease-in-out infinite; margin-bottom: 10px; }
@@ -331,7 +339,7 @@ function PatternsInner() {
                           {issue.impact}
                         </div>
 
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
                           {/* Evidence */}
                           <div className="ts-issue-section">
                             <div className="ts-issue-section-title">Evidence Examples</div>
@@ -353,7 +361,7 @@ function PatternsInner() {
                           </div>
                         </div>
 
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16 }}>
                           {/* Coaching actions */}
                           <div className="ts-issue-section">
                             <div className="ts-issue-section-title">Coaching Actions</div>

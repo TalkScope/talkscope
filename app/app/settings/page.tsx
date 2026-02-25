@@ -152,10 +152,13 @@ export default function SettingsPage() {
           margin-bottom:28px; overflow-x:auto; -webkit-overflow-scrolling:touch;
         }
         @media(max-width:600px) {
-          .ts-stab { padding:10px 12px; font-size:13px; }
-          .ts-settings-section { padding:16px !important; }
-          .ts-settings-section-title { font-size:14px !important; }
+          .ts-stab { padding:10px 10px; font-size:12px; }
+          .ts-settings-section-head { padding:14px 16px !important; }
+          .ts-settings-section-body { padding:14px 16px !important; }
+          .ts-settings-section-title { font-size:14px !important; overflow-wrap:anywhere; word-break:break-word; }
           .ts-item-name { font-size:13px !important; }
+          .ts-add-row { flex-direction:column; align-items:stretch; }
+          .ts-settings-input { min-width:unset !important; width:100%; }
         }
         .ts-stab {
           padding:10px 18px; font-size:14px; font-weight:700;
@@ -176,7 +179,7 @@ export default function SettingsPage() {
           display:flex; align-items:center; justify-content:space-between;
         }
         .ts-settings-section-title { font-size:15px; font-weight:800; }
-        .ts-settings-section-body { padding:20px 22px; }
+        .ts-settings-section-body { padding:20px 22px; overflow-x:hidden; }
 
         /* Add row */
         .ts-add-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
@@ -193,7 +196,7 @@ export default function SettingsPage() {
         .ts-item-row {
           display:flex; align-items:center; gap:10px; padding:10px 14px;
           border-radius:12px; border:1px solid var(--ts-border-soft);
-          background:var(--ts-bg-soft);
+          background:var(--ts-bg-soft); min-width:0; overflow:hidden;
         }
         .ts-item-row:hover { border-color:var(--ts-border); }
         .ts-item-icon {
@@ -201,7 +204,7 @@ export default function SettingsPage() {
           background:rgba(64,97,132,0.1); border:1px solid rgba(64,97,132,0.15);
           display:flex; align-items:center; justify-content:center; font-size:14px;
         }
-        .ts-item-name { flex:1; font-size:14px; font-weight:700; }
+        .ts-item-name { flex:1; font-size:14px; font-weight:700; overflow-wrap:anywhere; word-break:break-word; min-width:0; }
         .ts-item-meta { font-size:11px; color:var(--ts-muted); margin-top:1px; }
         .ts-item-actions { display:flex; gap:6px; }
 

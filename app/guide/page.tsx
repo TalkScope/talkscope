@@ -170,7 +170,12 @@ export default function GuidePage() {
         p { font-size: 14px; color: rgba(11,18,32,0.7); line-height: 1.8; margin-bottom: 12px; }
         @media (max-width: 768px) {
           .guide-sidebar { display: none !important; }
-          .guide-main { padding: 20px 16px !important; }
+          .guide-main { padding: 20px 14px !important; max-width: 100vw; overflow-x: hidden; }
+          h2 { font-size: 18px !important; }
+          h3 { font-size: 14px !important; }
+          p { font-size: 13px !important; }
+          table { font-size: 12px; display: block; overflow-x: auto; }
+          div { max-width: 100%; }
         }
       `}</style>
 
