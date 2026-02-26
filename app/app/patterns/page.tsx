@@ -134,7 +134,7 @@ function PatternsInner() {
           background: rgba(184,106,0,0.1); color: var(--ts-warn);
           border: 1px solid rgba(184,106,0,0.2);
         }
-        .ts-issue-title { font-size: 15px; font-weight: 750; flex: 1; line-height: 1.4; min-width: 0; overflow-wrap: break-word; word-break: normal; white-space: normal; }
+        .ts-issue-title { font-size: 15px; font-weight: 750; flex: 1; line-height: 1.4; min-width: 0; word-break: normal; overflow-wrap: break-word; white-space: normal; }
         .ts-issue-freq {
           font-size: 12px; font-weight: 650;
           padding: 4px 10px; border-radius: 20px;
@@ -142,7 +142,7 @@ function PatternsInner() {
           color: var(--ts-warn); white-space: nowrap;
         }
         .ts-issue-chevron { color: var(--ts-muted); font-size: 12px; flex-shrink:0; }
-        .ts-issue-body { padding: 0 16px 16px; border-top: 1px solid var(--ts-border-soft); padding-top: 16px; overflow: hidden; overflow-wrap: break-word; word-break: normal; }
+        .ts-issue-body { padding: 0 16px 16px; border-top: 1px solid var(--ts-border-soft); padding-top: 16px; overflow: hidden; word-break: normal; overflow-wrap: break-word; }
 
         /* Impact banner */
         .ts-impact-banner {
@@ -205,31 +205,15 @@ function PatternsInner() {
           .ts-pi-select { width: 100%; }
           .ts-pi-summary { font-size: 14px; padding: 14px 16px; overflow-wrap: break-word; word-break: normal; }
           .ts-issue-title { font-size: 13px; }
-          .ts-issue-row { flex-wrap: wrap; }
-          .ts-evidence-id { overflow-wrap: anywhere; word-break: break-word; }
+          .ts-issue-header { flex-wrap: wrap; align-items: flex-start; }
+          .ts-issue-title { flex: 1 1 100%; }
+          .ts-issue-freq { white-space: normal; margin-left: 46px; }
         }
 
         /* Skeleton */
         .ts-skel { background: var(--ts-border-soft); border-radius: 10px; animation: ts-pulse 1.4s ease-in-out infinite; margin-bottom: 10px; }
         @keyframes ts-pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-      `
-	  
-	  @media (max-width: 700px) {
-  .ts-issue-header {
-    flex-wrap: wrap;
-    align-items: flex-start;
-  }
-
-  .ts-issue-title {
-    flex: 1 1 100%;
-  }
-
-  .ts-issue-freq {
-    white-space: normal;
-    margin-left: 46px;
-  }
-}
-}</style>
+      `}</style>
 
       <div className="ts-container">
         {/* HEAD */}
