@@ -212,7 +212,24 @@ function PatternsInner() {
         /* Skeleton */
         .ts-skel { background: var(--ts-border-soft); border-radius: 10px; animation: ts-pulse 1.4s ease-in-out infinite; margin-bottom: 10px; }
         @keyframes ts-pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-      `}</style>
+      `
+	  
+	  @media (max-width: 700px) {
+  .ts-issue-header {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .ts-issue-title {
+    flex: 1 1 100%;
+  }
+
+  .ts-issue-freq {
+    white-space: normal;
+    margin-left: 46px;
+  }
+}
+}</style>
 
       <div className="ts-container">
         {/* HEAD */}
