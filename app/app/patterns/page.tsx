@@ -110,7 +110,7 @@ function PatternsInner() {
           padding: 18px 20px;
           font-size: 15px; line-height: 1.7;
           margin-bottom: 24px;
-          overflow-wrap: anywhere; word-break: break-word; white-space: normal;
+          overflow-wrap: break-word; word-break: normal; white-space: normal;
         }
 
         /* Issue card */
@@ -134,7 +134,7 @@ function PatternsInner() {
           background: rgba(184,106,0,0.1); color: var(--ts-warn);
           border: 1px solid rgba(184,106,0,0.2);
         }
-        .ts-issue-title { font-size: 15px; font-weight: 750; flex: 1; line-height: 1.4; min-width: 0; word-break: break-word; overflow-wrap: anywhere; white-space: normal; }
+        .ts-issue-title { font-size: 15px; font-weight: 750; flex: 1; line-height: 1.4; min-width: 0; overflow-wrap: break-word; word-break: normal; white-space: normal; }
         .ts-issue-freq {
           font-size: 12px; font-weight: 650;
           padding: 4px 10px; border-radius: 20px;
@@ -142,7 +142,7 @@ function PatternsInner() {
           color: var(--ts-warn); white-space: nowrap;
         }
         .ts-issue-chevron { color: var(--ts-muted); font-size: 12px; flex-shrink:0; }
-        .ts-issue-body { padding: 0 16px 16px; border-top: 1px solid var(--ts-border-soft); padding-top: 16px; overflow: hidden; word-break: break-word; overflow-wrap: anywhere; }
+        .ts-issue-body { padding: 0 16px 16px; border-top: 1px solid var(--ts-border-soft); padding-top: 16px; overflow: hidden; overflow-wrap: break-word; word-break: normal; }
 
         /* Impact banner */
         .ts-impact-banner {
@@ -203,10 +203,10 @@ function PatternsInner() {
           .ts-pi-bottom { grid-template-columns: 1fr; }
           .ts-pi-controls { flex-direction: column; align-items: stretch; }
           .ts-pi-select { width: 100%; }
-          .ts-pi-summary { font-size: 14px; padding: 14px 16px; overflow-wrap: anywhere; word-break: break-word; }
+          .ts-pi-summary { font-size: 14px; padding: 14px 16px; overflow-wrap: break-word; word-break: normal; }
           .ts-issue-title { font-size: 13px; }
           .ts-issue-row { flex-wrap: wrap; }
-          * { max-width: 100%; overflow-wrap: anywhere; }
+          .ts-evidence-id { overflow-wrap: anywhere; word-break: break-word; }
         }
 
         /* Skeleton */
